@@ -26,8 +26,8 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="p-4 bg-gray-800 text-white text-center w-full h-[80px] flex items-center justify-center">
-      <p>© 2025 Ditt Företag. {copyright ? copyright : ""}</p>
+    <footer className="p-4 bg-gray-800 text-white text-center w-full h-[150px] md:h-[100px] flex items-center justify-center">
+      <p>© 2025 Krubb & Klunk. {copyright ? copyright : ""}</p>
     </footer>
   );
 };
