@@ -36,9 +36,6 @@ const Home = () => {
         async (position) => {
           const userLat = position.coords.latitude;
           const userLon = position.coords.longitude;
-
-          console.log("Användarens position:", userLat, userLon); // Debugging
-
           setIsLoading(true);
 
           const overpassQuery = `
@@ -156,12 +153,12 @@ const Home = () => {
 
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center">
-      <div className="flex flex-col mb-2  w-2/4">
+      <div className="flex flex-col mb-2  w-full md:w-2/4">
         <h1 className="text-3xl font-bold">Restauranger i närheten</h1>
         <em>
           Du befinner dig i{" "}
           {restaurants.find((r) => r.city && r.city !== "Stad inte tillgänglig")
-            ?.city || "Okänd stad"}
+            ?.city || "Laddar.."}
         </em>
       </div>
 
@@ -170,12 +167,17 @@ const Home = () => {
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
-        <div className="w-2/4 flex flex-col gap-4 justify-center ">
+        <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
           {restaurants.slice(0, visibleCount).map((restaurant, index) => {
             const isExpanded = index === expandedIndex;
 
             return (
               <motion.div
+                whileHover={
+                  expandedIndex !== index
+                    ? { backgroundColor: "#4b5563" } // Tailwind: bg-gray-700
+                    : {}
+                }
                 key={index}
                 ref={(el) => {
                   restaurantRefs.current[index] = el;
@@ -184,10 +186,11 @@ const Home = () => {
                 animate={{ opacity: 1, x: 0 }} // Animerar till full opacitet och rätt position
                 exit={{ opacity: 0, x: 100 }} // När elementet tas bort, gå åt höger och bli osynligt
                 transition={{
+                  backgroundColor: { duration: 0.05, ease: "easeOut" },
                   duration: 0.4, // Tidsinställning för animeringen
                   delay: index * 0.1, // Fördröjning för att få varje div att komma i tur och ordning
                 }}
-                className="bg-[#ececec] w-full flex flex-col gap-5 p-5 shadow-md transition-all duration-500"
+                className="bg-gray-800 w-full flex flex-col gap-5 p-3 md:p-5 shadow-md transition-all duration-500 text-white"
               >
                 <div
                   onClick={() => {
@@ -211,12 +214,12 @@ const Home = () => {
                     expandedIndex !== index ? "cursor-pointer" : ""
                   }`}
                 >
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between">
                     <div className="flex flex-col gap-2">
                       <p className="text-2xl font-semibold">
                         {restaurant.name}
                       </p>
-                      <p className="text-gray-600 font-semibold text-lg">
+                      <p className="text-gray-300 font-semibold text-lg">
                         Du är ungefär {restaurant.distance.toFixed(2)} km bort
                       </p>
                     </div>
@@ -229,7 +232,7 @@ const Home = () => {
                 </div>
 
                 {isExpanded && (
-                  <>
+                  <div className="h-auto flex flex-col gap-5">
                     <div className="h-[350px]">
                       <Map
                         lat={restaurant.lat}
@@ -238,7 +241,7 @@ const Home = () => {
                       />
                     </div>
 
-                    <div className="flex flex-col md:flex-row md:justify-between items-center">
+                    <div className="flex flex-col gap-8 md:gap-0 md:flex-row md:justify-between md:items-center">
                       <div className="flex flex-col gap-5 p-2">
                         <div className="flex flex-col gap-2">
                           <div className="flex gap-2">
@@ -306,19 +309,19 @@ const Home = () => {
                         </div>
                       </div>
 
-                      <div className="h-[200px] w-[250px] flex flex-col gap-2 items-center justify-center pr-5">
+                      <div className="h-[150px] w-[250px] flex flex-col gap-2 items-center justify-center pl-1 md:pr-5 mb-6 mt-2">
                         <img
                           className="w-full h-full object-cover rounded-2xl shadow-md"
                           src={getCuisineImage(restaurant.cuisine)}
                           alt="img"
                         />
-                        <em className="text-sm text-gray-500">
+                        <em className="text-sm text-gray-400">
                           Note: Picture is AI generated and has nothing to do
                           with the restaurant.
                         </em>
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
               </motion.div>
             );
