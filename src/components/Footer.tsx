@@ -27,7 +27,10 @@ const Footer = () => {
 
   return (
     <footer className="p-4 bg-gray-800 text-white text-center w-full h-[150px] md:h-[100px] flex items-center justify-center">
-      <p>© 2025 Krubb & Klunk. {copyright ? copyright : ""}</p>
+      <p>
+        <span className="text-orange-500">© 2025 Platsguiden.</span>{" "}
+        {copyright ? copyright : ""}
+      </p>
     </footer>
   );
 };
