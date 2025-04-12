@@ -1,115 +1,118 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Place, OverpassElement } from "../Interfaces";
 import { useRef } from "react";
 import { motion } from "framer-motion";
-import { ClipLoader } from "react-spinners";
+import { ClipLoader, PulseLoader } from "react-spinners";
 import Map from "../components/Map";
 import Restaurant from "../assets/icons/restaurant.png";
 import Phone from "../assets/icons/phone.png";
 import Link from "../assets/icons/link.png";
 import Location from "../assets/icons/location.png";
 import Open from "../assets/icons/open.png";
+import Refresh1 from "../assets/icons/refresh1.png";
+import Refresh2 from "../assets/icons/refresh2.png";
+import ArrowUp from "../assets/icons/arrowUp.png";
+import ArrowDown from "../assets/icons/arrowDown.png";
 
 const Home = () => {
   const [restaurants, setRestaurants] = useState<Place[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Lägg till laddningstillstånd
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
-  const [centerOnUserFlags, setCenterOnUserFlags] = useState<boolean[]>([]);
-
   const restaurantRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  useEffect(() => {
-    const getUserLocation = async () => {
-      if (!navigator.geolocation) {
-        setError("Geolocation stöds inte i denna webbläsare.");
-        setIsLoading(false);
-        return;
-      }
+  const getUserLocation = useCallback(async () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation stöds inte i denna webbläsare.");
+      setIsLoading(false);
+      return;
+    }
 
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const userLat = position.coords.latitude;
-          const userLon = position.coords.longitude;
-          setIsLoading(true);
+    setIsLoading(true);
+    setError(null);
 
-          const overpassQuery = `
-            [out:json];
-            (
-              node["amenity"="restaurant"](around:5000,${userLat},${userLon});
-              way["amenity"="restaurant"](around:5000,${userLat},${userLon});
-              relation["amenity"="restaurant"](around:5000,${userLat},${userLon});
-            );
-            out center;
-          `;
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
 
-          try {
-            const response = await fetch(
-              "https://overpass-api.de/api/interpreter",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: `data=${encodeURIComponent(overpassQuery)}`,
-              }
-            );
+        const overpassQuery = `
+          [out:json];
+          (
+            node["amenity"="restaurant"](around:5000,${userLat},${userLon});
+            way["amenity"="restaurant"](around:5000,${userLat},${userLon});
+            relation["amenity"="restaurant"](around:5000,${userLat},${userLon});
+          );
+          out center;
+        `;
 
-            if (!response.ok)
-              throw new Error("Kunde inte hämta data från Overpass API");
+        try {
+          const response = await fetch(
+            "https://overpass-api.de/api/interpreter",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: `data=${encodeURIComponent(overpassQuery)}`,
+            }
+          );
 
-            const data = await response.json();
-            console.log(data);
+          if (!response.ok)
+            throw new Error("Kunde inte hämta data från Overpass API");
 
-            const places: Place[] = data.elements
-              .filter((item: OverpassElement) => item.tags?.name)
-              .map((item: OverpassElement) => {
-                const lat = item.lat || item.center?.lat || 0;
-                const lon = item.lon || item.center?.lon || 0;
-                const address = item.tags?.["addr:street"]
-                  ? `${item.tags["addr:street"]}, ${item.tags["addr:city"]}`
-                  : undefined;
+          const data = await response.json();
 
-                return {
-                  name: item.tags?.name || "Okänd restaurang",
-                  lat,
-                  lon,
-                  distance: getDistance(userLat, userLon, lat, lon),
-                  address,
-                  phone: item.tags?.["contact:phone"],
-                  website: item.tags?.website,
-                  cuisine: item.tags?.cuisine,
-                  openingHours: item.tags?.opening_hours,
-                  city: item.tags?.["addr:city"] || "Stad inte tillgänglig",
-                };
-              });
+          const places: Place[] = data.elements
+            .filter((item: OverpassElement) => item.tags?.name)
+            .map((item: OverpassElement) => {
+              const lat = item.lat || item.center?.lat || 0;
+              const lon = item.lon || item.center?.lon || 0;
+              const address = item.tags?.["addr:street"]
+                ? `${item.tags["addr:street"]}, ${item.tags["addr:city"]}`
+                : undefined;
 
-            const sortedPlaces = places.sort(
-              (a: Place, b: Place) => a.distance - b.distance
-            );
+              return {
+                name: item.tags?.name || "Okänd restaurang",
+                lat,
+                lon,
+                distance: getDistance(userLat, userLon, lat, lon),
+                address,
+                phone: item.tags?.["contact:phone"],
+                website: item.tags?.website,
+                cuisine: item.tags?.cuisine,
+                openingHours: item.tags?.opening_hours,
+                city: item.tags?.["addr:city"] || "Stad inte tillgänglig",
+              };
+            });
 
-            setRestaurants(sortedPlaces);
-            setIsLoading(false);
-          } catch {
-            setError("Något gick fel vid hämtning av restauranger.");
-            setIsLoading(false);
-          }
-        },
-        (error) => {
-          setError(`Geolocation error: ${error.message}`);
+          const sortedPlaces = places.sort(
+            (a: Place, b: Place) => a.distance - b.distance
+          );
+
+          setRestaurants(sortedPlaces);
+        } catch {
+          setError("Något gick fel vid hämtning av restauranger.");
+        } finally {
           setIsLoading(false);
-        },
-        {
-          enableHighAccuracy: true, // Förbättrar noggrannheten
-          timeout: 10000, // Timeout om positionen inte kan hämtas inom 10 sekunder
-          maximumAge: 0, // Ingen cachning av tidigare positioner
         }
-      );
-    };
-
-    getUserLocation();
+      },
+      (error) => {
+        setError(`Geolocation error: ${error.message}`);
+        setIsLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
   }, []);
+
+  useEffect(() => {
+    getUserLocation();
+  }, [getUserLocation]);
 
   function getDistance(
     lat1: number,
@@ -133,14 +136,52 @@ const Home = () => {
   }
 
   return (
-    <div className="w-full p-5 flex flex-col gap-4 items-center">
-      <div className="flex flex-col mb-2  w-full md:w-2/4">
-        <h1 className="text-3xl font-bold">Restauranger i närheten</h1>
-        <em>
-          Du befinner dig i{" "}
-          {restaurants.find((r) => r.city && r.city !== "Stad inte tillgänglig")
-            ?.city || "Laddar.."}
-        </em>
+    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-5">
+      <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:justify-between mb-3 w-full md:w-2/4 items-start md:items-center">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">
+            Restauranger i närheten
+          </h1>
+          <div className="flex gap-1.5 items-center">
+            <em>Du befinner dig i </em>
+            {restaurants.find(
+              (r) => r.city && r.city !== "Stad inte tillgänglig"
+            ) ? (
+              <p className="font-semibold">
+                {
+                  restaurants.find(
+                    (r) => r.city && r.city !== "Stad inte tillgänglig"
+                  )?.city
+                }
+              </p>
+            ) : (
+              <PulseLoader color="#F97316" loading={true} size={5} />
+            )}
+          </div>
+        </div>
+        {isLoading ? (
+          <div className="flex items-center gap-2 text-sm bg-[#FCF9F8] px-3 h-[40px] border border-gray-300 rounded font-semibold">
+            <ClipLoader color="#F97316" loading={true} size={20} />
+            <span className="text-sm text-gray-600">Hämtar position...</span>
+          </div>
+        ) : (
+          <button
+            onClick={getUserLocation}
+            className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[40px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+          >
+            <img
+              src={Refresh1}
+              alt="refresh"
+              className="h-5 w-5 group-hover:hidden"
+            />
+            <img
+              src={Refresh2}
+              alt="refresh hover"
+              className="h-5 w-5 hidden group-hover:block"
+            />
+            Uppdatera position
+          </button>
+        )}
       </div>
 
       {isLoading ? (
@@ -168,11 +209,11 @@ const Home = () => {
                   delay: index * 0.1, // Fördröjning för att få varje div att komma i tur och ordning
                 }}
                 className={`
-                  bg-white w-full flex flex-col gap-5 p-3 md:p-5 text-black rounded-md
+                  bg-white w-full flex flex-col gap-5 p-3 md:p-5 text-black rounded-md shadow-sm
                   border transition-all duration-300
                   ${
                     expandedIndex === index
-                      ? "border-[2px] border-orange-500"
+                      ? "border-[1.5px] border-orange-500"
                       : "border border-gray-300 hover:border-orange-500"
                   }
                 `}
@@ -201,8 +242,8 @@ const Home = () => {
                 >
                   <div className="flex flex-col gap-4">
                     <div className="flex justify-between">
-                      <div className="flex gap-2 items-center">
-                        <div className="h-[28px] w-[28px]">
+                      <div className="flex gap-2">
+                        <div className="h-[25px] w-[25px]">
                           <img
                             className="w-full h-full object-cover"
                             src={Restaurant}
@@ -210,7 +251,7 @@ const Home = () => {
                           />
                         </div>
                         <div className="flex flex-col">
-                          <p className="text-lg font-semibold leading-5">
+                          <p className="text-base md:text-lg font-semibold leading-5">
                             {restaurant.name}
                           </p>
                           <p className="text-sm text-gray-500">Restaurant</p>
@@ -218,14 +259,16 @@ const Home = () => {
                       </div>
                       <div className="bg-[#FFF8F5]">
                         <p className="text-[#C53C07] font-semibold p-2 rounded-lg">
-                          {restaurant.distance.toFixed(2)} km
+                          {restaurant.distance < 1
+                            ? `${Math.round(restaurant.distance * 1000)} m`
+                            : `${restaurant.distance.toFixed(2)} km`}
                         </p>
                       </div>
                     </div>
                     <div className="flex justify-between">
                       {restaurant.address ? (
-                        <div className="flex gap-1 items-center">
-                          <div className="h-[20px] w-[20px]">
+                        <div className="flex gap-1 items-center pl-1">
+                          <div className="h-[18px] w-[18px]">
                             <img
                               className="w-full h-full object-cover"
                               src={Location}
@@ -240,9 +283,23 @@ const Home = () => {
                         <div></div>
                       )}
                       {expandedIndex === index ? (
-                        <span className="text-xl">▼</span>
+                        <span className="text-xl">
+                          {" "}
+                          <img
+                            src={ArrowUp}
+                            alt="refresh"
+                            className="h-4 w-4"
+                          />
+                        </span>
                       ) : (
-                        <span className="text-xl">▶</span>
+                        <span className="text-xl">
+                          {" "}
+                          <img
+                            src={ArrowDown}
+                            alt="refresh"
+                            className="h-4 w-4"
+                          />
+                        </span>
                       )}
                     </div>
                   </div>
@@ -345,16 +402,7 @@ const Home = () => {
                             </a>
                           )}
                           <div className="">
-                            <button
-                              onClick={() => {
-                                const updatedFlags = [...centerOnUserFlags];
-                                updatedFlags[index] = !updatedFlags[index];
-                                setCenterOnUserFlags(updatedFlags);
-                              }}
-                              className="text-sm text-blue-600 hover:underline"
-                            >
-                              Visa min position
-                            </button>
+                            <button>Visa min position</button>
                           </div>
                         </div>
                       </div>
@@ -369,7 +417,7 @@ const Home = () => {
 
       {!isLoading && visibleCount < 15 && (
         <button
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          className="mt-4 px-4 py-2 bg-[#FCF9F8] border border-gray-300 font-semibold rounded hover:bg-[#FFF8F5] hover:text-[#C53C07]"
           onClick={() => setVisibleCount(Math.min(visibleCount + 5, 15))}
         >
           Visa mer
@@ -378,7 +426,7 @@ const Home = () => {
 
       {!isLoading && visibleCount === 15 && (
         <button
-          className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          className="mt-4 px-4 py-2 border border-orange-500 text-[#C2410C] hover:text-[#9A2A06] rounded font-semibold"
           onClick={() => setVisibleCount(visibleCount === 15 ? 5 : 10)}
         >
           {visibleCount === 15 ? "Visa mindre" : "Visa mer"}
