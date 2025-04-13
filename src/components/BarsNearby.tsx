@@ -21,6 +21,8 @@ const BarsNearby = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
   const barRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [showUserPosition, setShowUserPosition] = useState(false);
+  const [showPolyline, setShowPolyline] = useState(false);
 
   const getUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -113,6 +115,11 @@ const BarsNearby = () => {
   useEffect(() => {
     getUserLocation();
   }, [getUserLocation]);
+
+  const handleShowUserPosition = () => {
+    setShowUserPosition(true);
+    setShowPolyline(true);
+  };
 
   function getDistance(
     lat1: number,
@@ -216,6 +223,8 @@ const BarsNearby = () => {
                 <div
                   onClick={() => {
                     setExpandedIndex(index === expandedIndex ? -1 : index);
+                    setShowUserPosition(false);
+                    setShowPolyline(false);
 
                     setTimeout(() => {
                       const element = barRefs.current[index];
@@ -252,8 +261,8 @@ const BarsNearby = () => {
                           <p className="text-sm text-gray-500">Restaurant</p>
                         </div>
                       </div>
-                      <div className="bg-[#FFF8F5]">
-                        <p className="text-[#C53C07] font-semibold p-2 rounded-lg">
+                      <div className="bg-[#FFF8F5] h-[36px] flex items-center rounded-md">
+                        <p className="text-[#C53C07] font-semibold p-2 ">
                           {bar.distance < 1
                             ? `${Math.round(bar.distance * 1000)} m`
                             : `${bar.distance.toFixed(2)} km`}
@@ -301,7 +310,13 @@ const BarsNearby = () => {
                 {isExpanded && (
                   <div className="h-auto flex flex-col gap-5 border-t-2 border-gray-200">
                     <div className="h-[350px] mt-5">
-                      <Map lat={bar.lat} lon={bar.lon} name={bar.name} />
+                      <Map
+                        lat={bar.lat}
+                        lon={bar.lon}
+                        name={bar.name}
+                        showUserPosition={showUserPosition}
+                        showPolyLine={showPolyline}
+                      />
                     </div>
 
                     <div className="flex flex-col gap-8 md:gap-0 md:flex-row md:justify-between md:items-center">
@@ -374,7 +389,20 @@ const BarsNearby = () => {
                           ) : (
                             <a
                               href={`https://www.google.com/search?q=${encodeURIComponent(
-                                bar.name
+                                bar.name +
+                                  (bars.find(
+                                    (b) =>
+                                      b.city &&
+                                      b.city !== "Stad inte tillgänglig"
+                                  )
+                                    ? ` ${
+                                        bars.find(
+                                          (b) =>
+                                            b.city &&
+                                            b.city !== "Stad inte tillgänglig"
+                                        )?.city
+                                      }`
+                                    : "")
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -388,9 +416,12 @@ const BarsNearby = () => {
                               Sök på webben
                             </a>
                           )}
-                          <div className="">
-                            <button>Visa min position</button>
-                          </div>
+                          <button
+                            className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                            onClick={handleShowUserPosition}
+                          >
+                            Visa min position
+                          </button>
                         </div>
                       </div>
                     </div>
