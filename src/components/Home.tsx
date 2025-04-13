@@ -21,6 +21,8 @@ const Home = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
   const restaurantRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [showUserPosition, setShowUserPosition] = useState(false);
+  const [showPolyline, setShowPolyline] = useState(false);
 
   const getUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -113,6 +115,11 @@ const Home = () => {
   useEffect(() => {
     getUserLocation();
   }, [getUserLocation]);
+
+  const handleShowUserPosition = () => {
+    setShowUserPosition(true);
+    setShowPolyline(true);
+  };
 
   function getDistance(
     lat1: number,
@@ -221,6 +228,8 @@ const Home = () => {
                 <div
                   onClick={() => {
                     setExpandedIndex(index === expandedIndex ? -1 : index);
+                    setShowUserPosition(false);
+                    setShowPolyline(false);
 
                     setTimeout(() => {
                       const element = restaurantRefs.current[index];
@@ -257,8 +266,8 @@ const Home = () => {
                           <p className="text-sm text-gray-500">Restaurant</p>
                         </div>
                       </div>
-                      <div className="bg-[#FFF8F5]">
-                        <p className="text-[#C53C07] font-semibold p-2 rounded-lg">
+                      <div className="bg-[#FFF8F5] h-[36px] flex items-center rounded-md">
+                        <p className="text-[#C53C07] font-semibold p-2 ">
                           {restaurant.distance < 1
                             ? `${Math.round(restaurant.distance * 1000)} m`
                             : `${restaurant.distance.toFixed(2)} km`}
@@ -312,6 +321,8 @@ const Home = () => {
                         lat={restaurant.lat}
                         lon={restaurant.lon}
                         name={restaurant.name}
+                        showUserPosition={showUserPosition}
+                        showPolyLine={showPolyline}
                       />
                     </div>
 
@@ -387,7 +398,20 @@ const Home = () => {
                           ) : (
                             <a
                               href={`https://www.google.com/search?q=${encodeURIComponent(
-                                restaurant.name
+                                restaurant.name +
+                                  (restaurants.find(
+                                    (r) =>
+                                      r.city &&
+                                      r.city !== "Stad inte tillgänglig"
+                                  )
+                                    ? ` ${
+                                        restaurants.find(
+                                          (r) =>
+                                            r.city &&
+                                            r.city !== "Stad inte tillgänglig"
+                                        )?.city
+                                      }`
+                                    : "")
                               )}`}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -401,9 +425,13 @@ const Home = () => {
                               Sök på webben
                             </a>
                           )}
-                          <div className="">
-                            <button>Visa min position</button>
-                          </div>
+
+                          <button
+                            className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                            onClick={handleShowUserPosition}
+                          >
+                            Visa min position
+                          </button>
                         </div>
                       </div>
                     </div>

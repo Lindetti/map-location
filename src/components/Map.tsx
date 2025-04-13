@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useEffect, useState, useRef  } from "react";
+import { MapContainer, TileLayer, Marker, Popup, Polyline  } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
@@ -19,6 +19,8 @@ type MapProps = {
   zoom?: number;
   name?: string;
   centerOnUser?: boolean;
+  showUserPosition?: boolean;
+  showPolyLine?: boolean;
 };
 
 const customIcon = new L.Icon({
@@ -30,37 +32,47 @@ const customIcon = new L.Icon({
 
 const userIcon = new L.Icon({
   iconUrl: userIconPosition, // En annan ikon för användaren
-  iconSize: [50, 50],
+  iconSize: [42, 42],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
 });
 
-const Map = ({ lat, lon, zoom = 16, name = "Restaurang" }: MapProps) => {
+const Map = ({ lat, lon, zoom = 16, name = "Restaurang", showUserPosition, showPolyLine }: MapProps) => {
   const [userPosition, setUserPosition] = useState<{
     lat: number;
     lon: number;
   } | null>(null);
+  const mapRef = useRef<L.Map | null>(null); // Reference for the map
+
 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          const userLat = position.coords.latitude;
+          const userLon = position.coords.longitude;
+
           setUserPosition({
-            lat: position.coords.latitude,
-            lon: position.coords.longitude,
+            lat: userLat,
+            lon: userLon,
           });
+
+          // Fly to the user's location if the map is initialized
+          if (mapRef.current && showUserPosition) {
+            mapRef.current.flyTo([userLat, userLon], zoom); // Fly to the user's position
+          }
         },
         (error) => {
           console.error("Geolocation error:", error);
         },
         {
-          enableHighAccuracy: true, // Förbättrar noggrannheten
-          timeout: 10000, // Timeout efter 10 sekunder
-          maximumAge: 0, // Ingen cachning av tidigare positioner
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
         }
       );
     }
-  }, []);
+  }, [zoom, showUserPosition]);
 
   return (
     <MapContainer
@@ -70,6 +82,7 @@ const Map = ({ lat, lon, zoom = 16, name = "Restaurang" }: MapProps) => {
       minZoom={16} // Begränsa hur långt man kan zooma ut
       maxZoom={18}
       className="h-full w-full rounded shadow-md z-0"
+      ref={mapRef}
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -82,6 +95,18 @@ const Map = ({ lat, lon, zoom = 16, name = "Restaurang" }: MapProps) => {
           </div>
         </Popup>
       </Marker>
+      {userPosition && showPolyLine && (
+        <Polyline
+          positions={[
+            [userPosition.lat, userPosition.lon], // Användarens position
+            [lat, lon], // Restaurangens position
+          ]}
+          color="blue"
+          weight={3}
+          opacity={0.5}
+        />
+      )}
+
       {userPosition && (
         <Marker position={[userPosition.lat, userPosition.lon]} icon={userIcon}>
           <Popup>
