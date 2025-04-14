@@ -1,9 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
-import { Place, OverpassElement, PlaceType } from "../../Interfaces";
+import {
+  Place,
+  OverpassElement,
+  PlaceType,
+  iconMapping,
+} from "../../Interfaces";
+import { useCity } from "../../CityContext";
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
-import RestaurantIcon from "../../assets/icons/restaurant.png";
 import Header from "../Layout/Header";
 import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
@@ -11,6 +16,7 @@ import LoadMoreButtons from "../Place/LoadMoreButton";
 
 const Home = () => {
   const [restaurants, setRestaurants] = useState<Place[]>([]);
+  const { city, setCity } = useCity();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [visibleCount, setVisibleCount] = useState(5);
@@ -24,8 +30,14 @@ const Home = () => {
     singularLabel: string;
     value: PlaceType;
   }[] = [
-    { label: "Restauranger", singularLabel: "Restaurang", value: "restaurant" },
+    {
+      label: "Restauranger",
+      singularLabel: "Restaurang",
+      value: "restaurant",
+    },
     { label: "Snabbmat", singularLabel: "Snabbmat", value: "fast_food" },
+    { label: "Caféer", singularLabel: "Café", value: "cafe" },
+    { label: "Barer", singularLabel: "Bar", value: "bar" },
   ];
 
   const getUserLocation = useCallback(async () => {
@@ -47,9 +59,9 @@ const Home = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          way["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          relation["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+          node["amenity"="${selectedType}"](around:2000,${userLat},${userLon});
+          way["amenity"="${selectedType}"](around:2000,${userLat},${userLon});
+          relation["amenity"="${selectedType}"](around:2000,${userLat},${userLon});
         );
         out center;
       `;
@@ -86,7 +98,7 @@ const Home = () => {
                 lon,
                 distance: getDistance(userLat, userLon, lat, lon),
                 address,
-                phone: item.tags?.["contact:phone"],
+                phone: item.tags?.phone,
                 website: item.tags?.website,
                 cuisine: item.tags?.cuisine,
                 openingHours: item.tags?.opening_hours,
@@ -97,16 +109,46 @@ const Home = () => {
           const sortedPlaces = places.sort(
             (a: Place, b: Place) => a.distance - b.distance
           );
-
           setRestaurants(sortedPlaces);
+
+          if (!city) {
+            const firstValidCity = sortedPlaces.find(
+              (p) => p.city && p.city !== "Stad inte tillgänglig"
+            )?.city;
+            if (firstValidCity) {
+              setCity(firstValidCity);
+            }
+          }
         } catch {
-          setError("Något gick fel vid hämtning av restauranger.");
+          setError(
+            "Något gick fel vid hämtning, prova uppdatera din position."
+          );
         } finally {
           setIsLoading(false);
         }
       },
       (error) => {
-        setError(`Geolocation error: ${error.message}`);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setError(
+              "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden."
+            );
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setError(
+              "Platsinformation är inte tillgänglig just nu. Kontrollera din internetanslutning eller försök igen senare."
+            );
+            break;
+          case error.TIMEOUT:
+            setError(
+              "Det tog för lång tid att hämta din plats. Försök igen eller kontrollera dina inställningar."
+            );
+            break;
+          default:
+            setError(
+              "Ett okänt fel inträffade vid hämtning av plats. Prova uppdatera din position."
+            );
+        }
         setIsLoading(false);
       },
       {
@@ -115,7 +157,7 @@ const Home = () => {
         maximumAge: 0,
       }
     );
-  }, [selectedType]);
+  }, [selectedType, city, setCity]);
 
   useEffect(() => {
     getUserLocation();
@@ -147,14 +189,10 @@ const Home = () => {
     return distance;
   }
 
-  const city = restaurants.find(
-    (r) => r.city && r.city !== "Stad inte tillgänglig"
-  )?.city;
-
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-5">
       <Header
-        city={city} // Tar första restaurangens stad (om det finns någon)
+        city={city ?? undefined}
         isLoading={isLoading}
         onRefresh={getUserLocation}
         placeType={
@@ -171,7 +209,20 @@ const Home = () => {
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
+          <h2 className="text-xl font-semibold text-red-600">
+            Platsåtkomst nekad
+          </h2>
+          <p className="text-gray-700">
+            För att Platsguiden ska kunna visa restauranger, caféer och barer
+            nära dig behöver vi åtkomst till din plats. Du har nekat åtkomst,
+            vilket gör att vi inte kan hämta några resultat.
+          </p>
+          <p className="text-sm text-gray-500">
+            Tillåt platsåtkomst i webbläsarens inställningar och ladda om sidan.
+          </p>
+          <p className="text-sm text-gray-400 italic">{error}</p>
+        </div>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
           {restaurants.slice(0, visibleCount).map((restaurant, index) => {
@@ -203,7 +254,7 @@ const Home = () => {
                 <PlaceCard
                   place={restaurant}
                   isExpanded={expandedIndex === index}
-                  icon={RestaurantIcon}
+                  icon={iconMapping[selectedType]}
                   typeLabel={
                     placeOptions.find((opt) => opt.value === selectedType)
                       ?.singularLabel || "Restaurang"
@@ -231,11 +282,11 @@ const Home = () => {
                 {isExpanded && (
                   <PlaceDetails
                     place={restaurant}
-                    icon={RestaurantIcon}
+                    icon={iconMapping[selectedType]}
                     onShowUserPosition={handleShowUserPosition}
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}
-                    city={city}
+                    city={city ?? undefined}
                   />
                 )}
               </motion.div>

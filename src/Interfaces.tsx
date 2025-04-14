@@ -1,3 +1,12 @@
+import ClothesIcon from "./assets/icons/clothes.png";
+import ShoesIcon from "./assets/icons/shoes.png";
+import ElectronicsIcon from "./assets/icons/electronics.png";
+import RestaurantIcon from "./assets/icons/restaurant.png";
+import BarIcon from "./assets/icons/bar.png";
+import CafeIcon from "./assets/icons/cafe.png";
+import FastFoodIcon from "./assets/icons/fastfood.png";
+import AlcoholIcon from "./assets/icons/alcohol.png";
+
 export interface Place {
   name: string;
   lat: number;
@@ -9,6 +18,10 @@ export interface Place {
   cuisine?: string;
   openingHours?: string;
   city?: string;
+  email?: string;
+  operator?: string;
+  levels?: string;
+  brand?: string;
 }
 
 export interface OverpassElement {
@@ -22,6 +35,11 @@ export interface OverpassElement {
     "addr:street"?: string;
     "addr:city"?: string;
     "contact:phone"?: string;
+    "building:levels"?: string;
+    operator?: string;
+    brand?: string;
+    phone: string;
+    email: string;
     website?: string;
     cuisine?: string;
     opening_hours?: string;
@@ -39,9 +57,53 @@ export interface HeaderProps {
   showTypeSelect?: boolean; // ✅ Ny prop, valfr
 }
 
-export type PlaceType = "restaurant" | "fast_food" | "bar" | "pub" | "cafe";
+export type PlaceType =
+  | "restaurant"
+  | "fast_food"
+  | "bar"
+  | "pub"
+  | "clothes"
+  | "shoes"
+  | "supermarket"
+  | "electronics"
+  | "flowers"
+  | "cafe"
+  | "nightclub"
+  | "after_party"
+  | "alcohol";
+
 export const isPlaceType = (value: string): value is PlaceType => {
-  return ["restaurant", "fast_food", "bar", "pub"].includes(value);
+  return [
+    "restaurant",
+    "fast_food",
+    "bar",
+    "pub",
+    "clothes",
+    "shoes",
+    "supermarket",
+    "electronics",
+    "flowers",
+    "nightclub",
+    "cafe",
+    "after_party",
+    "alcohol",
+  ].includes(value);
+};
+
+export const iconMapping: { [key in PlaceType]: string } = {
+  restaurant: RestaurantIcon,
+  fast_food: FastFoodIcon, // Placeholder icon for fast food
+  bar: BarIcon,
+  pub: BarIcon, // Placeholder icon for pub
+  clothes: ClothesIcon,
+  shoes: ShoesIcon,
+  supermarket: ElectronicsIcon, // Placeholder icon for supermarket
+  electronics: ElectronicsIcon,
+  nightclub: ClothesIcon, // Placeholder icon for flowers
+  cafe: CafeIcon,
+  flowers: ClothesIcon,
+  after_party: ClothesIcon,
+  alcohol: AlcoholIcon, // Placeholder icon for concert hall
 };
 
 export interface LoadMoreButtonProps {

@@ -1,21 +1,23 @@
 import { useEffect, useState, useCallback } from "react";
+import { useCity } from "../../CityContext";
 import { Place, OverpassElement } from "../../Interfaces";
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
-import RestaurantIcon from "../../assets/icons/restaurant.png";
+import HotelIcon from "../../assets/icons/hotel.png";
 import Header from "../Layout/Header";
 import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
 
-const Tourism = () => {
-  const [tourism, setTourism] = useState<Place[]>([]);
+const Hotel = () => {
+  const [hotels, setHotels] = useState<Place[]>([]);
+  const { city } = useCity(); // Hämta staden från Context
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true); // Lägg till laddningstillstånd
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
-  const restaurantRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const hotelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showUserPosition, setShowUserPosition] = useState(false);
   const [showPolyline, setShowPolyline] = useState(false);
 
@@ -37,13 +39,14 @@ const Tourism = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["shop"="supermarket"](around:5000,${userLat},${userLon});
-          way["shop"="supermarket"](around:5000,${userLat},${userLon});
-          relation["shop"="supermarket"](around:5000,${userLat},${userLon});
+          node["tourism"="hotel"](around:2000,${userLat},${userLon});
+          way["tourism"="hotel"](around:2000,${userLat},${userLon});
+          relation["tourism"="hotel"](around:2000,${userLat},${userLon});
+          node["tourism"="hostel"](around:2000,${userLat},${userLon});
+          way["tourism"="hostel"](around:2000,${userLat},${userLon});
+          relation["tourism"="hostel"](around:2000,${userLat},${userLon});
         );
-        out body;
-        >;
-        out skel qt;
+        out center;
       `;
 
         try {
@@ -80,6 +83,9 @@ const Tourism = () => {
                 distance: getDistance(userLat, userLon, lat, lon),
                 address,
                 phone: item.tags?.["contact:phone"],
+                operator: item.tags?.operator,
+                brand: item.tags?.brand,
+                levels: item.tags?.["building:levels"],
                 website: item.tags?.website,
                 cuisine: item.tags?.cuisine,
                 openingHours: item.tags?.opening_hours,
@@ -91,15 +97,37 @@ const Tourism = () => {
             (a: Place, b: Place) => a.distance - b.distance
           );
 
-          setTourism(sortedPlaces);
+          setHotels(sortedPlaces);
         } catch {
-          setError("Något gick fel vid hämtning av restauranger.");
+          setError(
+            "Något gick fel vid hämtning, prova uppdatera din position."
+          );
         } finally {
           setIsLoading(false);
         }
       },
       (error) => {
-        setError(`Geolocation error: ${error.message}`);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setError(
+              "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden."
+            );
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setError(
+              "Platsinformation är inte tillgänglig just nu. Kontrollera din internetanslutning eller försök igen senare."
+            );
+            break;
+          case error.TIMEOUT:
+            setError(
+              "Det tog för lång tid att hämta din plats. Försök igen eller kontrollera dina inställningar."
+            );
+            break;
+          default:
+            setError(
+              "Ett okänt fel inträffade vid hämtning av plats. Prova uppdatera din position."
+            );
+        }
         setIsLoading(false);
       },
       {
@@ -140,17 +168,14 @@ const Tourism = () => {
     return distance;
   }
 
-  const city = tourism.find(
-    (r) => r.city && r.city !== "Stad inte tillgänglig"
-  )?.city;
-
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-5">
       <Header
-        city={city} // Tar första restaurangens stad (om det finns någon)
-        isLoading={isLoading}
+        city={city ?? undefined}
         onRefresh={getUserLocation}
-        placeType="Mataffärer"
+        placeType="Boenden"
+        showTypeSelect={false}
+        isLoading={isLoading}
       />
 
       {isLoading ? (
@@ -161,14 +186,14 @@ const Tourism = () => {
         <p className="text-red-500">{error}</p>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
-          {tourism.slice(0, visibleCount).map((explore, index) => {
+          {hotels.slice(0, visibleCount).map((bar, index) => {
             const isExpanded = index === expandedIndex;
 
             return (
               <motion.div
                 key={index}
                 ref={(el) => {
-                  restaurantRefs.current[index] = el;
+                  hotelRefs.current[index] = el;
                 }}
                 initial={{ opacity: 0, x: -70 }} // Startar från vänster med låg opacitet
                 animate={{ opacity: 1, x: 0 }} // Animerar till full opacitet och rätt position
@@ -188,17 +213,17 @@ const Tourism = () => {
                 `}
               >
                 <PlaceCard
-                  place={explore}
+                  place={bar}
                   isExpanded={expandedIndex === index}
-                  icon={RestaurantIcon}
-                  typeLabel="Livsmedelsbutik"
+                  icon={HotelIcon}
+                  typeLabel="Hotell"
                   onClick={() => {
                     setExpandedIndex(index === expandedIndex ? -1 : index);
                     setShowUserPosition(false);
                     setShowPolyline(false);
 
                     setTimeout(() => {
-                      const element = restaurantRefs.current[index];
+                      const element = hotelRefs.current[index];
                       const offset = 50;
 
                       if (element) {
@@ -211,14 +236,14 @@ const Tourism = () => {
                     }, 100);
                   }}
                 />
-
                 {isExpanded && (
                   <PlaceDetails
-                    place={explore}
-                    icon={RestaurantIcon}
+                    place={bar}
+                    icon={HotelIcon}
                     onShowUserPosition={handleShowUserPosition}
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}
+                    city={city ?? undefined}
                   />
                 )}
               </motion.div>
@@ -227,17 +252,19 @@ const Tourism = () => {
         </div>
       )}
 
-      <LoadMoreButtons
-        isLoading={isLoading}
-        visibleCount={visibleCount}
-        onClick={() =>
-          setVisibleCount(
-            visibleCount === 15 ? 5 : Math.min(visibleCount + 5, 15)
-          )
-        }
-      />
+      {(hotels.length > 5 || hotels.length <= 10) && (
+        <LoadMoreButtons
+          isLoading={isLoading}
+          visibleCount={visibleCount}
+          onClick={() =>
+            setVisibleCount(
+              visibleCount === 15 ? 5 : Math.min(visibleCount + 5, 15)
+            )
+          }
+        />
+      )}
     </div>
   );
 };
 
-export default Tourism;
+export default Hotel;

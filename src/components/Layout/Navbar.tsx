@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import Logo from "../../assets/icons/logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,24 +10,62 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex bg-gray-100 h-[120px] md:h-[100px] w-full items-center justify-center px-4 relative">
+    <nav className="flex bg-gray-100 h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
       <div className="w-full md:w-2/4 flex flex-col gap-3 md:flex-row justify-between items-center">
         <NavLink to="/">
-          <h1 className="font-semibold text-2xl">
-            Platsguiden<span className="text-orange-500 text-3xl">.</span>
-          </h1>
+          <img
+            src={Logo}
+            alt="Logo"
+            className="h-[45px] w-[200px] md:h-[45px] md:w-[220px]"
+          />
         </NavLink>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-5 font-semibold text-lg">
-          <NavLink to="/">Matställen</NavLink>
-          <NavLink to="/barer">Barer</NavLink>
-          <NavLink to="/mataffärer">Mataffärer</NavLink>
-          <NavLink to="/om">Om platsguiden</NavLink>
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              isActive
+                ? "text-black underline underline-offset-8 decoration-orange-500"
+                : "text-black"
+            }
+          >
+            Mat & Dryck
+          </NavLink>
+          <NavLink
+            to="/butiker"
+            className={({ isActive }) =>
+              isActive
+                ? "text-black underline underline-offset-8 decoration-orange-500"
+                : "text-black"
+            }
+          >
+            Butiker
+          </NavLink>
+          <NavLink
+            to="/boende"
+            className={({ isActive }) =>
+              isActive
+                ? "text-black underline underline-offset-8 decoration-orange-500"
+                : "text-black"
+            }
+          >
+            Boende
+          </NavLink>
+          <NavLink
+            to="/om"
+            className={({ isActive }) =>
+              isActive
+                ? "text-black underline underline-offset-8 decoration-orange-500"
+                : "text-black"
+            }
+          >
+            Om platsguiden
+          </NavLink>
         </div>
 
         {/* Mobile Menu (Hamburger) */}
-        <div className="md:hidden">
+        <div className="md:hidden mt-2">
           <button
             onClick={handleMenuClick}
             className="flex flex-col gap-1.5 items-end"
@@ -58,28 +97,44 @@ const Navbar = () => {
             <nav className="flex flex-col gap-4 p-6 mt-10">
               <NavLink
                 to="/"
-                className="block text-lg hover:text-orange-500"
+                className={({ isActive }) =>
+                  isActive
+                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
+                    : "block text-lg hover:text-orange-500"
+                }
                 onClick={handleMenuClick}
               >
-                Matställen
+                Mat & Dryck
               </NavLink>
               <NavLink
-                to="/barer"
-                className="block text-lg hover:text-orange-500"
+                to="/butiker"
+                className={({ isActive }) =>
+                  isActive
+                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
+                    : "block text-lg hover:text-orange-500"
+                }
                 onClick={handleMenuClick}
               >
-                Barer
+                Butiker
               </NavLink>
               <NavLink
-                to="/mataffärer"
-                className="block text-lg hover:text-orange-500"
+                to="/boende"
+                className={({ isActive }) =>
+                  isActive
+                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
+                    : "block text-lg hover:text-orange-500"
+                }
                 onClick={handleMenuClick}
               >
-                Mataffärer
+                Hotell
               </NavLink>
               <NavLink
                 to="/om"
-                className="block text-lg hover:text-orange-500"
+                className={({ isActive }) =>
+                  isActive
+                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
+                    : "block text-lg hover:text-orange-500"
+                }
                 onClick={handleMenuClick}
               >
                 Om platsguiden
@@ -87,9 +142,11 @@ const Navbar = () => {
             </nav>
 
             <div className=" w-full flex justify-center mt-10">
-              <h1 className="font-semibold text-2xl">
-                Platsguiden<span className="text-orange-500 text-3xl">.</span>
-              </h1>
+              <NavLink onClick={handleMenuClick} to="/">
+                <h1 className="font-semibold text-2xl">
+                  Platsguiden<span className="text-orange-500 text-3xl">.</span>
+                </h1>
+              </NavLink>
             </div>
           </div>
         </>

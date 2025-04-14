@@ -26,9 +26,11 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="p-4 bg-gray-800 text-white text-center w-full h-[150px] md:h-[100px] flex items-center justify-center">
+    <footer className="p-4 bg-gray-800 text-gray-400 text-center w-full h-[150px] md:h-[100px] flex items-center justify-center">
       <p>
-        <span className="text-orange-500">© 2025 Platsguiden.</span>{" "}
+        <span className="text-white font-semibold">
+          © 2025 Platsguiden<span className="text-orange-500 text-3xl">.</span>
+        </span>{" "}
         {copyright ? copyright : ""}
       </p>
     </footer>
