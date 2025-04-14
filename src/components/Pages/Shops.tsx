@@ -1,23 +1,52 @@
 import { useEffect, useState, useCallback } from "react";
-import { Place, OverpassElement } from "../../Interfaces";
+import { useCity } from "../../CityContext";
+import {
+  Place,
+  OverpassElement,
+  PlaceType,
+  iconMapping,
+} from "../../Interfaces";
 import { useRef } from "react";
 import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
-import BarIcon from "../../assets/icons/bar.png";
 import Header from "../Layout/Header";
 import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
 
-const BarsNearby = () => {
-  const [bars, setBars] = useState<Place[]>([]);
+const Shops = () => {
+  const [shops, setShops] = useState<Place[]>([]);
+  const { city, setCity } = useCity();
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true); // Lägg till laddningstillstånd
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
-  const barRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const shopsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showUserPosition, setShowUserPosition] = useState(false);
   const [showPolyline, setShowPolyline] = useState(false);
+  const [selectedType, setSelectedType] = useState<PlaceType>("clothes");
+  const placeOptions: {
+    label: string;
+    singularLabel: string;
+    value: PlaceType;
+  }[] = [
+    { label: "Klädbutiker", singularLabel: "Klädbutik", value: "clothes" },
+    {
+      label: "Skobutiker",
+      singularLabel: "Skobutik",
+      value: "shoes",
+    },
+    {
+      label: "Elektronik",
+      singularLabel: "Elektronik",
+      value: "electronics",
+    },
+    {
+      label: "Systembolag",
+      singularLabel: "Systembolag",
+      value: "alcohol",
+    },
+  ];
 
   const getUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -28,6 +57,7 @@ const BarsNearby = () => {
 
     setIsLoading(true);
     setError(null);
+    setShops([]);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -35,14 +65,16 @@ const BarsNearby = () => {
         const userLon = position.coords.longitude;
 
         const overpassQuery = `
-      [out:json];
-      (
-        node["amenity"="bar"](around:5000,${userLat},${userLon});
-        way["amenity"="bar"](around:5000,${userLat},${userLon});
-        relation["amenity"="bar"](around:5000,${userLat},${userLon});
-      );
-      out center;
-    `;
+        [out:json];
+        (
+          node["shop"="${selectedType}"](around:2000,${userLat},${userLon});
+          way["shop"="${selectedType}"](around:2000,${userLat},${userLon});
+          relation["shop"="${selectedType}"](around:2000,${userLat},${userLon});
+        );
+        out body;
+        >;
+        out skel qt;
+      `;
 
         try {
           const response = await fetch(
@@ -60,6 +92,7 @@ const BarsNearby = () => {
             throw new Error("Kunde inte hämta data från Overpass API");
 
           const data = await response.json();
+          console.log(data);
 
           const places: Place[] = data.elements
             .filter((item: OverpassElement) => item.tags?.name)
@@ -76,7 +109,8 @@ const BarsNearby = () => {
                 lon,
                 distance: getDistance(userLat, userLon, lat, lon),
                 address,
-                phone: item.tags?.["contact:phone"],
+                phone: item.tags?.phone,
+                email: item.tags?.email,
                 website: item.tags?.website,
                 cuisine: item.tags?.cuisine,
                 openingHours: item.tags?.opening_hours,
@@ -88,15 +122,46 @@ const BarsNearby = () => {
             (a: Place, b: Place) => a.distance - b.distance
           );
 
-          setBars(sortedPlaces);
+          setShops(sortedPlaces);
+
+          if (!city) {
+            const firstValidCity = sortedPlaces.find(
+              (p) => p.city && p.city !== "Stad inte tillgänglig"
+            )?.city;
+            if (firstValidCity) {
+              setCity(firstValidCity);
+            }
+          }
         } catch {
-          setError("Något gick fel vid hämtning av restauranger.");
+          setError(
+            "Något gick fel vid hämtning, prova uppdatera din position."
+          );
         } finally {
           setIsLoading(false);
         }
       },
       (error) => {
-        setError(`Geolocation error: ${error.message}`);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setError(
+              "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden."
+            );
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setError(
+              "Platsinformation är inte tillgänglig just nu. Kontrollera din internetanslutning eller försök igen senare."
+            );
+            break;
+          case error.TIMEOUT:
+            setError(
+              "Det tog för lång tid att hämta din plats. Försök igen eller kontrollera dina inställningar."
+            );
+            break;
+          default:
+            setError(
+              "Ett okänt fel inträffade vid hämtning av plats. Prova uppdatera din position."
+            );
+        }
         setIsLoading(false);
       },
       {
@@ -105,7 +170,7 @@ const BarsNearby = () => {
         maximumAge: 0,
       }
     );
-  }, []);
+  }, [selectedType, city, setCity]);
 
   useEffect(() => {
     getUserLocation();
@@ -137,18 +202,19 @@ const BarsNearby = () => {
     return distance;
   }
 
-  const city = bars.find(
-    (r) => r.city && r.city !== "Stad inte tillgänglig"
-  )?.city;
-
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-5">
       <Header
-        city={city} // Tar första restaurangens stad (om det finns någon)
+        city={city ?? undefined} // Tar första restaurangens stad (om det finns någon)
         isLoading={isLoading}
         onRefresh={getUserLocation}
-        placeType="Barer"
-        showTypeSelect={false}
+        placeType={
+          placeOptions.find((opt) => opt.value === selectedType)?.label || ""
+        }
+        placeOptions={placeOptions}
+        selectedType={selectedType}
+        onTypeChange={(val) => setSelectedType(val as PlaceType)}
+        showTypeSelect={true}
       />
 
       {isLoading ? (
@@ -159,14 +225,14 @@ const BarsNearby = () => {
         <p className="text-red-500">{error}</p>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
-          {bars.slice(0, visibleCount).map((bar, index) => {
+          {shops.slice(0, visibleCount).map((shop, index) => {
             const isExpanded = index === expandedIndex;
 
             return (
               <motion.div
                 key={index}
                 ref={(el) => {
-                  barRefs.current[index] = el;
+                  shopsRefs.current[index] = el;
                 }}
                 initial={{ opacity: 0, x: -70 }} // Startar från vänster med låg opacitet
                 animate={{ opacity: 1, x: 0 }} // Animerar till full opacitet och rätt position
@@ -186,17 +252,20 @@ const BarsNearby = () => {
                 `}
               >
                 <PlaceCard
-                  place={bar}
+                  place={shop}
                   isExpanded={expandedIndex === index}
-                  icon={BarIcon}
-                  typeLabel="Bar"
+                  icon={iconMapping[selectedType]}
+                  typeLabel={
+                    placeOptions.find((opt) => opt.value === selectedType)
+                      ?.singularLabel || "Restaurang"
+                  }
                   onClick={() => {
                     setExpandedIndex(index === expandedIndex ? -1 : index);
                     setShowUserPosition(false);
                     setShowPolyline(false);
 
                     setTimeout(() => {
-                      const element = barRefs.current[index];
+                      const element = shopsRefs.current[index];
                       const offset = 50;
 
                       if (element) {
@@ -209,14 +278,15 @@ const BarsNearby = () => {
                     }, 100);
                   }}
                 />
+
                 {isExpanded && (
                   <PlaceDetails
-                    place={bar}
-                    icon={BarIcon}
+                    place={shop}
+                    icon={iconMapping[selectedType]}
                     onShowUserPosition={handleShowUserPosition}
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}
-                    city={city}
+                    city={city ?? undefined}
                   />
                 )}
               </motion.div>
@@ -225,17 +295,19 @@ const BarsNearby = () => {
         </div>
       )}
 
-      <LoadMoreButtons
-        isLoading={isLoading}
-        visibleCount={visibleCount}
-        onClick={() =>
-          setVisibleCount(
-            visibleCount === 15 ? 5 : Math.min(visibleCount + 5, 15)
-          )
-        }
-      />
+      {shops.length > 5 && (
+        <LoadMoreButtons
+          isLoading={isLoading}
+          visibleCount={visibleCount}
+          onClick={() =>
+            setVisibleCount(
+              visibleCount === 15 ? 5 : Math.min(visibleCount + 5, 15)
+            )
+          }
+        />
+      )}
     </div>
   );
 };
 
-export default BarsNearby;
+export default Shops;

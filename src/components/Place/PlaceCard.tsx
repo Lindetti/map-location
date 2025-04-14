@@ -22,15 +22,17 @@ const PlaceCard = ({
             />
           </div>
           <div className="flex flex-col">
-            <p className="text-base md:text-lg font-semibold leading-5">
+          <div className="w-[180px] md:w-[450px]"> 
+          <p className="text-base md:text-lg font-semibold leading-5 truncate">
               {place.name}
             </p>
+          </div>
             <p className="text-sm text-gray-500">{typeLabel}</p>
           </div>
         </div>
 
         <div className="bg-[#FFF8F5] h-[36px] flex items-center rounded-md">
-          <p className="text-[#C53C07] font-semibold p-2 ">
+          <p className="text-[#C53C07] font-semibold p-2 text-sm md:text-base ">
             {place.distance < 1
               ? `${Math.round(place.distance * 1000)} m`
               : `${place.distance.toFixed(2)} km`}

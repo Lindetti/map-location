@@ -8,65 +8,74 @@ const About = () => {
       animate={{ opacity: 1, y: 0, scale: 1 }} // Fade in till fullt synlig, på plats och full storlek
       transition={{ duration: 0.5, ease: "easeOut" }} // 1 sekund lång animation med mjuk easing
     >
-      <div className="flex flex-col gap-8 w-full md:w-2/4">
+      <div className="flex flex-col gap-2 w-full md:w-2/4">
         <div className="flex flex-col gap-2 leading-7">
           <h1 className="text-lg font-semibold">Hitta Ställen Nära Dig</h1>
           <p>
-            Oavsett om du är på jakt efter en ny restaurang för lunch eller en
-            bar för en kväll ute, ger Platsguiden dig en snabb och enkel
-            översikt över de bästa alternativen i din närhet. 😃
+            Oavsett om du är sugen på att prova en ny restaurang till lunch,
+            hitta ett café för en kopp kaffe eller utforska områdets bästa
+            barer, erbjuder Platsguiden en enkel och snabb översikt över de
+            bästa alternativen i närheten. 😃
           </p>
         </div>
 
-        <div className="flex flex-col gap-8 leading-7">
-          <div className="flex flex-col gap-3 mt-3 mb-3">
+        <div className="flex flex-col gap-5 leading-7">
+          <div className="flex flex-col gap-3 mt-5 mb-3">
             <h1 className="text-lg font-semibold">
-              Vad kan du göra på platsguiden?
+              Vad kan du göra på Platsguiden?
             </h1>
-            <ul className="flex flex-col gap-4">
-              <li>
-                <span className="font-semibold">
-                  Se närmaste restauranger och barer:
+            <ul className="flex flex-col gap-3">
+              <li className="text-gray-800">
+                <span className="font-semibold text-black">
+                  Hitta närmaste platser:
                 </span>{" "}
-                Få en lista på de 15 närmaste restaurangerna och barerna baserat
-                på din plats, och få information om avstånd och öppettider.
+                Se de 15 närmaste restaurangerna, snabbmatsställen, kaffeer och
+                barer baserat på din plats. Du får även information om avstånd
+                och öppettider.
               </li>
-              <li>
-                <span className="font-semibold">Visa på karta:</span> Varje
-                restaurang eller bar visas på en interaktiv karta tillsammans
-                med din egen position för att hjälpa dig att hitta rätt.
+
+              <li className="text-gray-800">
+                <span className="font-semibold text-black">
+                  Visa på karta:{" "}
+                </span>
+                Se varje restaurang eller bar på en interaktiv karta, med din
+                egen position för att göra det enklare att hitta dit.
               </li>
-              <li>
-                <span className="font-semibold">Detaljerad information:</span>{" "}
-                Om det finns tillgänglig information som telefonnummer,
-                webbplats och öppettider, kommer dessa att visas direkt på varje
-                plats. Om information saknas, kan du snabbt söka efter stället
-                på webben via en länk.
+              <li className="text-gray-800">
+                <span className="font-semibold text-black">
+                  Detaljerad information:{" "}
+                </span>
+                Om telefonnummer, webbplats eller öppettider finns tillgängliga
+                visas dessa direkt. Saknas någon information kan du enkelt söka
+                efter platsen på internet via en smidig genväg.
               </li>
-              <li>
-                <span className="font-semibold">Exakt position:</span> Vid
-                användning på mobil kommer sidan att använda din exakta
-                GPS-position för bästa träff, medan användare på datorer kan få
-                en uppskattad position baserat på IP-adressen (vilket kan vara
-                något mindre exakt).
+              <li className="text-gray-800">
+                <span className="font-semibold text-black">
+                  Exakt position:{" "}
+                </span>
+                På mobil används din GPS-position för bästa träff, medan
+                användare på datorer får en uppskattad plats baserat på
+                IP-adressen (vilket kan vara något mindre exakt).
               </li>
             </ul>
           </div>
-          <div className="flex flex-col gap-2 ">
-            <h1 className="font-semibold text-lg">Om</h1>
-            <p>
-              Platsguiden är byggd med hjälp av Overpass API och skapad av
-              Alexander Lind 2025. <br />
-              Se min{" "}
-              <a
-                href="https://github.com/Lindetti"
-                target="_blank"
-                className="underline text-orange-500"
-              >
-                Github
-              </a>
-              .
-            </p>
+          <div className="flex flex-col gap-2  mb-3">
+            <h1 className="text-lg font-semibold">Kategorier i Platsguiden:</h1>
+            <ul className="flex flex-col gap-2">
+              <li className="text-gray-800">
+                <span className="font-semibold text-black">Mat & Dryck:</span>{" "}
+                Restauranger, snabbmat, kaffeer och barer.
+              </li>
+
+              <li className="text-gray-800">
+                <span className="font-semibold text-black">Butiker: </span>
+                Klädbutiker, skobutiker, elektronikbutiker och Systembolaget.
+              </li>
+              <li className="text-gray-800">
+                <span className="font-semibold text-black">Boende: </span>
+                Hotell och vandrarhem
+              </li>
+            </ul>
           </div>
         </div>
       </div>

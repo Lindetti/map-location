@@ -16,7 +16,7 @@ const Header = ({
 }: HeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
-    <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:justify-between mb-3 w-full md:w-2/4 items-start md:items-center">
+    <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:justify-between mb-3 w-full md:w-2/4 items-start md:items-center ">
       <div>
         <h1 className="text-2xl md:text-3xl font-bold">
           {placeType} i närheten
@@ -31,12 +31,12 @@ const Header = ({
         </div>
       </div>
 
-      <div className="flex gap-2 relative">
+      <div className="flex gap-2 relative  justify-center">
         {showTypeSelect && placeOptions && selectedType && onTypeChange && (
-          <div className="relative">
+          <div className="relative flex flex-grow ">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center justify-between w-[130px] text-sm bg-[#FCF9F8] px-3 h-[40px] border border-gray-300 rounded font-semibold"
+              className="flex items-center justify-between  w-[160px] text-sm bg-[#FCF9F8] px-3 h-[40px] border border-gray-300 rounded font-semibold"
             >
               {placeOptions.find((option) => option.value === selectedType)
                 ?.label || "Välj"}
@@ -56,7 +56,7 @@ const Header = ({
               </svg>
             </button>
             {isDropdownOpen && (
-              <ul className="absolute z-10 mt-1 w-[150px] bg-white border border-gray-300 rounded shadow-md">
+              <ul className="absolute z-10 mt-1 w-full w-[160px] bg-white border border-gray-300 rounded shadow-md">
                 {placeOptions.map((option) => (
                   <li
                     key={option.value}
@@ -65,7 +65,9 @@ const Header = ({
                       setIsDropdownOpen(false);
                     }}
                     className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                      selectedType === option.value ? "font-bold" : ""
+                      selectedType === option.value
+                        ? "font-bold bg-[#FCF9F8]"
+                        : ""
                     }`}
                   >
                     {option.label}
