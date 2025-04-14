@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ClipLoader, PulseLoader } from "react-spinners";
-import { HeaderProps } from "../../Interfaces";
+import { HeaderProps, iconMapping } from "../../Interfaces";
 import Refresh1 from "../../assets/icons/refresh1.png";
 import Refresh2 from "../../assets/icons/refresh2.png";
 
@@ -33,10 +33,10 @@ const Header = ({
 
       <div className="flex gap-2 relative  justify-center">
         {showTypeSelect && placeOptions && selectedType && onTypeChange && (
-          <div className="relative flex flex-grow ">
+          <div className="relative flex flex-grow">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center justify-between  w-[160px] text-sm bg-[#FCF9F8] px-3 h-[40px] border border-gray-300 rounded font-semibold"
+              className="flex items-center justify-between w-[160px] text-sm bg-[#FCF9F8] px-3 h-[40px] border border-gray-300 rounded font-semibold"
             >
               {placeOptions.find((option) => option.value === selectedType)
                 ?.label || "Välj"}
@@ -56,23 +56,32 @@ const Header = ({
               </svg>
             </button>
             {isDropdownOpen && (
-              <ul className="absolute z-10 mt-1 w-full w-[160px] bg-white border border-gray-300 rounded shadow-md">
-                {placeOptions.map((option) => (
-                  <li
-                    key={option.value}
-                    onClick={() => {
-                      onTypeChange(option.value);
-                      setIsDropdownOpen(false);
-                    }}
-                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
-                      selectedType === option.value
-                        ? "font-bold bg-[#FCF9F8]"
-                        : ""
-                    }`}
-                  >
-                    {option.label}
-                  </li>
-                ))}
+              <ul className="absolute z-10 mt-10 w-[160px] bg-white border border-gray-300 rounded shadow-md">
+                {placeOptions
+                  .filter((option) => option.value !== selectedType) // Ta bort valt alternativ
+                  .map((option) => (
+                    <li
+                      key={option.value}
+                      onClick={() => {
+                        onTypeChange(option.value);
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                        selectedType === option.value
+                          ? "font-bold bg-[#FCF9F8]"
+                          : ""
+                      }`}
+                    >
+                      {iconMapping[option.value as keyof typeof iconMapping] && (
+                        <img
+                          src={iconMapping[option.value as keyof typeof iconMapping]} // Hämta rätt ikon från iconMapping
+                          alt={`${option.value} icon`}
+                          className="h-5 w-5 mr-2 inline" // Lägg till margin till höger för att separera ikonen och texten
+                        />
+                      )}
+                      {option.label}
+                    </li>
+                  ))}
               </ul>
             )}
           </div>
