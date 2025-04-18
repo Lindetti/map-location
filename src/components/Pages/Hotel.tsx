@@ -39,12 +39,12 @@ const Hotel = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["tourism"="hotel"](around:2000,${userLat},${userLon});
-          way["tourism"="hotel"](around:2000,${userLat},${userLon});
-          relation["tourism"="hotel"](around:2000,${userLat},${userLon});
-          node["tourism"="hostel"](around:2000,${userLat},${userLon});
-          way["tourism"="hostel"](around:2000,${userLat},${userLon});
-          relation["tourism"="hostel"](around:2000,${userLat},${userLon});
+          node["tourism"="hotel"](around:5000,${userLat},${userLon});
+          way["tourism"="hotel"](around:5000,${userLat},${userLon});
+          relation["tourism"="hotel"](around:5000,${userLat},${userLon});
+          node["tourism"="hostel"](around:5000,${userLat},${userLon});
+          way["tourism"="hostel"](around:5000,${userLat},${userLon});
+          relation["tourism"="hostel"](around:5000,${userLat},${userLon});
         );
         out center;
       `;
@@ -65,16 +65,18 @@ const Hotel = () => {
             throw new Error("Kunde inte hämta data från Overpass API");
 
           const data = await response.json();
-          console.log(data);
 
           const places: Place[] = data.elements
             .filter((item: OverpassElement) => item.tags?.name)
             .map((item: OverpassElement) => {
-              const lat = item.lat || item.center?.lat || 0;
-              const lon = item.lon || item.center?.lon || 0;
+              const lat = item.lat ?? item.center?.lat;
+              const lon = item.lon ?? item.center?.lon;
+
+              if (lat === undefined || lon === undefined) return null;
+
               const address = item.tags?.["addr:street"]
                 ? `${item.tags["addr:street"]}, ${item.tags["addr:city"]}`
-                : undefined;
+                : "";
 
               return {
                 name: item.tags?.name || "Okänd restaurang",
@@ -93,7 +95,10 @@ const Hotel = () => {
               };
             });
 
-          const sortedPlaces = places.sort(
+          // Filtrera bort resultat som är för långt bort (t.ex. default-koordinater)
+          const filteredPlaces = places.filter((p) => p.distance < 5);
+
+          const sortedPlaces = filteredPlaces.sort(
             (a: Place, b: Place) => a.distance - b.distance
           );
 
@@ -169,7 +174,7 @@ const Hotel = () => {
   }
 
   return (
-    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-5">
+    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
         city={city ?? undefined}
         onRefresh={getUserLocation}
@@ -183,7 +188,18 @@ const Hotel = () => {
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
+          <p className="text-red-500 font-semibold">{error}</p>
+        </div>
+      ) : hotels.length === 0 ? (
+        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
+          <p className="text-gray-600 font-medium">
+            Inga boenden hittades i närheten av din nuvarande position.
+          </p>
+          <p className="text-sm text-gray-500">
+            Prova att uppdatera din plats eller försök igen senare.
+          </p>
+        </div>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
           {hotels.slice(0, visibleCount).map((bar, index) => {
@@ -252,7 +268,7 @@ const Hotel = () => {
         </div>
       )}
 
-      {(hotels.length > 5 || hotels.length <= 10) && (
+      {hotels.length > 0 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}

@@ -143,7 +143,7 @@ const PlaceDetails = ({
             <div>
               <p className="text-sm text-gray-500">
                 Om du känner att informationen är otillräcklig, prova gärna att
-                söka vidare via webben – du hittar knappen "Sök på internet" här
+                söka vidare via webben – du hittar knappen "Sök på Google" här
                 nedanför.
               </p>
             </div>
@@ -170,7 +170,7 @@ const PlaceDetails = ({
                 className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
               >
                 <img src={Link} alt="link icon" className="h-4 w-4" />
-                Sök på internet
+                Sök på Google
               </a>
             )}
 

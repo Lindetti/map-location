@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 const About = () => {
   return (
     <motion.div
-      className="w-full p-5 flex flex-col justify-center items-center mb-5 mt-3 md:mt-5 md:mb-0"
+      className="w-full p-5 flex flex-col justify-center items-center mb-5 mt-3 md:mt-2 md:mb-0"
       initial={{ opacity: 0, y: 50, scale: 0.95 }} // Börja osynlig, lite nedanför och något mindre
       animate={{ opacity: 1, y: 0, scale: 1 }} // Fade in till fullt synlig, på plats och full storlek
       transition={{ duration: 0.5, ease: "easeOut" }} // 1 sekund lång animation med mjuk easing

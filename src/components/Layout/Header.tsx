@@ -17,7 +17,7 @@ const Header = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
     <div className="flex flex-col gap-4 md:gap-0 md:flex-row md:justify-between mb-3 w-full md:w-2/4 items-start md:items-center ">
-      <div>
+      <div className="flex flex-col gap-1">
         <h1 className="text-2xl md:text-3xl font-bold">
           {placeType} i närheten
         </h1>
@@ -72,9 +72,15 @@ const Header = ({
                           : ""
                       }`}
                     >
-                      {iconMapping[option.value as keyof typeof iconMapping] && (
+                      {iconMapping[
+                        option.value as keyof typeof iconMapping
+                      ] && (
                         <img
-                          src={iconMapping[option.value as keyof typeof iconMapping]} // Hämta rätt ikon från iconMapping
+                          src={
+                            iconMapping[
+                              option.value as keyof typeof iconMapping
+                            ]
+                          } // Hämta rätt ikon från iconMapping
                           alt={`${option.value} icon`}
                           className="h-5 w-5 mr-2 inline" // Lägg till margin till höger för att separera ikonen och texten
                         />
