@@ -92,6 +92,7 @@ const Hotel = () => {
                 cuisine: item.tags?.cuisine,
                 openingHours: item.tags?.opening_hours,
                 city: item.tags?.["addr:city"] || "Stad inte tillgänglig",
+                typeLabel: getPlaceTypeLabel(item.tags),
               };
             });
 
@@ -173,6 +174,20 @@ const Hotel = () => {
     return distance;
   }
 
+  function getPlaceTypeLabel(tags: Record<string, string> | undefined): string {
+    if (!tags) return "Okänd plats";
+
+    const tourismType = tags["tourism"];
+    switch (tourismType) {
+      case "hotel":
+        return "Hotell";
+      case "hostel":
+        return "Vandrarhem";
+      default:
+        return "Boende";
+    }
+  }
+
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
@@ -202,7 +217,7 @@ const Hotel = () => {
         </div>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
-          {hotels.slice(0, visibleCount).map((bar, index) => {
+          {hotels.slice(0, visibleCount).map((hotels, index) => {
             const isExpanded = index === expandedIndex;
 
             return (
@@ -229,10 +244,10 @@ const Hotel = () => {
                 `}
               >
                 <PlaceCard
-                  place={bar}
+                  place={hotels}
                   isExpanded={expandedIndex === index}
                   icon={HotelIcon}
-                  typeLabel="Hotell"
+                  typeLabel={hotels.typeLabel}
                   onClick={() => {
                     setExpandedIndex(index === expandedIndex ? -1 : index);
                     setShowUserPosition(false);
@@ -254,7 +269,7 @@ const Hotel = () => {
                 />
                 {isExpanded && (
                   <PlaceDetails
-                    place={bar}
+                    place={hotels}
                     icon={HotelIcon}
                     onShowUserPosition={handleShowUserPosition}
                     showUserPosition={showUserPosition}

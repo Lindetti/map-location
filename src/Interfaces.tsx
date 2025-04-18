@@ -22,6 +22,7 @@ export interface Place {
   operator?: string;
   levels?: string;
   brand?: string;
+  typeLabel?: string; // Nytt fält för typ av plats
 }
 
 export interface OverpassElement {
