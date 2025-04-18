@@ -67,9 +67,9 @@ const Shops = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["shop"="${selectedType}"](around:2000,${userLat},${userLon});
-          way["shop"="${selectedType}"](around:2000,${userLat},${userLon});
-          relation["shop"="${selectedType}"](around:2000,${userLat},${userLon});
+          node["shop"="${selectedType}"](around:5000,${userLat},${userLon});
+          way["shop"="${selectedType}"](around:5000,${userLat},${userLon});
+          relation["shop"="${selectedType}"](around:5000,${userLat},${userLon});
         );
         out body;
         >;
@@ -97,11 +97,14 @@ const Shops = () => {
           const places: Place[] = data.elements
             .filter((item: OverpassElement) => item.tags?.name)
             .map((item: OverpassElement) => {
-              const lat = item.lat || item.center?.lat || 0;
-              const lon = item.lon || item.center?.lon || 0;
+              const lat = item.lat ?? item.center?.lat;
+              const lon = item.lon ?? item.center?.lon;
+
+              if (lat === undefined || lon === undefined) return null;
+
               const address = item.tags?.["addr:street"]
                 ? `${item.tags["addr:street"]}, ${item.tags["addr:city"]}`
-                : undefined;
+                : "";
 
               return {
                 name: item.tags?.name || "Okänd restaurang",
@@ -118,7 +121,10 @@ const Shops = () => {
               };
             });
 
-          const sortedPlaces = places.sort(
+          // Filtrera bort resultat som är för långt bort (t.ex. default-koordinater)
+          const filteredPlaces = places.filter((p) => p.distance < 5);
+
+          const sortedPlaces = filteredPlaces.sort(
             (a: Place, b: Place) => a.distance - b.distance
           );
 
@@ -181,6 +187,10 @@ const Shops = () => {
     setShowPolyline(true);
   };
 
+  const selectedTypeLabel =
+    placeOptions.find((p) => p.value === selectedType)?.singularLabel ||
+    "plats";
+
   function getDistance(
     lat1: number,
     lon1: number,
@@ -203,7 +213,7 @@ const Shops = () => {
   }
 
   return (
-    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-5">
+    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
         city={city ?? undefined} // Tar första restaurangens stad (om det finns någon)
         isLoading={isLoading}
@@ -222,7 +232,19 @@ const Shops = () => {
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
-        <p className="text-red-500">{error}</p>
+        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
+          <p className="text-red-500 font-semibold">{error}</p>
+        </div>
+      ) : shops.length === 0 ? (
+        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
+          <p className="text-gray-600 font-medium">
+            Inga träffar på {selectedTypeLabel.toLowerCase()} hittades i
+            närheten av din nuvarande position.
+          </p>
+          <p className="text-sm text-gray-500">
+            Prova att uppdatera din plats eller försök igen senare.
+          </p>
+        </div>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
           {shops.slice(0, visibleCount).map((shop, index) => {
@@ -295,7 +317,7 @@ const Shops = () => {
         </div>
       )}
 
-      {shops.length > 5 && (
+      {shops.length > 0 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}

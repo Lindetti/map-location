@@ -13,6 +13,7 @@ import Header from "../Layout/Header";
 import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
+import LocationPermission from "../LocationPermission";
 
 const Home = () => {
   const [restaurants, setRestaurants] = useState<Place[]>([]);
@@ -59,9 +60,9 @@ const Home = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["amenity"="${selectedType}"](around:2000,${userLat},${userLon});
-          way["amenity"="${selectedType}"](around:2000,${userLat},${userLon});
-          relation["amenity"="${selectedType}"](around:2000,${userLat},${userLon});
+          node["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+          way["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+          relation["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
         );
         out center;
       `;
@@ -86,11 +87,14 @@ const Home = () => {
           const places: Place[] = data.elements
             .filter((item: OverpassElement) => item.tags?.name)
             .map((item: OverpassElement) => {
-              const lat = item.lat || item.center?.lat || 0;
-              const lon = item.lon || item.center?.lon || 0;
+              const lat = item.lat ?? item.center?.lat;
+              const lon = item.lon ?? item.center?.lon;
+
+              if (lat === undefined || lon === undefined) return null;
+
               const address = item.tags?.["addr:street"]
                 ? `${item.tags["addr:street"]}, ${item.tags["addr:city"]}`
-                : undefined;
+                : "";
 
               return {
                 name: item.tags?.name || "Okänd restaurang",
@@ -106,9 +110,13 @@ const Home = () => {
               };
             });
 
-          const sortedPlaces = places.sort(
+          // Filtrera bort resultat som är för långt bort (t.ex. default-koordinater)
+          const filteredPlaces = places.filter((p) => p.distance < 5);
+
+          const sortedPlaces = filteredPlaces.sort(
             (a: Place, b: Place) => a.distance - b.distance
           );
+
           setRestaurants(sortedPlaces);
 
           if (!city) {
@@ -168,6 +176,10 @@ const Home = () => {
     setShowPolyline(true);
   };
 
+  const selectedTypeLabel =
+    placeOptions.find((p) => p.value === selectedType)?.singularLabel ||
+    "plats";
+
   function getDistance(
     lat1: number,
     lon1: number,
@@ -190,7 +202,7 @@ const Home = () => {
   }
 
   return (
-    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-5">
+    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
         city={city ?? undefined}
         isLoading={isLoading}
@@ -210,18 +222,41 @@ const Home = () => {
         </div>
       ) : error ? (
         <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
-          <h2 className="text-xl font-semibold text-red-600">
-            Platsåtkomst nekad
-          </h2>
-          <p className="text-gray-700">
-            För att Platsguiden ska kunna visa restauranger, caféer och barer
-            nära dig behöver vi åtkomst till din plats. Du har nekat åtkomst,
-            vilket gör att vi inte kan hämta några resultat.
+          {error ===
+          "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden." ? (
+            <>
+              <h2 className="text-xl font-semibold text-red-600">
+                Platsåtkomst nekad
+              </h2>
+              <p className="text-gray-700">
+                För att Platsguiden ska kunna visa ställen nära dig behöver vi
+                åtkomst till din plats. Du har nekat åtkomst, vilket gör att vi
+                inte kan hämta några resultat.
+              </p>
+              <p className="text-sm text-gray-500">
+                Tillåt platsåtkomst i webbläsarens inställningar.
+              </p>
+              {/* Använd LocationPermission här */}
+              <LocationPermission onPermissionGranted={getUserLocation} />
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold text-red-600">
+                Ett fel inträffade
+              </h2>
+              <p className="text-gray-700">{error}</p>
+            </>
+          )}
+        </div>
+      ) : restaurants.length === 0 ? (
+        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
+          <p className="text-gray-600 font-medium">
+            Inga träffar på {selectedTypeLabel.toLowerCase()} hittades i
+            närheten av din nuvarande position.
           </p>
           <p className="text-sm text-gray-500">
-            Tillåt platsåtkomst i webbläsarens inställningar och ladda om sidan.
+            Prova att uppdatera din plats eller försök igen senare.
           </p>
-          <p className="text-sm text-gray-400 italic">{error}</p>
         </div>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
@@ -295,15 +330,23 @@ const Home = () => {
         </div>
       )}
 
-      <LoadMoreButtons
-        isLoading={isLoading}
-        visibleCount={visibleCount}
-        onClick={() =>
-          setVisibleCount(
-            visibleCount === 15 ? 5 : Math.min(visibleCount + 5, 15)
-          )
-        }
-      />
+      {restaurants.length > 0 && (
+        <LoadMoreButtons
+          isLoading={isLoading}
+          visibleCount={visibleCount}
+          onClick={() =>
+            setVisibleCount(
+              visibleCount === 15 ? 5 : Math.min(visibleCount + 5, 15)
+            )
+          }
+        />
+      )}
+
+      <p className="text-sm text-gray-600 mt-4 text-center">
+        Observera: Viss information kan vara inaktuell. Vissa restauranger kan
+        ha stängt permanent eller flyttat utan att det ännu har uppdaterats i
+        tjänsten.
+      </p>
     </div>
   );
 };
