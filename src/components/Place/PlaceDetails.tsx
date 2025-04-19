@@ -35,8 +35,9 @@ const PlaceDetails = ({
       seafood: "Skaldjur",
       asian: "Asiatiskt",
       italian: "Italienskt",
-      steak_house: "Grillrestaurang",
+      steak_house: "Grill",
       bubble_tea: "Bubbelte",
+      regional: "Husmanskost",
     };
 
     const trimmed = cuisine.trim().toLowerCase();

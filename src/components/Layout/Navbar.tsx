@@ -21,9 +21,20 @@ const Navbar = () => {
         </NavLink>
 
         {/* Desktop Menu */}
+
         <div className="hidden md:flex gap-5 font-semibold text-lg">
           <NavLink
             to="/"
+            className={({ isActive }) =>
+              isActive
+                ? "text-black underline underline-offset-8 decoration-orange-500"
+                : "text-black"
+            }
+          >
+            Hem
+          </NavLink>
+          <NavLink
+            to="/mat&dryck"
             className={({ isActive }) =>
               isActive
                 ? "text-black underline underline-offset-8 decoration-orange-500"
@@ -60,7 +71,7 @@ const Navbar = () => {
                 : "text-black"
             }
           >
-            Om platsguiden
+            Information
           </NavLink>
         </div>
 
@@ -97,6 +108,17 @@ const Navbar = () => {
             <nav className="flex flex-col gap-4 p-6 mt-10">
               <NavLink
                 to="/"
+                className={({ isActive }) =>
+                  isActive
+                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
+                    : "block text-lg hover:text-orange-500"
+                }
+                onClick={handleMenuClick}
+              >
+                Hem
+              </NavLink>
+              <NavLink
+                to="/mat&dryck"
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
