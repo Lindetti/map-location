@@ -2,6 +2,7 @@ import Location from "../../assets/icons/location.png";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
 import { PlaceCardProps } from "../../Interfaces";
+import OpeningHours from "opening_hours";
 
 const PlaceCard = ({
   place,
@@ -10,6 +11,20 @@ const PlaceCard = ({
   typeLabel = "Restaurang",
   icon,
 }: PlaceCardProps) => {
+  const now = new Date();
+  let isOpen: boolean | null = null;
+  let nextChange: Date | null | undefined;
+
+  if (place.openingHours) {
+    try {
+      const oh = new OpeningHours(place.openingHours);
+      isOpen = oh.getState(now); // true/false beroende på aktuell tid
+      nextChange = oh.getNextChange(now);
+    } catch (err) {
+      console.warn("Kunde inte tolka opening_hours:", err);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-4 cursor-pointer" onClick={onClick}>
       <div className="flex justify-between">
@@ -22,12 +37,36 @@ const PlaceCard = ({
             />
           </div>
           <div className="flex flex-col">
-          <div className="w-[180px] md:w-[450px]"> 
-          <p className="text-base md:text-lg font-semibold leading-5 truncate">
-              {place.name}
-            </p>
-          </div>
-            <p className="text-sm text-gray-500">{typeLabel}</p>
+            <div className="w-[180px] md:w-[450px]">
+              <p className="text-base md:text-lg font-semibold leading-5 truncate">
+                {place.name}
+              </p>
+              <p className="text-sm text-gray-500">{typeLabel}</p>
+              {isOpen !== null && (
+                <div className="flex gap-2 items-center mt-2">
+                  <div
+                    className={`text-sm font-medium py-1 px-2 rounded-md text-white ${
+                      isOpen ? "bg-green-600" : "bg-red-500"
+                    }`}
+                  >
+                    {isOpen ? "Öppet nu" : "Stängt"}
+                  </div>
+                  {nextChange && (
+                    <p className="text-xs text-gray-500">
+                      {isOpen
+                        ? `Stänger kl. ${nextChange.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}`
+                        : `Öppnar kl. ${nextChange.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}`}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -42,7 +81,7 @@ const PlaceCard = ({
 
       <div className="flex justify-between">
         {place.address ? (
-          <div className="flex gap-1 items-center pl-1">
+          <div className="flex gap-1 items-center pl-7">
             <div className="h-[18px] w-[18px]">
               <img
                 className="w-full h-full object-cover"

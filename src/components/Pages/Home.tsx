@@ -1,31 +1,21 @@
-import { useEffect, useState, useCallback } from "react";
-import {
-  Place,
-  OverpassElement,
-  PlaceType,
-  iconMapping,
-} from "../../Interfaces";
-import { useCity } from "../../CityContext";
-import { useRef } from "react";
-import { motion } from "framer-motion";
-import { ClipLoader } from "react-spinners";
-import Header from "../Layout/Header";
-import PlaceCard from "../Place/PlaceCard";
-import PlaceDetails from "../Place/PlaceDetails";
-import LoadMoreButtons from "../Place/LoadMoreButton";
-import LocationPermission from "../LocationPermission";
+import { useEffect, useState } from "react";
+import { ClipLoader, PulseLoader } from "react-spinners";
+import { OverpassElement, PlaceType, iconMapping } from "../../Interfaces";
+import HomeImage from "../../assets/homeImages/homepicture.jpg";
+import { Link } from "react-router-dom";
+
+type Place = OverpassElement & {
+  distance: number;
+};
 
 const Home = () => {
-  const [restaurants, setRestaurants] = useState<Place[]>([]);
-  const { city, setCity } = useCity();
+  const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
+    null
+  );
+  const [city, setCity] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [visibleCount, setVisibleCount] = useState(5);
-  const [expandedIndex, setExpandedIndex] = useState<number>(-1);
-  const restaurantRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [showUserPosition, setShowUserPosition] = useState(false);
-  const [showPolyline, setShowPolyline] = useState(false);
-  const [selectedType, setSelectedType] = useState<PlaceType>("restaurant");
+  const [nearbyPlaces, setNearbyPlaces] = useState<OverpassElement[]>([]);
   const placeOptions: {
     label: string;
     singularLabel: string;
@@ -39,146 +29,8 @@ const Home = () => {
     { label: "Snabbmat", singularLabel: "Snabbmat", value: "fast_food" },
     { label: "Caféer", singularLabel: "Café", value: "cafe" },
     { label: "Barer", singularLabel: "Bar", value: "bar" },
+    { label: "Barer", singularLabel: "Hotel", value: "hotel" },
   ];
-
-  const getUserLocation = useCallback(async () => {
-    if (!navigator.geolocation) {
-      setError("Geolocation stöds inte i denna webbläsare.");
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    setRestaurants([]);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const userLat = position.coords.latitude;
-        const userLon = position.coords.longitude;
-
-        const overpassQuery = `
-        [out:json];
-        (
-          node["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          way["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          relation["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-        );
-        out center;
-      `;
-
-        try {
-          const response = await fetch(
-            "https://overpass-api.de/api/interpreter",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: `data=${encodeURIComponent(overpassQuery)}`,
-            }
-          );
-
-          if (!response.ok)
-            throw new Error("Kunde inte hämta data från Overpass API");
-
-          const data = await response.json();
-
-          const places: Place[] = data.elements
-            .filter((item: OverpassElement) => item.tags?.name)
-            .map((item: OverpassElement) => {
-              const lat = item.lat ?? item.center?.lat;
-              const lon = item.lon ?? item.center?.lon;
-
-              if (lat === undefined || lon === undefined) return null;
-
-              const address = item.tags?.["addr:street"]
-                ? `${item.tags["addr:street"]}, ${item.tags["addr:city"]}`
-                : "";
-
-              return {
-                name: item.tags?.name || "Okänd restaurang",
-                lat,
-                lon,
-                distance: getDistance(userLat, userLon, lat, lon),
-                address,
-                phone: item.tags?.phone,
-                website: item.tags?.website,
-                cuisine: item.tags?.cuisine,
-                openingHours: item.tags?.opening_hours,
-                city: item.tags?.["addr:city"] || "Stad inte tillgänglig",
-              };
-            });
-
-          // Filtrera bort resultat som är för långt bort (t.ex. default-koordinater)
-          const filteredPlaces = places.filter((p) => p.distance < 5);
-
-          const sortedPlaces = filteredPlaces.sort(
-            (a: Place, b: Place) => a.distance - b.distance
-          );
-
-          setRestaurants(sortedPlaces);
-
-          if (!city) {
-            const firstValidCity = sortedPlaces.find(
-              (p) => p.city && p.city !== "Stad inte tillgänglig"
-            )?.city;
-            if (firstValidCity) {
-              setCity(firstValidCity);
-            }
-          }
-        } catch {
-          setError(
-            "Något gick fel vid hämtning, prova uppdatera din position."
-          );
-        } finally {
-          setIsLoading(false);
-        }
-      },
-      (error) => {
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            setError(
-              "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden."
-            );
-            break;
-          case error.POSITION_UNAVAILABLE:
-            setError(
-              "Platsinformation är inte tillgänglig just nu. Kontrollera din internetanslutning eller försök igen senare."
-            );
-            break;
-          case error.TIMEOUT:
-            setError(
-              "Det tog för lång tid att hämta din plats. Försök igen eller kontrollera dina inställningar."
-            );
-            break;
-          default:
-            setError(
-              "Ett okänt fel inträffade vid hämtning av plats. Prova uppdatera din position."
-            );
-        }
-        setIsLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-  }, [selectedType, city, setCity]);
-
-  useEffect(() => {
-    getUserLocation();
-  }, [getUserLocation]);
-
-  const handleShowUserPosition = () => {
-    setShowUserPosition(true);
-    setShowPolyline(true);
-  };
-
-  const selectedTypeLabel =
-    placeOptions.find((p) => p.value === selectedType)?.singularLabel ||
-    "plats";
 
   function getDistance(
     lat1: number,
@@ -201,152 +53,287 @@ const Home = () => {
     return distance;
   }
 
-  return (
-    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
-      <Header
-        city={city ?? undefined}
-        isLoading={isLoading}
-        onRefresh={getUserLocation}
-        placeType={
-          placeOptions.find((opt) => opt.value === selectedType)?.label || ""
-        }
-        placeOptions={placeOptions}
-        selectedType={selectedType}
-        onTypeChange={(val) => setSelectedType(val as PlaceType)}
-        showTypeSelect={true}
-      />
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setError("Geolocation stöds inte i denna webbläsare.");
+      setLoading(false);
+      return;
+    }
 
-      {isLoading ? (
-        <div className="md:w-2/4 flex justify-center items-center h-[400px]">
-          <ClipLoader color="#F97316" loading={isLoading} size={120} />
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setLocation({ lat: latitude, lon: longitude });
+      },
+      (err) => {
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            setError("Du har nekat åtkomst till platsen.");
+            break;
+          case err.POSITION_UNAVAILABLE:
+            setError("Platsinformation är inte tillgänglig.");
+            break;
+          case err.TIMEOUT:
+            setError("Det tog för lång tid att hämta din plats.");
+            break;
+          default:
+            setError("Ett okänt fel inträffade vid hämtning av plats.");
+        }
+        setLoading(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!location) return;
+
+    setLoading(true);
+
+    const query = `
+    [out:json][timeout:25];
+    (
+      node(around:5000,${location.lat},${location.lon})["amenity"~"restaurant|fast_food|bar|cafe|bar|hotel|hostel"];
+      node(around:5000,${location.lat},${location.lon})["place"];
+    );
+    out body;
+  `;
+
+    fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(query)}`,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const elements: OverpassElement[] = data.elements;
+
+        const placesWithDistance: Place[] = elements
+          .filter(
+            (el) =>
+              el.tags?.name &&
+              (el.tags.amenity || el.tags.shop) &&
+              el.lat !== undefined && // Kontrollera om lat är definierad
+              el.lon !== undefined // Kontrollera om lon är definierad
+          )
+          .map((el) => ({
+            ...el,
+            distance: location
+              ? getDistance(location.lat, location.lon, el.lat!, el.lon!) // Nu säkerställer vi att lat och lon inte är undefined
+              : Infinity,
+          }));
+
+        const filteredPlaces = placesWithDistance.filter((p) => p.distance < 5);
+
+        const sortedPlaces = filteredPlaces.sort(
+          (a, b) => a.distance - b.distance
+        );
+
+        setNearbyPlaces(sortedPlaces);
+
+        const place = elements.find(
+          (el) =>
+            el.tags?.place === "city" ||
+            el.tags?.place === "town" ||
+            el.tags?.place === "village"
+        );
+        setCity(place?.tags?.name ?? "Okänd plats");
+      })
+      .catch(() => {
+        setError("Kunde inte hämta stadens namn.");
+      })
+      .finally(() => setLoading(false));
+  }, [location]);
+  useEffect(() => {
+    if (!location) return;
+
+    setLoading(true);
+
+    const query = `
+    [out:json][timeout:25];
+    (
+      node(around:5000,${location.lat},${location.lon})["amenity"~"restaurant|fast_food|bar|cafe"];
+      node(around:5000,${location.lat},${location.lon})["place"];
+    );
+    out body;
+  `;
+
+    fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `data=${encodeURIComponent(query)}`,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const elements: OverpassElement[] = data.elements;
+
+        const placesWithDistance: Place[] = elements
+          .filter(
+            (el) =>
+              el.tags?.name &&
+              (el.tags.amenity || el.tags.shop) &&
+              el.lat !== undefined && // Kontrollera om lat är definierad
+              el.lon !== undefined // Kontrollera om lon är definierad
+          )
+          .map((el) => ({
+            ...el,
+            distance: location
+              ? getDistance(location.lat, location.lon, el.lat!, el.lon!) // Nu säkerställer vi att lat och lon inte är undefined
+              : Infinity,
+          }));
+
+        const filteredPlaces = placesWithDistance.filter((p) => p.distance < 5);
+
+        const sortedPlaces = filteredPlaces.sort(
+          (a, b) => a.distance - b.distance
+        );
+
+        setNearbyPlaces(sortedPlaces);
+
+        const place = elements.find(
+          (el) =>
+            el.tags?.place === "city" ||
+            el.tags?.place === "town" ||
+            el.tags?.place === "village"
+        );
+        setCity(place?.tags?.name ?? "Okänd plats");
+      })
+      .catch(() => {
+        setError("Kunde inte hämta stadens namn.");
+      })
+      .finally(() => setLoading(false));
+  }, [location]);
+
+  const getPlaceLabel = (placeType: string | undefined): string => {
+    const match = placeOptions.find((option) => option.value === placeType);
+    return match ? match.singularLabel : "Okänd plats"; // Fallback till "Okänd plats" om ingen matchning hittas
+  };
+
+  return (
+    <div className="w-full md:w-2/4 p-5 flex flex-col gap-4 mb-5 md:mt-2">
+      <div className="flex flex-col gap-1">
+        <h1 className="font-semibold text-base text-gray-600">
+          Upptäck restauranger, butiker och boenden i närheten där du befinner
+          dig!
+        </h1>
+
+        {loading ? (
+          <div className="flex gap-2 items-center">
+            <em>Hämtar din plats...</em>
+            <PulseLoader color="#F97316" size={6} />
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-600 text-sm max-w-md">
+            <p>{error}</p>
+          </div>
+        ) : (
+          <div className="flex gap-1.5 items-center">
+            <em>Du befinner dig i</em>
+            <p className="font-semibold">{city}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col md:flex-row md:justify-between gap-4 mt-2">
+        <div className="flex-1 bg-red-200 h-[280px] shadow-sm rounded-md">
+          <img
+            className="object-cover h-full w-full rounded-md shadow-sm"
+            src={HomeImage}
+            alt="home-image"
+          />
         </div>
-      ) : error ? (
-        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
-          {error ===
-          "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden." ? (
-            <>
-              <h2 className="text-xl font-semibold text-red-600">
-                Platsåtkomst nekad
-              </h2>
-              <p className="text-gray-700">
-                För att Platsguiden ska kunna visa ställen nära dig behöver vi
-                åtkomst till din plats. Du har nekat åtkomst, vilket gör att vi
-                inte kan hämta några resultat.
-              </p>
-              <p className="text-sm text-gray-500">
-                Tillåt platsåtkomst i webbläsarens inställningar.
-              </p>
-              {/* Använd LocationPermission här */}
-              <LocationPermission onPermissionGranted={getUserLocation} />
-            </>
+
+        <div className="flex-1 bg-gray-100 py-5 md:py-0 h-[280px] shadow-sm rounded-md flex flex-row md:flex-col gap-5 items-center justify-center">
+          <Link
+            className="bg-orange-500 text-white w-[100px] text-center py-2 rounded-md"
+            to="/mat&dryck"
+          >
+            Mat & Dryck
+          </Link>
+          <Link
+            className="bg-orange-500 text-white w-[100px] text-center py-2 rounded-md"
+            to="/butiker"
+          >
+            Butiker
+          </Link>
+          <Link
+            className="bg-orange-500 text-white w-[100px] text-center py-2 rounded-md"
+            to="/boende"
+          >
+            Boende
+          </Link>
+        </div>
+
+        <div className="flex-1 bg-gray-100 flex flex-col gap-4 h-auto shadow-sm rounded-md overflow-auto px-3 py-2">
+          <h1 className="text-center mt-2 font-sans font-semibold">
+            Närmaste platser i närheten
+          </h1>
+
+          {loading ? ( // Här läggs condition för att visa loadern när platser laddas
+            <div className="flex justify-center items-center h-full">
+              <ClipLoader color="#F97316" size={40} />
+            </div>
+          ) : nearbyPlaces.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center">
+              Inga platser hittades.
+            </p>
           ) : (
-            <>
-              <h2 className="text-xl font-semibold text-red-600">
-                Ett fel inträffade
-              </h2>
-              <p className="text-gray-700">{error}</p>
-            </>
+            <div className="flex flex-col gap-2 mb-2">
+              {nearbyPlaces.slice(0, 8).map((place, index) => {
+                let calculatedDistance = null;
+
+                if (location && place.lat && place.lon) {
+                  calculatedDistance = getDistance(
+                    location.lat,
+                    location.lon,
+                    place.lat,
+                    place.lon
+                  );
+                }
+
+                const placeLabel = getPlaceLabel(
+                  place.tags?.amenity || place.tags?.shop
+                );
+
+                const placeType = place.tags?.amenity || place.tags?.shop; // Typen för platsen
+                const IconComponent = iconMapping[placeType as PlaceType];
+
+                return (
+                  <div
+                    key={index}
+                    className="bg-white shadow px-3 py-2 rounded"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-1 items-center max-w-[180px]">
+                        <img
+                          className="h-5 w-5"
+                          src={IconComponent}
+                          alt="text"
+                        />
+                        <p className="font-medium truncate">
+                          {place.tags?.name}
+                        </p>
+                      </div>
+                      <p className="text-[#C53C07] bg-[#FFF8F5] w-[65px] text-center font-semibold p-2 text-sm  rounded-sm">
+                        {calculatedDistance !== null
+                          ? calculatedDistance < 1
+                            ? `${Math.round(calculatedDistance * 1000)} m`
+                            : `${calculatedDistance.toFixed(2)} km`
+                          : "Okänt avstånd"}
+                      </p>
+                    </div>
+                    <p className="text-xs text-gray-500">{placeLabel}</p>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
-      ) : restaurants.length === 0 ? (
-        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
-          <p className="text-gray-600 font-medium">
-            Inga träffar på {selectedTypeLabel.toLowerCase()} hittades i
-            närheten av din nuvarande position.
-          </p>
-          <p className="text-sm text-gray-500">
-            Prova att uppdatera din plats eller försök igen senare.
-          </p>
-        </div>
-      ) : (
-        <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
-          {restaurants.slice(0, visibleCount).map((restaurant, index) => {
-            const isExpanded = index === expandedIndex;
-
-            return (
-              <motion.div
-                key={index}
-                ref={(el) => {
-                  restaurantRefs.current[index] = el;
-                }}
-                initial={{ opacity: 0, x: -70 }} // Startar från vänster med låg opacitet
-                animate={{ opacity: 1, x: 0 }} // Animerar till full opacitet och rätt position
-                exit={{ opacity: 0.5, x: 100 }} // När elementet tas bort, gå åt höger och bli osynligt
-                transition={{
-                  duration: 0.1, // Tidsinställning för animeringen
-                  delay: index * 0.1, // Fördröjning för att få varje div att komma i tur och ordning
-                }}
-                className={`
-                  bg-white w-full flex flex-col gap-5 p-3 md:p-5 text-black rounded-md shadow-sm
-                  border transition-all duration-300
-                  ${
-                    expandedIndex === index
-                      ? "border-[1.5px] border-orange-500"
-                      : "border border-gray-300 hover:border-orange-500"
-                  }
-                `}
-              >
-                <PlaceCard
-                  place={restaurant}
-                  isExpanded={expandedIndex === index}
-                  icon={iconMapping[selectedType]}
-                  typeLabel={
-                    placeOptions.find((opt) => opt.value === selectedType)
-                      ?.singularLabel || "Restaurang"
-                  }
-                  onClick={() => {
-                    setExpandedIndex(index === expandedIndex ? -1 : index);
-                    setShowUserPosition(false);
-                    setShowPolyline(false);
-
-                    setTimeout(() => {
-                      const element = restaurantRefs.current[index];
-                      const offset = 50;
-
-                      if (element) {
-                        const rect = element.getBoundingClientRect();
-                        window.scrollTo({
-                          top: window.scrollY + rect.top - offset,
-                          behavior: "smooth",
-                        });
-                      }
-                    }, 100);
-                  }}
-                />
-
-                {isExpanded && (
-                  <PlaceDetails
-                    place={restaurant}
-                    icon={iconMapping[selectedType]}
-                    onShowUserPosition={handleShowUserPosition}
-                    showUserPosition={showUserPosition}
-                    showPolyline={showPolyline}
-                    city={city ?? undefined}
-                  />
-                )}
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
-
-      {restaurants.length > 0 && (
-        <LoadMoreButtons
-          isLoading={isLoading}
-          visibleCount={visibleCount}
-          onClick={() =>
-            setVisibleCount(
-              visibleCount === 15 ? 5 : Math.min(visibleCount + 5, 15)
-            )
-          }
-        />
-      )}
-
-      <p className="text-sm text-gray-600 mt-4 text-center">
-        Observera: Viss information kan vara inaktuell. Vissa restauranger kan
-        ha stängt permanent eller flyttat utan att det ännu har uppdaterats i
-        tjänsten.
-      </p>
+      </div>
     </div>
   );
 };

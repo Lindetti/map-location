@@ -6,6 +6,7 @@ import BarIcon from "./assets/icons/bar.png";
 import CafeIcon from "./assets/icons/cafe.png";
 import FastFoodIcon from "./assets/icons/fastfood.png";
 import AlcoholIcon from "./assets/icons/alcohol.png";
+import HotelIcon from "./assets/icons/hotel.png";
 
 export interface Place {
   name: string;
@@ -37,6 +38,7 @@ export interface OverpassElement {
     "addr:city"?: string;
     "contact:phone"?: string;
     "building:levels"?: string;
+    place?: string;
     operator?: string;
     brand?: string;
     phone: string;
@@ -44,6 +46,8 @@ export interface OverpassElement {
     website?: string;
     cuisine?: string;
     opening_hours?: string;
+    amenity?: string;
+    shop?: string;
   };
 }
 
@@ -71,7 +75,9 @@ export type PlaceType =
   | "cafe"
   | "nightclub"
   | "after_party"
-  | "alcohol";
+  | "alcohol"
+  | "hotel"
+  | "hostel";
 
 export const isPlaceType = (value: string): value is PlaceType => {
   return [
@@ -105,6 +111,8 @@ export const iconMapping: { [key in PlaceType]: string } = {
   flowers: ClothesIcon,
   after_party: ClothesIcon,
   alcohol: AlcoholIcon, // Placeholder icon for concert hall
+  hotel: HotelIcon,
+  hostel: HotelIcon,
 };
 
 export interface LoadMoreButtonProps {

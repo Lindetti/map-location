@@ -3,6 +3,7 @@ import { CityProvider } from "./CityContext";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Layout/Navbar";
 import Home from "./components/Pages/Home";
+import FoodAndDrink from "./components/Pages/FoodAndDrink";
 import Shops from "./components/Pages/Shops";
 import Hotel from "./components/Pages/Hotel";
 import About from "./components/Pages/About";
@@ -16,6 +17,7 @@ function App() {
         <CityProvider>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/mat&dryck" element={<FoodAndDrink />} />
             <Route path="/butiker" element={<Shops />} />
             <Route path="/boende" element={<Hotel />} />
             <Route path="/om" element={<About />} />
