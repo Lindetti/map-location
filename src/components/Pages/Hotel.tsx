@@ -98,13 +98,13 @@ const Hotel = () => {
             });
 
           // Filtrera bort resultat som är för långt bort (t.ex. default-koordinater)
-          const filteredPlaces = places.filter((p) => p.distance < 5);
+          const filteredPlaces = places.filter((p) => p.distance < 10);
 
           const sortedPlaces = filteredPlaces.sort(
             (a: Place, b: Place) => a.distance - b.distance
           );
 
-          setHotels(sortedPlaces);
+          setHotels(sortedPlaces.slice(0, 15));
         } catch {
           setError(
             "Något gick fel vid hämtning, prova uppdatera din position."
@@ -287,7 +287,7 @@ const Hotel = () => {
         </div>
       )}
 
-      {hotels.length > 6 && (
+      {hotels.length > 5 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}

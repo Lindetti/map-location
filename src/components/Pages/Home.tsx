@@ -157,12 +157,11 @@ const Home = () => {
           distance: getDistance(latitude, longitude, el.lat!, el.lon!),
         }));
 
-      const filteredPlaces = placesWithDistance.filter((p) => p.distance < 5);
+      const filteredPlaces = placesWithDistance.filter((p) => p.distance < 10);
       const sortedPlaces = filteredPlaces.sort(
         (a, b) => a.distance - b.distance
       );
-
-      setNearbyPlaces(sortedPlaces);
+      setNearbyPlaces(sortedPlaces.slice(0, 5));
 
       const place = elements.find(
         (el) =>
@@ -288,7 +287,7 @@ const Home = () => {
             </div>
             <div className="flex-2">
               {isLoading ? (
-                <div className="bg-blue-50 h-[150px] flex flex-col gap-4 items-center justify-center ">
+                <div className="bg-gray-100 h-[150px] flex flex-col gap-4 items-center justify-center ">
                   <p>Hämtar aktuellt väder..</p>
                   <ClipLoader color="#F97316" size={40} />
                 </div>
@@ -297,7 +296,7 @@ const Home = () => {
                   {weather && (
                     <div className="flex gap-5 justify-center items-center w-full ">
                       <img
-                        className="h-[150px] w-[150px]"
+                        className="h-[120px] w-[120px]"
                         src={weatherIcons[weather.code]?.icon ?? "❓"}
                         alt="icon"
                       />
@@ -307,10 +306,7 @@ const Home = () => {
                           Kl. {getCurrentTime()}
                         </p>
                         <p className="font-semibold text-4xl">
-                          {Math.abs(weather.temperature) < 0.5
-                            ? 0
-                            : weather.temperature}
-                          °
+                          {Math.round(weather.temperature)}°
                         </p>
                         <div className="flex gap-2 text-sm">
                           <p>Känns som</p>
@@ -344,7 +340,7 @@ const Home = () => {
               </p>
             ) : (
               <div className="flex flex-col gap-2 mb-2">
-                {nearbyPlaces.slice(0, 8).map((place, index) => {
+                {nearbyPlaces.slice(0, 5).map((place, index) => {
                   let calculatedDistance = null;
 
                   if (location && place.lat && place.lon) {
@@ -365,7 +361,7 @@ const Home = () => {
                   return (
                     <div
                       key={index}
-                      className="bg-white shadow px-3 py-2 rounded"
+                      className="bg-white shadow px-3 py-3 rounded"
                     >
                       <div className="flex justify-between items-center">
                         <div className="flex gap-1 items-center max-w-[180px]">
