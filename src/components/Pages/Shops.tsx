@@ -320,7 +320,7 @@ const Shops = () => {
         </div>
       )}
 
-      {shops.length > 0 && (
+      {shops.length > 6 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}

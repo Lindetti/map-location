@@ -309,7 +309,7 @@ const Home = () => {
         </div>
       )}
 
-      {foodAndDrink.length > 0 && (
+      {foodAndDrink.length > 6 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}

@@ -257,7 +257,7 @@ const Home = () => {
         <div className="flex flex-col md:flex-row  gap-4 mt-2">
           <div className="flex-1 flex flex-col gap-4">
             <div className=" flex flex-col md:flex-row gap-4">
-              <div className="flex-1 bg-red-200 h-[280px] shadow-sm rounded-md">
+              <div className="flex-1 h-[280px] shadow-sm rounded-md">
                 <img
                   className="object-cover h-full w-full rounded-md shadow-sm"
                   src={HomeImage}

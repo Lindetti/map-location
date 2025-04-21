@@ -287,7 +287,7 @@ const Hotel = () => {
         </div>
       )}
 
-      {hotels.length > 0 && (
+      {hotels.length > 6 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}
