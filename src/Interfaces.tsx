@@ -52,14 +52,15 @@ export interface OverpassElement {
 }
 
 export interface HeaderProps {
-  city: string | undefined;
-  isLoading: boolean;
-  onRefresh: () => void;
-  placeType: string;
-  selectedType?: string; // ✅ Gör valfri
-  placeOptions?: { value: string; label: string }[]; // ✅ Gör valfri
-  onTypeChange?: (type: string) => void; // ✅ Gör valfri
-  showTypeSelect?: boolean; // ✅ Ny prop, valfr
+  city?: string | undefined;
+  isLoading?: boolean;
+  onRefresh?: () => void;
+  placeType?: string;
+  selectedType?: string; 
+  placeOptions?: { value: string; label: string }[]; 
+  onTypeChange?: (type: string) => void; 
+  showTypeSelect?: boolean; 
+  isHome?: boolean;
 }
 
 export type PlaceType =

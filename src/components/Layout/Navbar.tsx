@@ -159,7 +159,7 @@ const Navbar = () => {
                 }
                 onClick={handleMenuClick}
               >
-                Om platsguiden
+                Information
               </NavLink>
             </nav>
 

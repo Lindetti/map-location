@@ -13,6 +13,7 @@ import Header from "../Layout/Header";
 import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
+import AutoLocationUpdater from "../AutoLocationUpdater";
 
 const Shops = () => {
   const [shops, setShops] = useState<Place[]>([]);
@@ -92,7 +93,6 @@ const Shops = () => {
             throw new Error("Kunde inte hämta data från Overpass API");
 
           const data = await response.json();
-          console.log(data);
 
           const places: Place[] = data.elements
             .filter((item: OverpassElement) => item.tags?.name)
@@ -128,7 +128,7 @@ const Shops = () => {
             (a: Place, b: Place) => a.distance - b.distance
           );
 
-          setShops(sortedPlaces);
+          setShops(sortedPlaces.slice(0, 15));
 
           if (!city) {
             const firstValidCity = sortedPlaces.find(
@@ -227,8 +227,11 @@ const Shops = () => {
         showTypeSelect={true}
       />
 
+      <AutoLocationUpdater onLocationUpdate={getUserLocation} />
+
       {isLoading ? (
-        <div className="md:w-2/4 flex justify-center items-center h-[400px]">
+        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[400px]">
+          <p>Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
@@ -327,6 +330,13 @@ const Shops = () => {
             )
           }
         />
+      )}
+      {shops.length > 0 && (
+        <p className="text-sm text-gray-600 mt-4 text-center">
+          Observera: Viss information kan vara inaktuell. Vissa platser kan ha
+          stängt permanent, flyttat eller förändrats utan att det ännu har
+          uppdaterats i tjänsten.
+        </p>
       )}
     </div>
   );
