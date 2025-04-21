@@ -15,7 +15,7 @@ import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
 import AutoLocationUpdater from "../AutoLocationUpdater";
 
-const Home = () => {
+const FoodAndDrink = () => {
   const [foodAndDrink, setFoodAndDrink] = useState<Place[]>([]);
   const { city, setCity } = useCity();
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +111,7 @@ const Home = () => {
             });
 
           // Filtrera bort resultat som är för långt bort (t.ex. default-koordinater)
-          const filteredPlaces = places.filter((p) => p.distance < 5);
+          const filteredPlaces = places.filter((p) => p.distance < 10);
 
           const sortedPlaces = filteredPlaces.sort(
             (a: Place, b: Place) => a.distance - b.distance
@@ -309,7 +309,7 @@ const Home = () => {
         </div>
       )}
 
-      {foodAndDrink.length > 6 && (
+      {foodAndDrink.length > 5 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}
@@ -332,4 +332,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default FoodAndDrink;

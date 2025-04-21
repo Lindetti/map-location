@@ -13,11 +13,7 @@ const Navbar = () => {
     <nav className="flex bg-gray-100 h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
       <div className="w-full md:w-2/4 flex flex-col gap-3 md:flex-row justify-between items-center">
         <NavLink to="/">
-          <img
-            src={Logo}
-            alt="Logo"
-            className="h-[45px] w-[200px] md:h-[45px] md:w-[220px]"
-          />
+          <img src={Logo} alt="Logo" className="h-[45px] w-[230px]" />
         </NavLink>
 
         {/* Desktop Menu */}
@@ -28,7 +24,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black"
+                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
             }
           >
             Hem
@@ -38,7 +34,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black"
+                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
             }
           >
             Mat & Dryck
@@ -48,7 +44,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black"
+                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
             }
           >
             Butiker
@@ -58,7 +54,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black"
+                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
             }
           >
             Boende
@@ -68,7 +64,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black"
+                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
             }
           >
             Information
@@ -101,11 +97,11 @@ const Navbar = () => {
           <div className="fixed top-0 right-0 h-full w-1/2 bg-gray-800 text-white z-50 shadow-lg transition-transform transform translate-x-0">
             <button
               onClick={handleMenuClick}
-              className="absolute top-4 right-4 text-white text-2xl"
+              className="absolute top-4 right-5 text-white text-3xl"
             >
               &times;
             </button>
-            <nav className="flex flex-col gap-4 p-6 mt-10">
+            <nav className="flex flex-col gap-4 p-7 mt-10">
               <NavLink
                 to="/"
                 className={({ isActive }) =>
