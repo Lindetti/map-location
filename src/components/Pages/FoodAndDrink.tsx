@@ -13,7 +13,7 @@ import Header from "../Layout/Header";
 import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
-import LocationPermission from "../LocationPermission";
+import AutoLocationUpdater from "../AutoLocationUpdater";
 
 const Home = () => {
   const [foodAndDrink, setFoodAndDrink] = useState<Place[]>([]);
@@ -60,9 +60,9 @@ const Home = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          way["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          relation["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+          node["amenity"="${selectedType}"](around:10000,${userLat},${userLon});
+          way["amenity"="${selectedType}"](around:10000,${userLat},${userLon});
+          relation["amenity"="${selectedType}"](around:10000,${userLat},${userLon});
         );
         out center;
       `;
@@ -216,37 +216,16 @@ const Home = () => {
         showTypeSelect={true}
       />
 
+      <AutoLocationUpdater onLocationUpdate={getUserLocation} />
+
       {isLoading ? (
-        <div className="md:w-2/4 flex justify-center items-center h-[400px]">
+        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[400px]">
+          <p>Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
         <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
-          {error ===
-          "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden." ? (
-            <>
-              <h2 className="text-xl font-semibold text-red-600">
-                Platsåtkomst nekad
-              </h2>
-              <p className="text-gray-700">
-                För att Platsguiden ska kunna visa ställen nära dig behöver vi
-                åtkomst till din plats. Du har nekat åtkomst, vilket gör att vi
-                inte kan hämta några resultat.
-              </p>
-              <p className="text-sm text-gray-500">
-                Tillåt platsåtkomst i webbläsarens inställningar.
-              </p>
-              {/* Använd LocationPermission här */}
-              <LocationPermission onPermissionGranted={getUserLocation} />
-            </>
-          ) : (
-            <>
-              <h2 className="text-xl font-semibold text-red-600">
-                Ett fel inträffade
-              </h2>
-              <p className="text-gray-700">{error}</p>
-            </>
-          )}
+          <p className="text-red-500 font-semibold">{error}</p>
         </div>
       ) : foodAndDrink.length === 0 ? (
         <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
@@ -342,11 +321,13 @@ const Home = () => {
         />
       )}
 
-      <p className="text-sm text-gray-600 mt-4 text-center">
-        Observera: Viss information kan vara inaktuell. Vissa restauranger kan
-        ha stängt permanent eller flyttat utan att det ännu har uppdaterats i
-        tjänsten.
-      </p>
+      {foodAndDrink.length > 0 && (
+        <p className="text-sm text-gray-600 mt-4 text-center">
+          Observera: Viss information kan vara inaktuell. Vissa platser kan ha
+          stängt permanent, flyttat eller förändrats utan att det ännu har
+          uppdaterats i tjänsten.
+        </p>
+      )}
     </div>
   );
 };

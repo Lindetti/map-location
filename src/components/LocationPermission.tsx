@@ -11,6 +11,10 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const reloadPage = () => {
+    window.location.reload(); // Ladda om sidan när "Försök igen" klickas
+  };
+
   const checkLocationPermission = async () => {
     if (!navigator.permissions) {
       setError("Din webbläsare stöder inte platsbehörigheter.");
@@ -25,9 +29,8 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
 
       if (permissionStatus.state === "granted") {
         // Platsåtkomst är redan tillåten
-        navigator.geolocation.getCurrentPosition(() => {
-          onPermissionGranted();
-        });
+        onPermissionGranted();
+        reloadPage();
       } else if (permissionStatus.state === "denied") {
         // Platsåtkomst är nekad
         setError(
@@ -35,7 +38,7 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
         );
         setIsModalOpen(true);
       } else {
-        // Platsåtkomst har inte frågats ännu
+        // Platsåtkomst har inte frågats ännu, be om den
         requestLocation();
       }
     } catch (err) {
@@ -48,7 +51,7 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
   const requestLocation = () => {
     navigator.geolocation.getCurrentPosition(
       () => {
-        onPermissionGranted();
+        onPermissionGranted(); // Anropa callback när platsåtkomst beviljas
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
@@ -64,7 +67,7 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
   return (
     <>
       <button
-        onClick={checkLocationPermission}
+        onClick={checkLocationPermission} // Använd funktionen för att kontrollera behörigheten
         className="mt-2 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
       >
         Försök igen

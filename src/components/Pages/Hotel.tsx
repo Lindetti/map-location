@@ -9,6 +9,7 @@ import Header from "../Layout/Header";
 import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
+import AutoLocationUpdater from "../AutoLocationUpdater";
 
 const Hotel = () => {
   const [hotels, setHotels] = useState<Place[]>([]);
@@ -39,12 +40,12 @@ const Hotel = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["tourism"="hotel"](around:5000,${userLat},${userLon});
-          way["tourism"="hotel"](around:5000,${userLat},${userLon});
-          relation["tourism"="hotel"](around:5000,${userLat},${userLon});
-          node["tourism"="hostel"](around:5000,${userLat},${userLon});
-          way["tourism"="hostel"](around:5000,${userLat},${userLon});
-          relation["tourism"="hostel"](around:5000,${userLat},${userLon});
+          node["tourism"="hotel"](around:10000,${userLat},${userLon});
+          way["tourism"="hotel"](around:10000,${userLat},${userLon});
+          relation["tourism"="hotel"](around:10000,${userLat},${userLon});
+          node["tourism"="hostel"](around:10000,${userLat},${userLon});
+          way["tourism"="hostel"](around:10000,${userLat},${userLon});
+          relation["tourism"="hostel"](around:10000,${userLat},${userLon});
         );
         out center;
       `;
@@ -198,8 +199,11 @@ const Hotel = () => {
         isLoading={isLoading}
       />
 
+      <AutoLocationUpdater onLocationUpdate={getUserLocation} />
+
       {isLoading ? (
-        <div className="md:w-2/4 flex justify-center items-center h-[400px]">
+        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[400px]">
+          <p>Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
@@ -293,6 +297,14 @@ const Hotel = () => {
             )
           }
         />
+      )}
+
+      {hotels.length > 0 && (
+        <p className="text-sm text-gray-600 mt-4 text-center">
+          Observera: Viss information kan vara inaktuell. Vissa platser kan ha
+          stängt permanent, flyttat eller förändrats utan att det ännu har
+          uppdaterats i tjänsten.
+        </p>
       )}
     </div>
   );
