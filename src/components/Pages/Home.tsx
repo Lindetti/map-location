@@ -4,9 +4,12 @@ import { OverpassElement, PlaceType, iconMapping } from "../../Interfaces";
 import HomeImage from "../../assets/homeImages/homepicture.jpg";
 import { Link } from "react-router-dom";
 import Header from "../Layout/Header";
+import Map from "../Map";
 import LocationPermission from "../LocationPermission";
 import AutoLocationUpdater from "../AutoLocationUpdater";
 import { weatherIcons } from "../WeatherIcons";
+import ArrowUp from "../../assets/icons/arrowUp.png";
+import ArrowDown from "../../assets/icons/arrowDown.png";
 
 type Place = OverpassElement & {
   distance: number;
@@ -20,6 +23,9 @@ const Home = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [nearbyPlaces, setNearbyPlaces] = useState<OverpassElement[]>([]);
+  const [showUserPosition, setShowUserPosition] = useState(false);
+  const [showPolyline, setShowPolyline] = useState(false);
+  const [expandedIndex, setExpandedIndex] = useState<number>(-1);
   const [weather, setWeather] = useState<{
     temperature: number;
     windspeed: number;
@@ -212,6 +218,16 @@ const Home = () => {
     return `${hours}:${minutes}`;
   };
 
+  const isNight = () => {
+    const hour = new Date().getHours();
+    return hour < 6 || hour > 20;
+  };
+
+  const handleShowUserPosition = () => {
+    setShowUserPosition(true);
+    setShowPolyline(true);
+  };
+
   return (
     <div className="w-full md:w-2/4 p-5 flex flex-col gap-4 mb-5 md:mt-2">
       <Header
@@ -292,12 +308,20 @@ const Home = () => {
                   <ClipLoader color="#F97316" size={40} />
                 </div>
               ) : (
-                <div className="bg-blue-200 relative h-[180px] flex justify-center items-center font-sans">
+                <div
+                  className={`relative h-[180px] flex justify-center items-center font-sans ${
+                    isNight() ? "bg-gray-800 text-gray-200" : "bg-blue-200"
+                  }`}
+                >
                   {weather && (
                     <div className="flex gap-5 justify-center items-center w-full ">
                       <img
                         className="h-[120px] w-[120px]"
-                        src={weatherIcons[weather.code]?.icon ?? "❓"}
+                        src={
+                          isNight()
+                            ? weatherIcons[weather.code]?.night.icon
+                            : weatherIcons[weather.code]?.day.icon
+                        }
                         alt="icon"
                       />
                       <div className="flex flex-col gap-1">
@@ -341,6 +365,7 @@ const Home = () => {
             ) : (
               <div className="flex flex-col gap-2 mb-2">
                 {nearbyPlaces.slice(0, 5).map((place, index) => {
+                  const isExpanded = index === expandedIndex;
                   let calculatedDistance = null;
 
                   if (location && place.lat && place.lon) {
@@ -361,28 +386,74 @@ const Home = () => {
                   return (
                     <div
                       key={index}
-                      className="bg-white shadow px-3 py-3 rounded"
+                      className="bg-white shadow px-3 py-5 rounded flex flex-col gap-3"
                     >
-                      <div className="flex justify-between items-center">
-                        <div className="flex gap-1 items-center max-w-[180px]">
-                          <img
-                            className="h-5 w-5"
-                            src={IconComponent}
-                            alt="text"
-                          />
-                          <p className="font-medium truncate">
-                            {place.tags?.name}
+                      <div
+                        className="flex flex-col gap-2 cursor-pointer"
+                        onClick={() => {
+                          setExpandedIndex(
+                            index === expandedIndex ? -1 : index
+                          );
+                          setShowUserPosition(false);
+                          setShowPolyline(false);
+                        }}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex gap-1  max-w-[180px]">
+                            <img
+                              className="h-5 w-5"
+                              src={IconComponent}
+                              alt="text"
+                            />
+                            <div>
+                              <p className="font-medium truncate">
+                                {place.tags?.name}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {placeLabel}
+                              </p>
+                            </div>
+                          </div>
+                          <p className="text-[#C53C07] bg-[#FFF8F5] w-[65px] text-center font-semibold p-2 text-sm rounded-sm">
+                            {calculatedDistance !== null
+                              ? calculatedDistance < 1
+                                ? `${Math.round(calculatedDistance * 1000)} m`
+                                : `${calculatedDistance.toFixed(2)} km`
+                              : "Okänt avstånd"}
                           </p>
                         </div>
-                        <p className="text-[#C53C07] bg-[#FFF8F5] w-[65px] text-center font-semibold p-2 text-sm rounded-sm">
-                          {calculatedDistance !== null
-                            ? calculatedDistance < 1
-                              ? `${Math.round(calculatedDistance * 1000)} m`
-                              : `${calculatedDistance.toFixed(2)} km`
-                            : "Okänt avstånd"}
-                        </p>
+
+                        <span className="text-xl flex justify-end pr-2">
+                          <img
+                            src={isExpanded ? ArrowUp : ArrowDown}
+                            alt="toggle arrow"
+                            className="h-4 w-4"
+                          />
+                        </span>
                       </div>
-                      <p className="text-xs text-gray-500">{placeLabel}</p>
+
+                      {isExpanded &&
+                        place.lat !== undefined &&
+                        place.lon !== undefined && (
+                          <div className="flex flex-col gap-3 p-2 border-t-2 h-400px]">
+                            <div className="h-[300px] mt-2 mb-2">
+                              <Map
+                                lat={place.lat} // Exempel på en fast lat
+                                lon={place.lon}
+                                zoom={16}
+                                name={place.tags?.name}
+                                showUserPosition={showUserPosition}
+                                showPolyLine={showPolyline}
+                              />
+                            </div>
+                            <button
+                              className="flex items-center justify-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                              onClick={handleShowUserPosition}
+                            >
+                              Visa min position
+                            </button>
+                          </div>
+                        )}
                     </div>
                   );
                 })}
