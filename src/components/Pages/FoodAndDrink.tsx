@@ -171,6 +171,10 @@ const FoodAndDrink = () => {
     getUserLocation();
   }, [getUserLocation]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleShowUserPosition = () => {
     setShowUserPosition(true);
     setShowPolyline(true);

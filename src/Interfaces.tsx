@@ -31,6 +31,9 @@ export interface OverpassElement {
   id: number;
   lat?: number;
   lon?: number;
+  name: string;
+  openingHours?: string;
+  website?: string;
   center?: { lat: number; lon: number }; // För "way"-objekt
   tags?: {
     name?: string;
@@ -43,11 +46,11 @@ export interface OverpassElement {
     brand?: string;
     phone: string;
     email: string;
-    website?: string;
     cuisine?: string;
     opening_hours?: string;
     amenity?: string;
     shop?: string;
+    website?: string;
   };
 }
 
@@ -56,10 +59,10 @@ export interface HeaderProps {
   isLoading?: boolean;
   onRefresh?: () => void;
   placeType?: string;
-  selectedType?: string; 
-  placeOptions?: { value: string; label: string }[]; 
-  onTypeChange?: (type: string) => void; 
-  showTypeSelect?: boolean; 
+  selectedType?: string;
+  placeOptions?: { value: string; label: string }[];
+  onTypeChange?: (type: string) => void;
+  showTypeSelect?: boolean;
   isHome?: boolean;
 }
 
