@@ -10,6 +10,11 @@ import AutoLocationUpdater from "../AutoLocationUpdater";
 import { weatherIcons } from "../WeatherIcons";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
+import { motion } from "framer-motion";
+import LinkIcon from "../../assets/icons/link.png";
+import Phone from "../../assets/icons/phone.png";
+import Email from "../../assets/icons/email.png";
+import Open from "../../assets/icons/open.png";
 
 type Place = OverpassElement & {
   distance: number;
@@ -19,7 +24,11 @@ const Home = () => {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
     null
   );
-  const [city, setCity] = useState<string | null>(null);
+  const [city, setCity] = useState<string | null>(() => {
+    // Check localStorage for saved city on initial mount
+    const savedCity = localStorage.getItem("savedCity");
+    return savedCity || null;
+  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [nearbyPlaces, setNearbyPlaces] = useState<OverpassElement[]>([]);
@@ -167,7 +176,7 @@ const Home = () => {
       const sortedPlaces = filteredPlaces.sort(
         (a, b) => a.distance - b.distance
       );
-      setNearbyPlaces(sortedPlaces.slice(0, 5));
+      setNearbyPlaces(sortedPlaces.slice(0, 6));
 
       const place = elements.find(
         (el) =>
@@ -176,7 +185,13 @@ const Home = () => {
           el.tags?.place === "village"
       );
       const cityName = place?.tags?.name ?? "Okänd plats";
-      setCity(cityName);
+
+      // Check if city has changed
+      const savedCity = localStorage.getItem("savedCity");
+      if (savedCity !== cityName) {
+        setCity(cityName);
+        localStorage.setItem("savedCity", cityName);
+      }
     } catch (err: unknown) {
       if (err instanceof GeolocationPositionError) {
         switch (err.code) {
@@ -206,6 +221,10 @@ const Home = () => {
     getUserLocation();
   }, [getUserLocation]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const getPlaceLabel = (placeType: string | undefined): string => {
     const match = placeOptions.find((option) => option.value === placeType);
     return match ? match.singularLabel : "Okänd plats";
@@ -228,8 +247,73 @@ const Home = () => {
     setShowPolyline(true);
   };
 
+  const handleExpand = (index: number) => {
+    setExpandedIndex(index === expandedIndex ? -1 : index);
+    setShowUserPosition(false);
+    setShowPolyline(false);
+
+    if (index !== expandedIndex) {
+      // Add a small delay to ensure the div is rendered before scrolling
+      setTimeout(() => {
+        const element = document.getElementById(`place-${index}`);
+        if (element) {
+          const offset = 50; // Offset to account for header and spacing
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          });
+        }
+      }, 100);
+    }
+  };
+
+  const translateCuisine = (cuisine: string): string => {
+    const translations: Record<string, string> = {
+      burger: "Hamburgare",
+      italian_pizza: "Italiensk pizza",
+      pizza: "Pizza",
+      sushi: "Sushi",
+      chinese: "Kinesiskt",
+      japanese: "Japanskt",
+      american: "Amerikanskt",
+      greek: "Grekiskt",
+      indian: "Indiskt",
+      kebab: "Kebab",
+      mexican: "Mexikanskt",
+      thai: "Thailändskt",
+      coffee_shop: "Café",
+      cafe: "Café",
+      bakery: "Bageri",
+      fast_food: "Snabbmat",
+      sandwich: "Smörgåsar",
+      seafood: "Skaldjur",
+      asian: "Asiatiskt",
+      italian: "Italienskt",
+      steak_house: "Grill",
+      bubble_tea: "Bubbelte",
+      regional: "Husmanskost",
+    };
+
+    const trimmed = cuisine.trim().toLowerCase();
+    return (
+      translations[trimmed] ??
+      trimmed
+        .split("_")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")
+    );
+  };
+
   return (
-    <div className="w-full md:w-2/4 p-5 flex flex-col gap-4 mb-5 md:mt-2">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="w-full md:w-2/4 p-5 flex flex-col gap-4 mb-5 md:mt-2"
+    >
       <Header
         city={city ?? undefined}
         isLoading={isLoading}
@@ -242,7 +326,12 @@ const Home = () => {
 
       {/* Error Handling */}
       {error ? (
-        <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4"
+        >
           {error ===
           "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden." ? (
             <div className="flex flex-col gap-4">
@@ -267,10 +356,20 @@ const Home = () => {
               <p className="text-gray-700">{error}</p>
             </div>
           )}
-        </div>
+        </motion.div>
       ) : (
-        <div className="flex flex-col md:flex-row  gap-4 mt-2">
-          <div className="flex-1 flex flex-col gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="flex flex-col md:flex-row gap-4 mt-2"
+        >
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex-1 flex flex-col gap-4"
+          >
             <div className=" flex flex-col md:flex-row gap-4">
               <div className="flex-1 h-[280px] shadow-sm rounded-md">
                 <img
@@ -280,21 +379,25 @@ const Home = () => {
                 />
               </div>
 
-              <div className="flex-1 bg-gray-100 py-5 md:py-0 h-[280px] shadow-sm rounded-md flex flex-row md:flex-col gap-5 items-center justify-center">
+              <div className=" bg-gray-100 py-5 md:py-0 h-[80px] md:h-[280px] shadow-sm rounded-md flex flex-row md:flex-col gap-5 items-center justify-center w-full md:w-[250px] p-4">
+                <h1 className="hidden md:block text-center font-semibold text-base">
+                  Snabbval
+                </h1>
+
                 <Link
-                  className="bg-orange-500 text-white w-[100px] text-center py-2 rounded-md hover hover:bg-orange-600 transition ease-in-out duration-300"
+                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 md:w-[120px] w-[125px] text-sm  border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
                   to="/mat&dryck"
                 >
                   Mat & Dryck
                 </Link>
                 <Link
-                  className="bg-orange-500 text-white w-[100px] text-center py-2 rounded-md hover hover:bg-orange-600 transition ease-in-out duration-300"
+                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 w-[120px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
                   to="/butiker"
                 >
                   Butiker
                 </Link>
                 <Link
-                  className="bg-orange-500 text-white w-[100px] text-center py-2 rounded-md hover hover:bg-orange-600 transition ease-in-out duration-300"
+                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 w-[120px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
                   to="/boende"
                 >
                   Boende
@@ -345,10 +448,15 @@ const Home = () => {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Nearby places */}
-          <div className="w-full md:w-[300px] bg-gray-100 flex flex-col gap-4 h-auto shadow-sm rounded-md overflow-auto px-3 py-2">
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="w-full md:w-[400px] bg-gray-100 flex flex-col gap-4 h-auto shadow-sm rounded-md overflow-auto px-3 py-2"
+          >
             <h1 className="text-center mt-2 font-sans font-semibold">
               Närmaste platser i närheten
             </h1>
@@ -364,7 +472,7 @@ const Home = () => {
               </p>
             ) : (
               <div className="flex flex-col gap-2 mb-2">
-                {nearbyPlaces.slice(0, 5).map((place, index) => {
+                {nearbyPlaces.map((place, index) => {
                   const isExpanded = index === expandedIndex;
                   let calculatedDistance = null;
 
@@ -384,19 +492,29 @@ const Home = () => {
                   const IconComponent = iconMapping[placeType as PlaceType];
 
                   return (
-                    <div
+                    <motion.div
                       key={index}
-                      className="bg-white shadow px-3 py-5 rounded flex flex-col gap-3"
+                      id={`place-${index}`}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{
+                        duration: 0.3,
+                        delay: index * 0.1,
+                        ease: "easeOut",
+                      }}
+                      className={`
+                        bg-white w-full flex flex-col gap-5 p-3 md:p-5 text-black rounded-md shadow-sm
+                        border transition-all duration-300
+                        ${
+                          expandedIndex === index
+                            ? "border-[1.5px] border-orange-500"
+                            : "border border-gray-300 hover:border-orange-500"
+                        }
+                      `}
                     >
                       <div
                         className="flex flex-col gap-2 cursor-pointer"
-                        onClick={() => {
-                          setExpandedIndex(
-                            index === expandedIndex ? -1 : index
-                          );
-                          setShowUserPosition(false);
-                          setShowPolyline(false);
-                        }}
+                        onClick={() => handleExpand(index)}
                       >
                         <div className="flex justify-between items-center">
                           <div className="flex gap-1  max-w-[180px]">
@@ -446,23 +564,159 @@ const Home = () => {
                                 showPolyLine={showPolyline}
                               />
                             </div>
-                            <button
-                              className="flex items-center justify-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                              onClick={handleShowUserPosition}
-                            >
-                              Visa min position
-                            </button>
+                            <div className="flex flex-col gap-2">
+                              {place.tags?.cuisine && (
+                                <div className="flex gap-2 items-center">
+                                  <img
+                                    src={IconComponent}
+                                    alt="link icon"
+                                    className="h-6 w-6"
+                                  />
+                                  {(place.tags?.cuisine ?? "")
+                                    .split(";")
+                                    .slice(0, 3)
+                                    .map((cuisine) => translateCuisine(cuisine))
+                                    .join(", ")}
+                                </div>
+                              )}
+
+                              <div className="flex flex-col gap-2">
+                                {place.tags?.brand && (
+                                  <div className="flex gap-2 items-center">
+                                    <p className="text-gray-500"> Kedja:</p>
+                                    <p className="font-semibold text-gray-500">
+                                      {place.tags?.brand}
+                                    </p>
+                                  </div>
+                                )}
+                                {place.tags?.operator && (
+                                  <div className="flex gap-2 items-center">
+                                    <p className="text-gray-500"> Kedja:</p>
+                                    <p className="font-semibold text-gray-500">
+                                      {place.tags?.operator}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="flex flex-col gap-2">
+                                {place.tags?.phone && (
+                                  <div className="flex gap-2 items-center">
+                                    <img
+                                      src={Phone}
+                                      alt="phone icon"
+                                      className="h-5 w-5"
+                                    />
+                                    <a
+                                      href={`${place.tags?.["contact:phone"]}`}
+                                      className="text-blue-500 hover:underline"
+                                    >
+                                      {place.tags?.phone}
+                                    </a>
+                                  </div>
+                                )}
+                                {place.tags?.email && (
+                                  <div className="flex gap-2 items-center">
+                                    <img
+                                      src={Email}
+                                      alt="link icon"
+                                      className="h-5 w-5"
+                                    />
+                                    <a
+                                      href={`mailto:${place.tags?.email}`}
+                                      className="text-blue-500 hover:underline"
+                                    >
+                                      {place.tags?.email}
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            {place.tags?.opening_hours && (
+                              <div className="flex flex-col gap-1">
+                                <div className="flex gap-2 items-center">
+                                  <img
+                                    src={Open}
+                                    alt="open icon"
+                                    className="h-5 w-5"
+                                  />
+                                  <p>Öppettider:</p>
+                                </div>
+                                <ul className="list-none pl-1 text-gray-500">
+                                  {place.tags?.opening_hours
+                                    .split(";")
+                                    .map((hour, i) => (
+                                      <li key={i}>{hour.trim()}</li>
+                                    ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            <div>
+                              {place.tags?.website ? (
+                                <></>
+                              ) : (
+                                <div>
+                                  <p className="text-sm text-gray-500">
+                                    Om du känner att informationen är
+                                    otillräcklig, prova gärna att söka vidare
+                                    via webben – du hittar knappen "Sök på
+                                    Google" här nedanför.
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex justify-between p-1">
+                              {place.tags?.website ? (
+                                <a
+                                  href={place.tags?.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                                >
+                                  <img
+                                    src={LinkIcon}
+                                    alt="link icon"
+                                    className="h-4 w-4"
+                                  />
+                                  Besök webbplats
+                                </a>
+                              ) : (
+                                <a
+                                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                                    place.tags?.name + " " + city
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                                >
+                                  <img
+                                    src={LinkIcon}
+                                    alt="link icon"
+                                    className="h-4 w-4"
+                                  />
+                                  Sök på Google
+                                </a>
+                              )}
+
+                              <button
+                                className="flex items-center justify-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                                onClick={handleShowUserPosition}
+                              >
+                                Visa min position
+                              </button>
+                            </div>
                           </div>
                         )}
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

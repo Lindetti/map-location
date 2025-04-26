@@ -79,13 +79,13 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               {place.brand && (
                 <div className="flex gap-2 items-center">
-                  <p className="text-gray-500"> Hotellkedja:</p>
+                  <p className="text-gray-500"> Kedja:</p>
                   <p className="font-semibold text-gray-500">{place.brand}</p>
                 </div>
               )}
               {place.operator && (
                 <div className="flex gap-2 items-center">
-                  <p className="text-gray-500"> Hotellkedja:</p>
+                  <p className="text-gray-500"> Kedja:</p>
                   <p className="font-semibold text-gray-500">
                     {place.operator}
                   </p>
