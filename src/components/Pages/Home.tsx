@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { ClipLoader } from "react-spinners";
+import { ClipLoader, PulseLoader } from "react-spinners";
 import { OverpassElement, PlaceType, iconMapping } from "../../Interfaces";
 import HomeImage from "../../assets/homeImages/homepicture.jpg";
 import { Link } from "react-router-dom";
@@ -176,7 +176,7 @@ const Home = () => {
       const sortedPlaces = filteredPlaces.sort(
         (a, b) => a.distance - b.distance
       );
-      setNearbyPlaces(sortedPlaces.slice(0, 6));
+      setNearbyPlaces(sortedPlaces.slice(0, 5));
 
       const place = elements.find(
         (el) =>
@@ -307,6 +307,26 @@ const Home = () => {
     );
   };
 
+  const isOpen = (openingHours: string): boolean => {
+    const now = new Date();
+    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const currentTime = now.getHours() * 60 + now.getMinutes(); // Convert to minutes
+
+    const hours = openingHours.split(";");
+    const todayHours = hours[currentDay === 0 ? 6 : currentDay - 1]; // Adjust for Sunday being 0
+
+    if (!todayHours || todayHours.toLowerCase().includes("stängt")) {
+      return false;
+    }
+
+    const [openTime, closeTime] = todayHours.split("-").map((time) => {
+      const [hours, minutes] = time.trim().split(":").map(Number);
+      return hours * 60 + (minutes || 0);
+    });
+
+    return currentTime >= openTime && currentTime <= closeTime;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -370,16 +390,26 @@ const Home = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="flex-1 flex flex-col gap-4"
           >
-            <div className=" flex flex-col md:flex-row gap-4">
-              <div className="flex-1 h-[300px] shadow-sm rounded-md">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 h-[300px] md:h-[350px] shadow-sm rounded-md relative overflow-hidden">
                 <img
-                  className="object-cover h-full w-full rounded-md shadow-sm"
+                  className="object-cover object-center h-full w-full rounded-md shadow-sm"
                   src={HomeImage}
                   alt="home-image"
                 />
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                  <div className="text-center text-white px-4">
+                    <h1 className="text-3xl md:text-3xl font-bold mb-2">
+                      Upptäck platsen
+                    </h1>
+                    <p className="text-lg md:text-xl">
+                      Hitta de bästa platserna i närheten
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className=" bg-gray-100 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-5 items-center justify-center w-full md:w-[250px] p-4">
+              <div className="bg-gray-100 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-5 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
                 <h1 className="hidden md:block text-center font-semibold text-base">
                   Snabbval
                 </h1>
@@ -412,12 +442,15 @@ const Home = () => {
             </div>
             <div className="flex-2">
               {isLoading ? (
-                <div className="bg-gray-100 h-[150px] flex flex-col gap-4 items-center justify-center ">
+                <div className=" h-[150px] flex flex-col gap-4 items-center justify-center ">
                   <p>Hämtar aktuellt väder..</p>
                   <ClipLoader color="#F97316" size={40} />
                 </div>
               ) : (
-                <div
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
                   className={`relative h-[180px] flex justify-center items-center font-sans ${
                     isNight() ? "bg-gray-800 text-gray-200" : "bg-blue-200"
                   }`}
@@ -451,7 +484,7 @@ const Home = () => {
                   <div className="absolute bottom-1 left-1 text-sm">
                     <p className="text-gray-400">Powered by open-meteo.com</p>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
           </motion.div>
@@ -461,11 +494,15 @@ const Home = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="w-full md:w-[400px] bg-gray-100 flex flex-col gap-4 h-auto shadow-sm rounded-md overflow-auto px-3 py-2"
+            className="w-full md:w-[500px] flex flex-col gap-4 h-auto rounded-md overflow-auto px-3 mt-5 md:mt-0"
           >
-            <h1 className="text-center mt-2 font-sans font-semibold">
-              Närmaste platser i närheten
-            </h1>
+            {isLoading ? (
+              <PulseLoader color="#F97316" size={5} />
+            ) : (
+              <h1 className="text-center md:text-left font-sans font-semibold">
+                Dina fem närmaste platser just nu
+              </h1>
+            )}
 
             {isLoading ? (
               <div className="flex flex-col gap-3 justify-center items-center h-full">
@@ -538,22 +575,43 @@ const Home = () => {
                               </p>
                             </div>
                           </div>
-                          <p className="text-[#C53C07] bg-[#FFF8F5] w-[65px] text-center font-semibold p-2 text-sm rounded-sm">
-                            {calculatedDistance !== null
-                              ? calculatedDistance < 1
-                                ? `${Math.round(calculatedDistance * 1000)} m`
-                                : `${calculatedDistance.toFixed(2)} km`
-                              : "Okänt avstånd"}
-                          </p>
+                          <div className="flex flex-col items-end gap-1">
+                            <p className="text-[#C53C07] bg-[#FFF8F5] w-[65px] text-center font-semibold p-2 text-sm rounded-sm">
+                              {calculatedDistance !== null
+                                ? calculatedDistance < 1
+                                  ? `${Math.round(calculatedDistance * 1000)} m`
+                                  : `${calculatedDistance.toFixed(2)} km`
+                                : "Okänt avstånd"}
+                            </p>
+                          </div>
                         </div>
 
-                        <span className="text-xl flex justify-end pr-2">
-                          <img
-                            src={isExpanded ? ArrowUp : ArrowDown}
-                            alt="toggle arrow"
-                            className="h-4 w-4"
-                          />
-                        </span>
+                        <div className="flex justify-between items-center">
+                          {place.tags?.opening_hours ? (
+                        <div className="pl-4">
+                              <p
+                              className={`text-sm font-medium py-1 px-2 rounded-md text-white ${
+                                isOpen(place.tags.opening_hours)
+                                  ? "bg-green-600"
+                                  : "bg-red-500"
+                              }`}
+                            >
+                              {isOpen(place.tags.opening_hours)
+                                ? "Öppet"
+                                : "Stängt"}
+                            </p>
+                        </div>
+                          ) : (
+                            <div> </div>
+                          )}
+                          <span className="text-xl">
+                            <img
+                              src={isExpanded ? ArrowUp : ArrowDown}
+                              alt="toggle arrow"
+                              className="h-4 w-4"
+                            />
+                          </span>
+                        </div>
                       </div>
 
                       {isExpanded &&

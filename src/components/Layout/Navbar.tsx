@@ -18,7 +18,7 @@ const Navbar = () => {
 
         {/* Desktop Menu */}
 
-        <div className="hidden md:flex gap-5 font-semibold text-lg">
+        <div className="hidden md:flex gap-5 font-semibold text-base">
           <NavLink
             to="/"
             className={({ isActive }) =>
@@ -77,7 +77,7 @@ const Navbar = () => {
                 : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
             }
           >
-            Information
+            Om Platsguiden
           </NavLink>
         </div>
 
@@ -176,7 +176,7 @@ const Navbar = () => {
                 }
                 onClick={handleMenuClick}
               >
-                Information
+                Om Platsguiden
               </NavLink>
             </nav>
 

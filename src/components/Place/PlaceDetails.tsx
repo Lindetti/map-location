@@ -24,6 +24,9 @@ const PlaceDetails = ({
 
   const handleConfirmGPS = () => {
     onTogglePositionFixed();
+    if (!showUserPosition) {
+      onShowUserPosition();
+    }
     setShowGPSModal(false);
   };
 
@@ -193,8 +196,9 @@ const PlaceDetails = ({
 
             <div className="flex justify-between mt-2">
               <button
-                className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={onShowUserPosition}
+                disabled={isPositionFixed}
               >
                 Visa min position
               </button>
