@@ -9,7 +9,7 @@ import PlaceCard from "../Place/PlaceCard";
 import PlaceDetails from "../Place/PlaceDetails";
 import LoadMoreButtons from "../Place/LoadMoreButton";
 import AutoLocationUpdater from "../AutoLocationUpdater";
-import HotelIcon from "../../assets/icons/hotel.png";
+import FuelIcon from "../../assets/icons/gas.png";
 
 const Transport = () => {
   const [fuelStations, setFuelStations] = useState<Place[]>([]);
@@ -240,7 +240,7 @@ const Transport = () => {
                 <PlaceCard
                   place={station}
                   isExpanded={expandedIndex === index}
-                  icon={HotelIcon}
+                  icon={FuelIcon}
                   typeLabel="Bensinstation"
                   onClick={() => {
                     setExpandedIndex(index === expandedIndex ? -1 : index);
@@ -265,7 +265,7 @@ const Transport = () => {
                 {isExpanded && (
                   <PlaceDetails
                     place={station}
-                    icon={HotelIcon}
+                    icon={FuelIcon}
                     onShowUserPosition={handleShowUserPosition}
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}

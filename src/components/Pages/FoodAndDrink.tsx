@@ -39,7 +39,6 @@ const FoodAndDrink = () => {
     { label: "Snabbmat", singularLabel: "Snabbmat", value: "fast_food" },
     { label: "Caféer", singularLabel: "Café", value: "cafe" },
     { label: "Barer", singularLabel: "Bar", value: "bar" },
-    { label: "Mataffärer", singularLabel: "Mataffär", value: "supermarket" },
   ];
 
   const getUserLocation = useCallback(async () => {
