@@ -5,6 +5,7 @@ import Navbar from "./components/Layout/Navbar";
 import Home from "./components/Pages/Home";
 import FoodAndDrink from "./components/Pages/FoodAndDrink";
 import Shops from "./components/Pages/Shops";
+import Transport from "./components/Pages/Transport";
 import Hotel from "./components/Pages/Hotel";
 import About from "./components/Pages/About";
 import Footer from "./components/Layout/Footer";
@@ -20,6 +21,7 @@ function App() {
             <Route path="/mat&dryck" element={<FoodAndDrink />} />
             <Route path="/butiker" element={<Shops />} />
             <Route path="/boende" element={<Hotel />} />
+            <Route path="/bensinstationer" element={<Transport />} />
             <Route path="/om" element={<About />} />
           </Routes>
         </CityProvider>

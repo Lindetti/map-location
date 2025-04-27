@@ -81,7 +81,9 @@ export type PlaceType =
   | "after_party"
   | "alcohol"
   | "hotel"
-  | "hostel";
+  | "hostel"
+  | "fuel"
+  | "convenience";
 
 export const isPlaceType = (value: string): value is PlaceType => {
   return [

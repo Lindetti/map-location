@@ -15,7 +15,7 @@ const About = () => {
             Oavsett om du är sugen på att prova en ny restaurang till lunch,
             hitta ett café för en kopp kaffe eller utforska områdets bästa
             barer, erbjuder Platsguiden en enkel och snabb översikt över de
-            bästa alternativen i närheten. 😃
+            bästa alternativen i närheten. 
           </p>
         </div>
 
