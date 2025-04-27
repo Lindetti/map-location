@@ -16,7 +16,7 @@ const Header = ({
   isHome = false,
 }: HeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+
   return (
     <div className=" flex flex-col gap-4 w-full md:w-2/4 mt-3 md:mt-2">
       {isHome ? (

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   Place,
   OverpassElement,
@@ -6,7 +6,6 @@ import {
   iconMapping,
 } from "../../Interfaces";
 import { useCity } from "../../CityContext";
-import { useRef } from "react";
 import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
 import Header from "../Layout/Header";
@@ -26,6 +25,8 @@ const FoodAndDrink = () => {
   const [showUserPosition, setShowUserPosition] = useState(false);
   const [showPolyline, setShowPolyline] = useState(false);
   const [selectedType, setSelectedType] = useState<PlaceType>("restaurant");
+  const [isPositionFixed, setIsPositionFixed] = useState(false);
+  const positionWatchId = useRef<number | null>(null);
   const placeOptions: {
     label: string;
     singularLabel: string;
@@ -205,6 +206,77 @@ const FoodAndDrink = () => {
     return distance;
   }
 
+  const calculateWalkingTime = (distance: number): number => {
+    const walkingSpeed = 5; // km/h
+    const timeInHours = distance / walkingSpeed;
+    const timeInMinutes = Math.round(timeInHours * 60);
+    return timeInMinutes;
+  };
+
+  const handlePositionUpdate = useCallback(
+    (position: GeolocationPosition) => {
+      if (!isPositionFixed) return;
+
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      setFoodAndDrink((prevPlaces) =>
+        prevPlaces.map((place) => ({
+          ...place,
+          distance: getDistance(userLat, userLon, place.lat, place.lon),
+        }))
+      );
+    },
+    [isPositionFixed]
+  );
+
+  useEffect(() => {
+    if (isPositionFixed) {
+      positionWatchId.current = navigator.geolocation.watchPosition(
+        handlePositionUpdate,
+        (error) => console.error("Error watching position:", error),
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
+    } else if (positionWatchId.current !== null) {
+      navigator.geolocation.clearWatch(positionWatchId.current);
+      positionWatchId.current = null;
+    }
+
+    return () => {
+      if (positionWatchId.current !== null) {
+        navigator.geolocation.clearWatch(positionWatchId.current);
+      }
+    };
+  }, [isPositionFixed, handlePositionUpdate]);
+
+  const handleExpand = (index: number) => {
+    // Release position when expanding a different restaurant or collapsing
+    if (index !== expandedIndex) {
+      setIsPositionFixed(false);
+    }
+
+    setExpandedIndex(index === expandedIndex ? -1 : index);
+    setShowUserPosition(false);
+    setShowPolyline(false);
+
+    setTimeout(() => {
+      const element = restaurantRefs.current[index];
+      const offset = 50;
+
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        window.scrollTo({
+          top: window.scrollY + rect.top - offset,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  };
+
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
@@ -223,7 +295,7 @@ const FoodAndDrink = () => {
       <AutoLocationUpdater onLocationUpdate={getUserLocation} />
 
       {isLoading ? (
-        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[400px]">
+        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[500px]">
           <p>Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
@@ -277,24 +349,8 @@ const FoodAndDrink = () => {
                     placeOptions.find((opt) => opt.value === selectedType)
                       ?.singularLabel || "Restaurang"
                   }
-                  onClick={() => {
-                    setExpandedIndex(index === expandedIndex ? -1 : index);
-                    setShowUserPosition(false);
-                    setShowPolyline(false);
-
-                    setTimeout(() => {
-                      const element = restaurantRefs.current[index];
-                      const offset = 50;
-
-                      if (element) {
-                        const rect = element.getBoundingClientRect();
-                        window.scrollTo({
-                          top: window.scrollY + rect.top - offset,
-                          behavior: "smooth",
-                        });
-                      }
-                    }, 100);
-                  }}
+                  walkingTime={calculateWalkingTime(foodplace.distance)}
+                  onClick={() => handleExpand(index)}
                 />
 
                 {isExpanded && (
@@ -305,6 +361,10 @@ const FoodAndDrink = () => {
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}
                     city={city ?? undefined}
+                    isPositionFixed={isPositionFixed}
+                    onTogglePositionFixed={() =>
+                      setIsPositionFixed(!isPositionFixed)
+                    }
                   />
                 )}
               </motion.div>

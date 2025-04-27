@@ -21,6 +21,8 @@ const Hotel = () => {
   const hotelRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showUserPosition, setShowUserPosition] = useState(false);
   const [showPolyline, setShowPolyline] = useState(false);
+  const [isPositionFixed, setIsPositionFixed] = useState(false);
+  const positionWatchId = useRef<number | null>(null);
 
   const getUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -145,6 +147,46 @@ const Hotel = () => {
     );
   }, []);
 
+  const handlePositionUpdate = useCallback(
+    (position: GeolocationPosition) => {
+      if (!isPositionFixed) return;
+
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      setHotels((prevPlaces) =>
+        prevPlaces.map((place) => ({
+          ...place,
+          distance: getDistance(userLat, userLon, place.lat, place.lon),
+        }))
+      );
+    },
+    [isPositionFixed]
+  );
+
+  useEffect(() => {
+    if (isPositionFixed) {
+      positionWatchId.current = navigator.geolocation.watchPosition(
+        handlePositionUpdate,
+        (error) => console.error("Error watching position:", error),
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
+    } else if (positionWatchId.current !== null) {
+      navigator.geolocation.clearWatch(positionWatchId.current);
+      positionWatchId.current = null;
+    }
+
+    return () => {
+      if (positionWatchId.current !== null) {
+        navigator.geolocation.clearWatch(positionWatchId.current);
+      }
+    };
+  }, [isPositionFixed, handlePositionUpdate]);
+
   useEffect(() => {
     getUserLocation();
   }, [getUserLocation]);
@@ -193,6 +235,30 @@ const Hotel = () => {
     }
   }
 
+  const handleExpand = (index: number) => {
+    // Release position when expanding a different hotel or collapsing
+    if (index !== expandedIndex) {
+      setIsPositionFixed(false);
+    }
+
+    setExpandedIndex(index === expandedIndex ? -1 : index);
+    setShowUserPosition(false);
+    setShowPolyline(false);
+
+    setTimeout(() => {
+      const element = hotelRefs.current[index];
+      const offset = 50;
+
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        window.scrollTo({
+          top: window.scrollY + rect.top - offset,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  };
+
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
@@ -206,7 +272,7 @@ const Hotel = () => {
       <AutoLocationUpdater onLocationUpdate={getUserLocation} />
 
       {isLoading ? (
-        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[400px]">
+        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[500px]">
           <p>Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
@@ -225,7 +291,7 @@ const Hotel = () => {
         </div>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
-          {hotels.slice(0, visibleCount).map((hotels, index) => {
+          {hotels.slice(0, visibleCount).map((hotel, index) => {
             const isExpanded = index === expandedIndex;
 
             return (
@@ -252,37 +318,24 @@ const Hotel = () => {
                 `}
               >
                 <PlaceCard
-                  place={hotels}
+                  place={hotel}
                   isExpanded={expandedIndex === index}
                   icon={HotelIcon}
-                  typeLabel={hotels.typeLabel}
-                  onClick={() => {
-                    setExpandedIndex(index === expandedIndex ? -1 : index);
-                    setShowUserPosition(false);
-                    setShowPolyline(false);
-
-                    setTimeout(() => {
-                      const element = hotelRefs.current[index];
-                      const offset = 50;
-
-                      if (element) {
-                        const rect = element.getBoundingClientRect();
-                        window.scrollTo({
-                          top: window.scrollY + rect.top - offset,
-                          behavior: "smooth",
-                        });
-                      }
-                    }, 100);
-                  }}
+                  typeLabel={hotel.typeLabel}
+                  onClick={() => handleExpand(index)}
                 />
                 {isExpanded && (
                   <PlaceDetails
-                    place={hotels}
+                    place={hotel}
                     icon={HotelIcon}
                     onShowUserPosition={handleShowUserPosition}
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}
                     city={city ?? undefined}
+                    isPositionFixed={isPositionFixed}
+                    onTogglePositionFixed={() =>
+                      setIsPositionFixed(!isPositionFixed)
+                    }
                   />
                 )}
               </motion.div>

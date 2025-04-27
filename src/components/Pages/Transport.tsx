@@ -12,15 +12,17 @@ import AutoLocationUpdater from "../AutoLocationUpdater";
 import FuelIcon from "../../assets/icons/gas.png";
 
 const Transport = () => {
-  const [fuelStations, setFuelStations] = useState<Place[]>([]);
+  const [transport, setTransport] = useState<Place[]>([]);
   const { city, setCity } = useCity();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
-  const fuelRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const transportRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showUserPosition, setShowUserPosition] = useState(false);
   const [showPolyline, setShowPolyline] = useState(false);
+  const [isPositionFixed, setIsPositionFixed] = useState(false);
+  const positionWatchId = useRef<number | null>(null);
 
   const getUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -31,7 +33,7 @@ const Transport = () => {
 
     setIsLoading(true);
     setError(null);
-    setFuelStations([]);
+    setTransport([]);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -95,7 +97,7 @@ const Transport = () => {
             (a: Place, b: Place) => a.distance - b.distance
           );
 
-          setFuelStations(sortedPlaces.slice(0, 15));
+          setTransport(sortedPlaces.slice(0, 15));
 
           if (!city) {
             const firstValidCity = sortedPlaces.find(
@@ -179,6 +181,69 @@ const Transport = () => {
     return distance;
   }
 
+  const handlePositionUpdate = useCallback(
+    (position: GeolocationPosition) => {
+      if (!isPositionFixed) return;
+
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      setTransport((prevPlaces) =>
+        prevPlaces.map((place) => ({
+          ...place,
+          distance: getDistance(userLat, userLon, place.lat, place.lon),
+        }))
+      );
+    },
+    [isPositionFixed]
+  );
+
+  useEffect(() => {
+    if (isPositionFixed) {
+      positionWatchId.current = navigator.geolocation.watchPosition(
+        handlePositionUpdate,
+        (error) => console.error("Error watching position:", error),
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
+    } else if (positionWatchId.current !== null) {
+      navigator.geolocation.clearWatch(positionWatchId.current);
+      positionWatchId.current = null;
+    }
+
+    return () => {
+      if (positionWatchId.current !== null) {
+        navigator.geolocation.clearWatch(positionWatchId.current);
+      }
+    };
+  }, [isPositionFixed, handlePositionUpdate]);
+
+  const handleExpand = (index: number) => {
+    if (index !== expandedIndex) {
+      setIsPositionFixed(false);
+    }
+
+    setExpandedIndex(index === expandedIndex ? -1 : index);
+    setShowUserPosition(false);
+    setShowPolyline(false);
+
+    setTimeout(() => {
+      const element = transportRefs.current[index];
+      const offset = 50;
+
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        window.scrollTo({
+          top: window.scrollY + rect.top - offset,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  };
+
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
@@ -192,7 +257,7 @@ const Transport = () => {
       <AutoLocationUpdater onLocationUpdate={getUserLocation} />
 
       {isLoading ? (
-        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[400px]">
+        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[500px]">
           <p>Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
@@ -200,7 +265,7 @@ const Transport = () => {
         <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
           <p className="text-red-500 font-semibold">{error}</p>
         </div>
-      ) : fuelStations.length === 0 ? (
+      ) : transport.length === 0 ? (
         <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
           <p className="text-gray-600 font-medium">
             Inga bensinstationer hittades i närheten av din nuvarande position.
@@ -211,14 +276,14 @@ const Transport = () => {
         </div>
       ) : (
         <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
-          {fuelStations.slice(0, visibleCount).map((station, index) => {
+          {transport.slice(0, visibleCount).map((station, index) => {
             const isExpanded = index === expandedIndex;
 
             return (
               <motion.div
                 key={index}
                 ref={(el) => {
-                  fuelRefs.current[index] = el;
+                  transportRefs.current[index] = el;
                 }}
                 initial={{ opacity: 0, x: -70 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -242,24 +307,7 @@ const Transport = () => {
                   isExpanded={expandedIndex === index}
                   icon={FuelIcon}
                   typeLabel="Bensinstation"
-                  onClick={() => {
-                    setExpandedIndex(index === expandedIndex ? -1 : index);
-                    setShowUserPosition(false);
-                    setShowPolyline(false);
-
-                    setTimeout(() => {
-                      const element = fuelRefs.current[index];
-                      const offset = 50;
-
-                      if (element) {
-                        const rect = element.getBoundingClientRect();
-                        window.scrollTo({
-                          top: window.scrollY + rect.top - offset,
-                          behavior: "smooth",
-                        });
-                      }
-                    }, 100);
-                  }}
+                  onClick={() => handleExpand(index)}
                 />
 
                 {isExpanded && (
@@ -270,6 +318,10 @@ const Transport = () => {
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}
                     city={city ?? undefined}
+                    isPositionFixed={isPositionFixed}
+                    onTogglePositionFixed={() =>
+                      setIsPositionFixed(!isPositionFixed)
+                    }
                   />
                 )}
               </motion.div>
@@ -278,7 +330,7 @@ const Transport = () => {
         </div>
       )}
 
-      {fuelStations.length > 5 && (
+      {transport.length > 5 && (
         <LoadMoreButtons
           isLoading={isLoading}
           visibleCount={visibleCount}
@@ -290,7 +342,7 @@ const Transport = () => {
         />
       )}
 
-      {fuelStations.length > 0 && (
+      {transport.length > 0 && (
         <p className="text-sm text-gray-600 mt-4 text-center">
           Observera: Viss information kan vara inaktuell. Vissa platser kan ha
           stängt permanent, flyttat eller förändrats utan att det ännu har
