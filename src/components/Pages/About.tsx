@@ -1,81 +1,159 @@
 import { motion } from "framer-motion";
+import HeroImage from "../../assets/homeImages/about.jpg";
 
 const About = () => {
   return (
     <motion.div
       className="w-full p-5 flex flex-col justify-center items-center mb-5 mt-3 md:mt-2 md:mb-0"
-      initial={{ opacity: 0, y: 50, scale: 0.95 }} // Börja osynlig, lite nedanför och något mindre
-      animate={{ opacity: 1, y: 0, scale: 1 }} // Fade in till fullt synlig, på plats och full storlek
-      transition={{ duration: 0.5, ease: "easeOut" }} // 1 sekund lång animation med mjuk easing
+      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="flex flex-col gap-2 w-full md:w-2/4">
-        <div className="flex flex-col gap-2 leading-7">
-          <h1 className="text-lg font-semibold">Hitta Ställen Nära Dig</h1>
-          <p>
-            Oavsett om du är sugen på att prova en ny restaurang till lunch,
-            hitta ett café för en kopp kaffe eller utforska områdets bästa
-            barer, erbjuder Platsguiden en enkel och snabb översikt över de
-            bästa alternativen i närheten. 
-          </p>
+      <div className="flex flex-col gap-8 w-full md:w-2/4">
+        {/* Header Section */}
+        <div className="relative h-[300px] w-full rounded-md overflow-hidden shadow-md">
+          <img
+            src={HeroImage}
+            alt="Hero"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+            <div className="text-center text-white px-4">
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                Om Platsguiden<span className="text-orange-500">.</span>
+              </h1>
+              <p className="text-lg md:text-xl">
+                Din guide till de bästa platserna i närheten
+              </p>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-5 leading-7">
-          <div className="flex flex-col gap-3 mt-5 mb-3">
-            <h1 className="text-lg font-semibold">
-              Vad kan du göra på Platsguiden?
-            </h1>
-            <ul className="flex flex-col gap-3">
-              <li className="text-gray-800">
-                <span className="font-semibold text-black">
-                  Hitta närmaste platser:
-                </span>{" "}
-                Se de 15 närmaste restaurangerna, snabbmatsställen, kaffeer och
-                barer baserat på din plats. Du får även information om avstånd
-                och öppettider.
-              </li>
-
-              <li className="text-gray-800">
-                <span className="font-semibold text-black">
-                  Visa på karta:{" "}
-                </span>
-                Se varje restaurang eller bar på en interaktiv karta, med din
-                egen position för att göra det enklare att hitta dit.
-              </li>
-              <li className="text-gray-800">
-                <span className="font-semibold text-black">
-                  Detaljerad information:{" "}
-                </span>
-                Om telefonnummer, webbplats eller öppettider finns tillgängliga
-                visas dessa direkt. Saknas någon information kan du enkelt söka
-                efter platsen på internet via en smidig genväg.
-              </li>
-              <li className="text-gray-800">
-                <span className="font-semibold text-black">
-                  Exakt position:{" "}
-                </span>
-                På mobil används din GPS-position för bästa träff, medan
-                användare på datorer får en uppskattad plats baserat på
-                IP-adressen (vilket kan vara något mindre exakt).
-              </li>
-            </ul>
+        {/* Main Content */}
+        <div className="flex flex-col gap-8">
+          {/* Introduction */}
+          <div className="flex flex-col gap-4">
+            <h2 className="text-lg md:text-2xl font-semibold text-gray-800">
+              Hitta Ställen Nära Dig
+            </h2>
+            <p className="text-gray-600 leading-relaxed">
+              Oavsett om du är sugen på att prova en ny restaurang till lunch,
+              hitta ett café för en kopp kaffe eller utforska områdets bästa
+              barer, erbjuder Platsguiden en enkel och snabb översikt över de
+              bästa alternativen i närheten.
+            </p>
           </div>
-          <div className="flex flex-col gap-2  mb-3">
-            <h1 className="text-lg font-semibold">Kategorier i Platsguiden:</h1>
-            <ul className="flex flex-col gap-2">
-              <li className="text-gray-800">
-                <span className="font-semibold text-black">Mat & Dryck:</span>{" "}
-                Restauranger, snabbmat, kaffeer och barer.
-              </li>
 
-              <li className="text-gray-800">
-                <span className="font-semibold text-black">Butiker: </span>
-                Klädbutiker, skobutiker, elektronikbutiker och Systembolaget.
-              </li>
-              <li className="text-gray-800">
-                <span className="font-semibold text-black">Boende: </span>
-                Hotell och vandrarhem
-              </li>
-            </ul>
+          {/* Features */}
+          <div className="flex flex-col gap-6">
+            <h2 className="text-lg md:text-2xl font-semibold text-gray-800">
+              Vad kan du göra på Platsguiden
+              <span className="text-orange-500">?</span>
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Hitta närmaste platser 📍
+                </h3>
+                <p className="text-gray-600">
+                  Se de 15 närmaste restaurangerna, snabbmatsställen, kaffeer
+                  och barer baserat på din plats. Du får även information om
+                  avstånd och öppettider.
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Visa på karta 🗺️
+                </h3>
+                <p className="text-gray-600">
+                  Se varje restaurang eller bar på en interaktiv karta, med din
+                  egen position för att göra det enklare att hitta dit.
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Detaljerad information ℹ️
+                </h3>
+                <p className="text-gray-600">
+                  Om telefonnummer, webbplats eller öppettider finns
+                  tillgängliga visas dessa direkt. Saknas någon information kan
+                  du enkelt söka efter platsen på internet via en smidig genväg.
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Exakt position 📡
+                </h3>
+                <p className="text-gray-600">
+                  På mobil används din GPS-position för bästa träff, medan
+                  användare på datorer får en uppskattad plats baserat på
+                  IP-adressen (vilket kan vara något mindre exakt).
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Aktivera GPS 📡
+                </h3>
+                <p className="text-gray-600">
+                  Med funktionen "Aktivera GPS" får du realtidsuppdatering av
+                  din position och den valda platsen, så att du alltid vet var
+                  du är och om du börjar närma dig stället du letar efter.
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Väder på aktuell plats 🌤️
+                </h3>
+                <p className="text-gray-600">
+                  Få väderinformation baserat på din aktuella position – så att
+                  du alltid vet om det är bra väder att ge sig ut på en promenad
+                  till din nästa destination.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Categories */}
+          <div className="flex flex-col gap-6">
+            <h2 className="text-lg md:text-2xl font-semibold text-gray-800">
+              Kategorier i Platsguiden
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Mat & Dryck
+                </h3>
+                <p className="text-gray-600">
+                  Restauranger, snabbmat, kaffeer och barer
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">Butiker</h3>
+                <p className="text-gray-600">
+                  Livsmedel, kläder, skor, elektronik och Systembolag
+                </p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">Boende</h3>
+                <p className="text-gray-600">Hotell och vandrarhem</p>
+              </div>
+
+              <div className="p-4 bg-white rounded-lg shadow-sm">
+                <h3 className="font-semibold text-gray-800 mb-2">
+                  Bensinstationer
+                </h3>
+                <p className="text-gray-600">
+                  Hitta närmaste bensinstationer för att tanka din bil
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

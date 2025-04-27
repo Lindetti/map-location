@@ -314,7 +314,7 @@ const Shops = () => {
   };
 
   return (
-    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
+    <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2 min-h-[calc(100vh-280px)]">
       <Header
         city={city ?? undefined} // Tar första restaurangens stad (om det finns någon)
         isLoading={isLoading}
@@ -328,7 +328,9 @@ const Shops = () => {
         showTypeSelect={true}
       />
 
-      <AutoLocationUpdater onLocationUpdate={getUserLocation} />
+      {!isPositionFixed && (
+        <AutoLocationUpdater onLocationUpdate={getUserLocation} />
+      )}
 
       {isLoading ? (
         <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[500px]">
@@ -350,7 +352,7 @@ const Shops = () => {
           </p>
         </div>
       ) : (
-        <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
+        <div className="w-full md:w-2/4 flex flex-col gap-4  min-h-[500px] ">
           {shops.slice(0, visibleCount).map((shop, index) => {
             const isExpanded = index === expandedIndex;
 
