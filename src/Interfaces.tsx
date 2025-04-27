@@ -7,6 +7,8 @@ import CafeIcon from "./assets/icons/cafe.png";
 import FastFoodIcon from "./assets/icons/fastfood.png";
 import AlcoholIcon from "./assets/icons/alcohol.png";
 import HotelIcon from "./assets/icons/hotel.png";
+import SuperMarketIcon from "./assets/icons/grocery.png";
+import FuelIcon from "./assets/icons/gas.png";
 
 export interface Place {
   name: string;
@@ -81,7 +83,9 @@ export type PlaceType =
   | "after_party"
   | "alcohol"
   | "hotel"
-  | "hostel";
+  | "hostel"
+  | "fuel"
+  | "convenience";
 
 export const isPlaceType = (value: string): value is PlaceType => {
   return [
@@ -98,6 +102,8 @@ export const isPlaceType = (value: string): value is PlaceType => {
     "cafe",
     "after_party",
     "alcohol",
+    "fuel",
+    "convenience",
   ].includes(value);
 };
 
@@ -108,7 +114,7 @@ export const iconMapping: { [key in PlaceType]: string } = {
   pub: BarIcon, // Placeholder icon for pub
   clothes: ClothesIcon,
   shoes: ShoesIcon,
-  supermarket: ElectronicsIcon, // Placeholder icon for supermarket
+  supermarket: SuperMarketIcon, // Placeholder icon for supermarket
   electronics: ElectronicsIcon,
   nightclub: ClothesIcon, // Placeholder icon for flowers
   cafe: CafeIcon,
@@ -117,6 +123,8 @@ export const iconMapping: { [key in PlaceType]: string } = {
   alcohol: AlcoholIcon, // Placeholder icon for concert hall
   hotel: HotelIcon,
   hostel: HotelIcon,
+  fuel: FuelIcon,
+  convenience: SuperMarketIcon,
 };
 
 export interface LoadMoreButtonProps {

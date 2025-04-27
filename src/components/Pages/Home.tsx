@@ -145,7 +145,7 @@ const Home = () => {
       const query = `
         [out:json][timeout:25];
         (
-          node(around:10000,${latitude},${longitude})["amenity"~"restaurant|fast_food|bar|cafe|bar|hotel|hostel"];
+          node(around:10000,${latitude},${longitude})["amenity"~"restaurant|fast_food|bar|cafe|bar|hotel|hostel|shops"];
           node(around:10000,${latitude},${longitude})["place"];
         );
         out body;
@@ -371,7 +371,7 @@ const Home = () => {
             className="flex-1 flex flex-col gap-4"
           >
             <div className=" flex flex-col md:flex-row gap-4">
-              <div className="flex-1 h-[280px] shadow-sm rounded-md">
+              <div className="flex-1 h-[300px] shadow-sm rounded-md">
                 <img
                   className="object-cover h-full w-full rounded-md shadow-sm"
                   src={HomeImage}
@@ -379,7 +379,7 @@ const Home = () => {
                 />
               </div>
 
-              <div className=" bg-gray-100 py-5 md:py-0 h-[80px] md:h-[280px] shadow-sm rounded-md flex flex-row md:flex-col gap-5 items-center justify-center w-full md:w-[250px] p-4">
+              <div className=" bg-gray-100 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-5 items-center justify-center w-full md:w-[250px] p-4">
                 <h1 className="hidden md:block text-center font-semibold text-base">
                   Snabbval
                 </h1>
@@ -401,6 +401,12 @@ const Home = () => {
                   to="/boende"
                 >
                   Boende
+                </Link>
+                <Link
+                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 w-[120px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                  to="/bensinstationer"
+                >
+                  Bensinstationer
                 </Link>
               </div>
             </div>
