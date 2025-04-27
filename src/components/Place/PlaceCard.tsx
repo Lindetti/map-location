@@ -70,12 +70,16 @@ const PlaceCard = ({
           </div>
         </div>
 
-        <div className="bg-[#FFF8F5] h-[36px] flex items-center rounded-md">
-          <p className="text-[#C53C07] font-semibold p-2 text-sm md:text-base ">
-            {place.distance < 1
-              ? `${Math.round(place.distance * 1000)} m`
-              : `${place.distance.toFixed(2)} km`}
-          </p>
+        <div className="flex flex-col items-end gap-1">
+          <div className="bg-[#FFF8F5] h-[36px] flex items-center rounded-md">
+            <div className="flex items-center gap-2 p-2">
+              <p className="text-[#C53C07] font-semibold text-sm md:text-base">
+                {place.distance < 1
+                  ? `${Math.round(place.distance * 1000)} m`
+                  : `${place.distance.toFixed(2)} km`}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -140,6 +140,7 @@ export interface PlaceCardProps {
   onClick: () => void;
   typeLabel?: string;
   icon?: string;
+  walkingTime?: number;
 }
 
 export interface PlaceDetailsProps {
@@ -147,7 +148,8 @@ export interface PlaceDetailsProps {
   onShowUserPosition: () => void;
   showUserPosition: boolean;
   showPolyline: boolean;
-  typeLabel?: string;
-  icon?: string;
+  icon: string;
   city?: string;
+  isPositionFixed: boolean;
+  onTogglePositionFixed: () => void;
 }

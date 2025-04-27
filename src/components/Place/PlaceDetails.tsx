@@ -4,6 +4,7 @@ import Phone from "../../assets/icons/phone.png";
 import Email from "../../assets/icons/email.png";
 import Link from "../../assets/icons/link.png";
 import Open from "../../assets/icons/open.png";
+import { useState } from "react";
 
 const PlaceDetails = ({
   place,
@@ -12,7 +13,20 @@ const PlaceDetails = ({
   showPolyline,
   icon,
   city,
+  isPositionFixed,
+  onTogglePositionFixed,
 }: PlaceDetailsProps) => {
+  const [showGPSModal, setShowGPSModal] = useState(false);
+
+  const handleGPSActivation = () => {
+    setShowGPSModal(true);
+  };
+
+  const handleConfirmGPS = () => {
+    onTogglePositionFixed();
+    setShowGPSModal(false);
+  };
+
   const translateCuisine = (cuisine: string): string => {
     const translations: Record<string, string> = {
       burger: "Hamburgare",
@@ -63,7 +77,7 @@ const PlaceDetails = ({
       </div>
 
       <div className="flex flex-col gap-8 md:gap-0 md:flex-row md:justify-between md:items-center">
-        <div className="flex flex-col gap-5 p-2 w-full ">
+        <div className="flex flex-col gap-5 p-2 w-full">
           <div className="flex flex-col gap-2">
             {place.cuisine && (
               <div className="flex gap-2 items-center">
@@ -150,40 +164,84 @@ const PlaceDetails = ({
             </div>
           )}
 
-          <div className="flex justify-between p-1">
-            {place.website ? (
-              <a
-                href={place.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
-              >
-                <img src={Link} alt="link icon" className="h-4 w-4" />
-                Besök webbplats
-              </a>
-            ) : (
-              <a
-                href={`https://www.google.com/search?q=${encodeURIComponent(
-                  place.name + " " + city
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
-              >
-                <img src={Link} alt="link icon" className="h-4 w-4" />
-                Sök på Google
-              </a>
-            )}
+          <div className="flex flex-col gap-4 p-1">
+            <div className="flex flex-col gap-2">
+              {place.website ? (
+                <a
+                  href={place.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                >
+                  <img src={Link} alt="link icon" className="h-4 w-4" />
+                  Besök webbplats
+                </a>
+              ) : (
+                <a
+                  href={`https://www.google.com/search?q=${encodeURIComponent(
+                    place.name + " " + city
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                >
+                  <img src={Link} alt="link icon" className="h-4 w-4" />
+                  Sök på Google
+                </a>
+              )}
+            </div>
 
-            <button
-              className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-              onClick={onShowUserPosition}
-            >
-              Visa min position
-            </button>
+            <div className="flex justify-between mt-2">
+              <button
+                className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                onClick={onShowUserPosition}
+              >
+                Visa min position
+              </button>
+              <button
+                className={`group flex items-center gap-2 text-sm px-3 h-[35px] border rounded font-semibold transition ${
+                  isPositionFixed
+                    ? "bg-[#C53C07] text-white border-[#C53C07]"
+                    : "bg-[#FCF9F8] text-black border-gray-300 hover:bg-[#FFF8F5] hover:text-[#C53C07]"
+                }`}
+                onClick={
+                  isPositionFixed ? onTogglePositionFixed : handleGPSActivation
+                }
+              >
+                {isPositionFixed ? "Avaktivera GPS" : "Aktivera GPS"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* GPS Activation Modal */}
+      {showGPSModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md mx-4">
+            <h2 className="text-xl font-semibold mb-4">Aktivera GPS</h2>
+            <p className="text-gray-600 mb-6">
+              När du aktiverar GPS kommer din position att uppdateras i realtid
+              på kartan. Avståndet till platsen kommer att uppdateras
+              automatiskt när du rör dig.
+            </p>
+            <div className="flex justify-end gap-4">
+              <button
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                onClick={() => setShowGPSModal(false)}
+              >
+                Avbryt
+              </button>
+              <button
+                className="px-4 py-2 bg-[#F97316] text-white rounded hover:bg-[#C2410C]"
+                onClick={handleConfirmGPS}
+              >
+                Aktivera
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

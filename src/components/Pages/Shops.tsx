@@ -25,6 +25,8 @@ const Shops = () => {
   const shopsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [showUserPosition, setShowUserPosition] = useState(false);
   const [showPolyline, setShowPolyline] = useState(false);
+  const [isPositionFixed, setIsPositionFixed] = useState(false);
+  const positionWatchId = useRef<number | null>(null);
   const [selectedType, setSelectedType] = useState<PlaceType>("supermarket");
   const placeOptions: {
     label: string;
@@ -209,6 +211,46 @@ const Shops = () => {
     );
   }, [selectedType, city, setCity]);
 
+  const handlePositionUpdate = useCallback(
+    (position: GeolocationPosition) => {
+      if (!isPositionFixed) return;
+
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      setShops((prevPlaces) =>
+        prevPlaces.map((place) => ({
+          ...place,
+          distance: getDistance(userLat, userLon, place.lat, place.lon),
+        }))
+      );
+    },
+    [isPositionFixed]
+  );
+
+  useEffect(() => {
+    if (isPositionFixed) {
+      positionWatchId.current = navigator.geolocation.watchPosition(
+        handlePositionUpdate,
+        (error) => console.error("Error watching position:", error),
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0,
+        }
+      );
+    } else if (positionWatchId.current !== null) {
+      navigator.geolocation.clearWatch(positionWatchId.current);
+      positionWatchId.current = null;
+    }
+
+    return () => {
+      if (positionWatchId.current !== null) {
+        navigator.geolocation.clearWatch(positionWatchId.current);
+      }
+    };
+  }, [isPositionFixed, handlePositionUpdate]);
+
   useEffect(() => {
     getUserLocation();
   }, [getUserLocation]);
@@ -247,6 +289,30 @@ const Shops = () => {
     return distance;
   }
 
+  const handleExpand = (index: number) => {
+    // Release position when expanding a different shop or collapsing
+    if (index !== expandedIndex) {
+      setIsPositionFixed(false);
+    }
+
+    setExpandedIndex(index === expandedIndex ? -1 : index);
+    setShowUserPosition(false);
+    setShowPolyline(false);
+
+    setTimeout(() => {
+      const element = shopsRefs.current[index];
+      const offset = 50;
+
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        window.scrollTo({
+          top: window.scrollY + rect.top - offset,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  };
+
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2">
       <Header
@@ -265,7 +331,7 @@ const Shops = () => {
       <AutoLocationUpdater onLocationUpdate={getUserLocation} />
 
       {isLoading ? (
-        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[400px]">
+        <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[500px]">
           <p>Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
@@ -317,26 +383,9 @@ const Shops = () => {
                   icon={iconMapping[selectedType]}
                   typeLabel={
                     placeOptions.find((opt) => opt.value === selectedType)
-                      ?.singularLabel || "Restaurang"
+                      ?.singularLabel || "Butik"
                   }
-                  onClick={() => {
-                    setExpandedIndex(index === expandedIndex ? -1 : index);
-                    setShowUserPosition(false);
-                    setShowPolyline(false);
-
-                    setTimeout(() => {
-                      const element = shopsRefs.current[index];
-                      const offset = 50;
-
-                      if (element) {
-                        const rect = element.getBoundingClientRect();
-                        window.scrollTo({
-                          top: window.scrollY + rect.top - offset,
-                          behavior: "smooth",
-                        });
-                      }
-                    }, 100);
-                  }}
+                  onClick={() => handleExpand(index)}
                 />
 
                 {isExpanded && (
@@ -347,6 +396,10 @@ const Shops = () => {
                     showUserPosition={showUserPosition}
                     showPolyline={showPolyline}
                     city={city ?? undefined}
+                    isPositionFixed={isPositionFixed}
+                    onTogglePositionFixed={() =>
+                      setIsPositionFixed(!isPositionFixed)
+                    }
                   />
                 )}
               </motion.div>
