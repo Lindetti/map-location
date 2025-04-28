@@ -332,7 +332,7 @@ const Home = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full md:w-2/4 p-5 flex flex-col gap-4 mb-5 md:mt-2"
+      className="w-full md:w-2/4 p-5 flex flex-col gap-6 mb-5 md:mt-2"
     >
       <Header
         city={city ?? undefined}
@@ -382,15 +382,15 @@ const Home = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-col md:flex-row gap-4 mt-2"
+          className="flex flex-col md:flex-row gap-6 mt-2"
         >
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex-1 flex flex-col gap-4"
+            className="flex-1 flex flex-col gap-6"
           >
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-6">
               <div className="flex-1 h-[300px] md:h-[350px] shadow-sm rounded-md relative overflow-hidden">
                 <img
                   className="object-cover object-center h-full w-full rounded-md shadow-sm"
@@ -399,7 +399,7 @@ const Home = () => {
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                   <div className="text-center text-white px-4">
-                    <h1 className="text-3xl md:text-3xl font-bold mb-2">
+                    <h1 className="text-3xl md:text-4xl font-bold mb-3">
                       Upptäck platsen
                     </h1>
                     <p className="text-lg md:text-xl">
@@ -409,13 +409,13 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="bg-gray-100 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-5 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
+              <div className="bg-gray-100 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-4 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
                 <h1 className="hidden md:block text-center font-semibold text-base">
                   Snabbval
                 </h1>
 
                 <Link
-                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 md:w-[120px] w-[125px] text-sm  border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 md:w-[120px] w-[125px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
                   to="/mat&dryck"
                 >
                   Mat & Dryck
@@ -442,8 +442,8 @@ const Home = () => {
             </div>
             <div className="flex-2">
               {isLoading ? (
-                <div className=" h-[150px] flex flex-col gap-4 items-center justify-center ">
-                  <p>Hämtar aktuellt väder..</p>
+                <div className="h-[150px] flex flex-col gap-4 items-center justify-center">
+                  <p className="text-gray-600">Hämtar aktuellt väder..</p>
                   <ClipLoader color="#F97316" size={40} />
                 </div>
               ) : (
@@ -456,7 +456,7 @@ const Home = () => {
                   }`}
                 >
                   {weather && (
-                    <div className="flex gap-5 justify-center items-center w-full ">
+                    <div className="flex gap-6 justify-center items-center w-full">
                       <img
                         className="h-[120px] w-[120px]"
                         src={
@@ -466,9 +466,8 @@ const Home = () => {
                         }
                         alt="icon"
                       />
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-2">
                         <p className="font-semibold text-base">
-                          {" "}
                           Kl. {getCurrentTime()}
                         </p>
                         <p className="font-semibold text-4xl">
@@ -499,14 +498,14 @@ const Home = () => {
             {isLoading ? (
               <PulseLoader color="#F97316" size={5} />
             ) : (
-              <h1 className="text-center md:text-left font-sans font-semibold">
-                Dina fem närmaste platser just nu
+              <h1 className="font-sans font-semibold text-xl">
+                Dina närmaste platser just nu
               </h1>
             )}
 
             {isLoading ? (
               <div className="flex flex-col gap-3 justify-center items-center h-full">
-                <p>Hämtar din position..</p>
+                <p className="text-gray-600">Hämtar din position..</p>
                 <ClipLoader color="#F97316" size={40} />
               </div>
             ) : nearbyPlaces.length === 0 ? (
@@ -514,7 +513,7 @@ const Home = () => {
                 Inga platser hittades.
               </p>
             ) : (
-              <div className="flex flex-col gap-2 mb-2">
+              <div className="flex flex-col gap-3 mb-2">
                 {nearbyPlaces.map((place, index) => {
                   const isExpanded = index === expandedIndex;
                   let calculatedDistance = null;
@@ -546,7 +545,7 @@ const Home = () => {
                         ease: "easeOut",
                       }}
                       className={`
-                        bg-white w-full flex flex-col gap-5 p-3 md:p-5 text-black rounded-md shadow-sm
+                        bg-white w-full flex flex-col gap-4 p-4 md:p-5 text-black rounded-md shadow-sm
                         border transition-all duration-300
                         ${
                           expandedIndex === index
@@ -556,11 +555,11 @@ const Home = () => {
                       `}
                     >
                       <div
-                        className="flex flex-col gap-2 cursor-pointer"
+                        className="flex flex-col gap-3 cursor-pointer"
                         onClick={() => handleExpand(index)}
                       >
                         <div className="flex justify-between items-center">
-                          <div className="flex gap-1  max-w-[180px]">
+                          <div className="flex gap-2 max-w-[180px]">
                             <img
                               className="h-5 w-5"
                               src={IconComponent}
@@ -588,19 +587,19 @@ const Home = () => {
 
                         <div className="flex justify-between items-center">
                           {place.tags?.opening_hours ? (
-                        <div className="pl-4">
+                            <div className="pl-4">
                               <p
-                              className={`text-sm font-medium py-1 px-2 rounded-md text-white ${
-                                isOpen(place.tags.opening_hours)
-                                  ? "bg-green-600"
-                                  : "bg-red-500"
-                              }`}
-                            >
-                              {isOpen(place.tags.opening_hours)
-                                ? "Öppet"
-                                : "Stängt"}
-                            </p>
-                        </div>
+                                className={`text-sm font-medium py-1 px-2 rounded-md text-white ${
+                                  isOpen(place.tags.opening_hours)
+                                    ? "bg-green-600"
+                                    : "bg-red-500"
+                                }`}
+                              >
+                                {isOpen(place.tags.opening_hours)
+                                  ? "Öppet"
+                                  : "Stängt"}
+                              </p>
+                            </div>
                           ) : (
                             <div> </div>
                           )}
@@ -617,10 +616,10 @@ const Home = () => {
                       {isExpanded &&
                         place.lat !== undefined &&
                         place.lon !== undefined && (
-                          <div className="flex flex-col gap-3 p-2 border-t-2 h-400px]">
+                          <div className="flex flex-col gap-4 p-2 border-t-2">
                             <div className="h-[300px] mt-2 mb-2">
                               <Map
-                                lat={place.lat} // Exempel på en fast lat
+                                lat={place.lat}
                                 lon={place.lon}
                                 zoom={16}
                                 name={place.tags?.name}
@@ -628,7 +627,15 @@ const Home = () => {
                                 showPolyLine={showPolyline}
                               />
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex justify-start mb-4">
+                              <button
+                                className="flex items-center justify-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
+                                onClick={handleShowUserPosition}
+                              >
+                                Visa min position
+                              </button>
+                            </div>
+                            <div className="flex flex-col gap-3">
                               {place.tags?.cuisine && (
                                 <div className="flex gap-2 items-center">
                                   <img
@@ -636,27 +643,31 @@ const Home = () => {
                                     alt="link icon"
                                     className="h-6 w-6"
                                   />
-                                  {(place.tags?.cuisine ?? "")
-                                    .split(";")
-                                    .slice(0, 3)
-                                    .map((cuisine) => translateCuisine(cuisine))
-                                    .join(", ")}
+                                  <p className="text-gray-600">
+                                    {(place.tags?.cuisine ?? "")
+                                      .split(";")
+                                      .slice(0, 3)
+                                      .map((cuisine) =>
+                                        translateCuisine(cuisine)
+                                      )
+                                      .join(", ")}
+                                  </p>
                                 </div>
                               )}
 
                               <div className="flex flex-col gap-2">
                                 {place.tags?.brand && (
                                   <div className="flex gap-2 items-center">
-                                    <p className="text-gray-500"> Kedja:</p>
-                                    <p className="font-semibold text-gray-500">
+                                    <p className="text-gray-500">Kedja:</p>
+                                    <p className="font-semibold text-gray-700">
                                       {place.tags?.brand}
                                     </p>
                                   </div>
                                 )}
                                 {place.tags?.operator && (
                                   <div className="flex gap-2 items-center">
-                                    <p className="text-gray-500"> Kedja:</p>
-                                    <p className="font-semibold text-gray-500">
+                                    <p className="text-gray-500">Kedja:</p>
+                                    <p className="font-semibold text-gray-700">
                                       {place.tags?.operator}
                                     </p>
                                   </div>
@@ -697,20 +708,24 @@ const Home = () => {
                               </div>
                             </div>
                             {place.tags?.opening_hours && (
-                              <div className="flex flex-col gap-1">
+                              <div className="flex flex-col gap-2">
                                 <div className="flex gap-2 items-center">
                                   <img
                                     src={Open}
                                     alt="open icon"
                                     className="h-5 w-5"
                                   />
-                                  <p>Öppettider:</p>
+                                  <p className="font-semibold text-gray-700">
+                                    Öppettider:
+                                  </p>
                                 </div>
-                                <ul className="list-none pl-1 text-gray-500">
+                                <ul className="list-none pl-1 text-gray-600">
                                   {place.tags?.opening_hours
                                     .split(";")
                                     .map((hour, i) => (
-                                      <li key={i}>{hour.trim()}</li>
+                                      <li key={i} className="py-1">
+                                        {hour.trim()}
+                                      </li>
                                     ))}
                                 </ul>
                               </div>
@@ -762,13 +777,6 @@ const Home = () => {
                                   Sök på Google
                                 </a>
                               )}
-
-                              <button
-                                className="flex items-center justify-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                                onClick={handleShowUserPosition}
-                              >
-                                Visa min position
-                              </button>
                             </div>
                           </div>
                         )}
