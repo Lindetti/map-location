@@ -154,7 +154,7 @@ const Navbar = () => {
                 }
                 onClick={handleMenuClick}
               >
-                Hotell
+                Boende
               </NavLink>
               <NavLink
                 to="/bensinstationer"
