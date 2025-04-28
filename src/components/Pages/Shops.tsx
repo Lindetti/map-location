@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useCity } from "../../CityContext";
+import { useCity } from "../../context/CityContext";
 import {
   Place,
   OverpassElement,

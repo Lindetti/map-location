@@ -1,5 +1,5 @@
 import "./App.css";
-import { CityProvider } from "./CityContext";
+import { CityProvider } from "./context/CityContext";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Layout/Navbar";
 import Home from "./components/Pages/Home";

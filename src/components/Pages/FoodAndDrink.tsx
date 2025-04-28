@@ -5,7 +5,7 @@ import {
   PlaceType,
   iconMapping,
 } from "../../Interfaces";
-import { useCity } from "../../CityContext";
+import { useCity } from "../../context/CityContext";
 import { motion } from "framer-motion";
 import { ClipLoader } from "react-spinners";
 import Header from "../Layout/Header";
