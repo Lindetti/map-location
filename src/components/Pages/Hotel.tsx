@@ -40,12 +40,12 @@ const Hotel = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["tourism"="hotel"](around:10000,${userLat},${userLon});
-          way["tourism"="hotel"](around:10000,${userLat},${userLon});
-          relation["tourism"="hotel"](around:10000,${userLat},${userLon});
-          node["tourism"="hostel"](around:10000,${userLat},${userLon});
-          way["tourism"="hostel"](around:10000,${userLat},${userLon});
-          relation["tourism"="hostel"](around:10000,${userLat},${userLon});
+          node["tourism"="hotel"](around:5000,${userLat},${userLon});
+          way["tourism"="hotel"](around:5000,${userLat},${userLon});
+          relation["tourism"="hotel"](around:5000,${userLat},${userLon});
+          node["tourism"="hostel"](around:5000,${userLat},${userLon});
+          way["tourism"="hostel"](around:5000,${userLat},${userLon});
+          relation["tourism"="hostel"](around:5000,${userLat},${userLon});
         );
         out center;
       `;
@@ -189,6 +189,10 @@ const Hotel = () => {
     getUserLocation();
   }, [getUserLocation]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   function getDistance(
     lat1: number,
     lon1: number,
@@ -279,7 +283,7 @@ const Hotel = () => {
           </p>
         </div>
       ) : (
-        <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
+        <div className="w-full lg:w-2/4 flex flex-col gap-4 justify-center ">
           {hotels.slice(0, visibleCount).map((hotel, index) => {
             const isExpanded = index === expandedIndex;
 

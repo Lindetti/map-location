@@ -8,7 +8,7 @@ import type { MapHandle } from "../Map";
 
 // Define the structure for coordinates if needed elsewhere, otherwise inline
 type Coordinate = [number, number]; // Assuming [longitude, latitude] based on ORS
-type OrsProfile = "driving-car" | "foot-walking"; // Define allowed profiles
+type OrsProfile = "foot-walking" | "driving-car"; // Define allowed profiles
 
 // Remove onShowUserPosition and showUserPosition from props if they are only for the button
 interface MinimalPlaceDetailsProps {
@@ -19,7 +19,14 @@ interface MinimalPlaceDetailsProps {
   city: PlaceDetailsProps["city"]; // Keep city
 }
 
-const PlaceDetails = ({ place, icon, city }: MinimalPlaceDetailsProps) => {
+const PlaceDetails = ({
+  place,
+  // onShowUserPosition, // Removed
+  // showUserPosition, // Removed
+  // showPolyline, // Removed
+  icon,
+  city,
+}: MinimalPlaceDetailsProps) => {
   const [showMapModal, setShowMapModal] = useState(false);
   const [currentDistance, setCurrentDistance] = useState<number | null>(null); // Initialize as null
   const [watchId, setWatchId] = useState<number | null>(null);
@@ -30,7 +37,7 @@ const PlaceDetails = ({ place, icon, city }: MinimalPlaceDetailsProps) => {
     useState<boolean>(false);
   const [directionsError, setDirectionsError] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] =
-    useState<OrsProfile>("driving-car");
+    useState<OrsProfile>("foot-walking");
   const [isRouteActive, setIsRouteActive] = useState<boolean>(false);
 
   // State for the initial map (outside modal)
@@ -112,34 +119,31 @@ const PlaceDetails = ({ place, icon, city }: MinimalPlaceDetailsProps) => {
     }
     // --- End Caching Logic ---
 
-    // const apiKey = import.meta.env.VITE_OPENROUTESERVICE_API_KEY;
-    // if (!apiKey) {
-    //   console.error(
-    //     "OpenRouteService API key not found in environment variables."
-    //   );
-    //   setDirectionsError("API-nyckel saknas för att hämta vägbeskrivning.");
-    //   setIsLoadingDirections(false);
-    //   return;
-    // }
+    const apiKey = import.meta.env.VITE_OPENROUTESERVICE_API_KEY;
+    if (!apiKey) {
+      console.error(
+        "OpenRouteService API key not found in environment variables."
+      );
+      setDirectionsError("API-nyckel saknas för att hämta vägbeskrivning.");
+      setIsLoadingDirections(false);
+      return;
+    }
 
     // ORS uses longitude, latitude order
     const startLonLat = `${startCoords[0]},${startCoords[1]}`;
     const endLonLat = `${endCoords[0]},${endCoords[1]}`;
+    // Use 'driving-car', 'cycling-regular', 'foot-walking' etc. as needed
+    // const profile = "driving-car"; // Use the function parameter instead
 
-    // Use the local API endpoint instead of direct ORS call
-    const url = `/api/directions?start=${startLonLat}&end=${endLonLat}&profile=${profile}`;
-
-    // const url = `https://api.openrouteservice.org/v2/directions/${profile}?api_key=${apiKey}&start=${startLonLat}&end=${endLonLat}`;
+    const url = `https://api.openrouteservice.org/v2/directions/${profile}?api_key=${apiKey}&start=${startLonLat}&end=${endLonLat}`;
 
     try {
-      // No Authorization header needed when calling our own API endpoint
       const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json();
-        // Log the error returned from our API endpoint
-        console.error("API Route Error:", errorData);
+        console.error("ORS API Error:", errorData);
         throw new Error(
-          errorData.error || `HTTP error! status: ${response.status}`
+          errorData.error?.message || `HTTP error! status: ${response.status}`
         );
       }
       const data = await response.json();
@@ -561,16 +565,6 @@ const PlaceDetails = ({ place, icon, city }: MinimalPlaceDetailsProps) => {
                   {/* Profile Selection Buttons */}
                   <div className="flex justify-center gap-4">
                     <button
-                      onClick={() => setSelectedProfile("driving-car")}
-                      className={`px-4 py-2 rounded font-semibold transition ${
-                        selectedProfile === "driving-car"
-                          ? "bg-[#C53C07] text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      }`}
-                    >
-                      Bil
-                    </button>
-                    <button
                       onClick={() => setSelectedProfile("foot-walking")}
                       className={`px-4 py-2 rounded font-semibold transition ${
                         selectedProfile === "foot-walking"
@@ -579,6 +573,16 @@ const PlaceDetails = ({ place, icon, city }: MinimalPlaceDetailsProps) => {
                       }`}
                     >
                       Gång
+                    </button>
+                    <button
+                      onClick={() => setSelectedProfile("driving-car")}
+                      className={`px-4 py-2 rounded font-semibold transition ${
+                        selectedProfile === "driving-car"
+                          ? "bg-[#C53C07] text-white"
+                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      }`}
+                    >
+                      Bil
                     </button>
                   </div>
                   {/* Start Route Button */}

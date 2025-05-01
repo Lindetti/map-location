@@ -41,9 +41,9 @@ const Transport = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["amenity"="fuel"](around:10000,${userLat},${userLon});
-          way["amenity"="fuel"](around:10000,${userLat},${userLon});
-          relation["amenity"="fuel"](around:10000,${userLat},${userLon});
+          node["amenity"="fuel"](around:5000,${userLat},${userLon});
+          way["amenity"="fuel"](around:5000,${userLat},${userLon});
+          relation["amenity"="fuel"](around:5000,${userLat},${userLon});
         );
         out center;
       `;
@@ -148,6 +148,10 @@ const Transport = () => {
   useEffect(() => {
     getUserLocation();
   }, [getUserLocation]);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   function getDistance(
     lat1: number,
@@ -264,7 +268,7 @@ const Transport = () => {
           </p>
         </div>
       ) : (
-        <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
+        <div className="w-full lg:w-2/4 flex flex-col gap-4 justify-center ">
           {transport.slice(0, visibleCount).map((station, index) => {
             const isExpanded = index === expandedIndex;
 

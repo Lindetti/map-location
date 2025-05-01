@@ -18,9 +18,9 @@ const Header = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <div className=" flex flex-col gap-4 w-full md:w-2/4 mt-3 md:mt-2">
+    <div className=" flex flex-col gap-4 w-full lg:w-2/4 mt-3 md:mt-2">
       {isHome ? (
-        <div className="w-full md:w-[550px] ">
+        <div className="w-full lg:w-[550px] ">
           <div className="flex flex-col gap-1">
             <p className="font-semibold text-gray-500">
               Upptäck restauranger, butiker och boenden i närheten där du

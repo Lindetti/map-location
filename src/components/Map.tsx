@@ -18,6 +18,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import userIconPosition from "../assets/icons/usericon.png";
+import userArrowIcon from "../assets/icons/arrowDown.png";
 
 // Define Coordinate type consistent with ORS output
 type Coordinate = [number, number]; // [longitude, latitude]
@@ -54,11 +55,16 @@ const customIcon = new L.Icon({
   popupAnchor: [1, -34],
 });
 
-const userIcon = new L.Icon({
-  iconUrl: userIconPosition, // En annan ikon för användaren
-  iconSize: [42, 42],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
+// Create a custom DivIcon to layer the dot and the arrow
+const userIcon = L.divIcon({
+  className: "user-location-marker", // Custom class for potential styling
+  html: `
+    <img src="${userArrowIcon}" class="user-direction-arrow" alt="direction arrow" style="width: 30px; height: 30px; position: absolute; left: 50%; top: 100%; transform: translate(-50%, -5px);" />
+    <img src="${userIconPosition}" class="user-location-dot" alt="user location" style="width: 42px; height: 42px; position: relative; z-index: 1;" />
+  `,
+  iconSize: [42, 42], // Base size of the main dot icon
+  iconAnchor: [21, 42], // Anchor at the bottom-center of the dot
+  popupAnchor: [0, -45], // Adjust popup anchor relative to the dot's bottom
 });
 
 const popupStyle = `
@@ -93,9 +99,11 @@ const Map = forwardRef<MapHandle, MapProps>(
     const [userPosition, setUserPosition] = useState<{
       lat: number;
       lon: number;
+      heading: number | null;
     } | null>(null);
     const mapRef = useRef<L.Map | null>(null);
     const watchIdRef = useRef<number | null>(null); // Use ref to store watchId for imperative cleanup
+    const userMarkerRef = useRef<L.Marker | null>(null); // Ref for the user marker instance
 
     // Expose the stopWatching function via useImperativeHandle
     useImperativeHandle(ref, () => ({
@@ -109,7 +117,7 @@ const Map = forwardRef<MapHandle, MapProps>(
       },
     }));
 
-    // Effect for getting/watching user position (used for marker)
+    // Effect for getting/watching user position (used for marker AND panning/zooming during route)
     useEffect(() => {
       // Clear previous watch before starting a new one (belt-and-suspenders)
       if (watchIdRef.current !== null) {
@@ -124,6 +132,7 @@ const Map = forwardRef<MapHandle, MapProps>(
             setUserPosition({
               lat: position.coords.latitude,
               lon: position.coords.longitude,
+              heading: position.coords.heading,
             });
           },
           (error) =>
@@ -136,13 +145,24 @@ const Map = forwardRef<MapHandle, MapProps>(
           (position) => {
             const userLat = position.coords.latitude;
             const userLon = position.coords.longitude;
+            const userHeading = position.coords.heading;
+            const userLatLng = L.latLng(userLat, userLon);
 
             setUserPosition({
               lat: userLat,
               lon: userLon,
+              heading: userHeading,
             });
 
-            // Don't flyTo here automatically
+            // Center map exactly on user and zoom *if* route is active
+            if (routeCoordinates && mapRef.current) {
+              const map = mapRef.current;
+              map.setView(userLatLng, 18, {
+                animate: true,
+                duration: 1.0, // Smooth transition
+                noMoveStart: true,
+              });
+            }
           },
           (error) => {
             console.error("Error watching position:", error);
@@ -162,10 +182,9 @@ const Map = forwardRef<MapHandle, MapProps>(
         if (watchIdRef.current !== null) {
           navigator.geolocation.clearWatch(watchIdRef.current);
           watchIdRef.current = null;
-          console.log("Map: Effect cleanup stopped watching position.");
         }
       };
-    }, [showUserPosition, zoom]);
+    }, [showUserPosition, zoom, routeCoordinates]);
 
     useEffect(() => {
       const style = document.createElement("style");
@@ -176,27 +195,32 @@ const Map = forwardRef<MapHandle, MapProps>(
       };
     }, []);
 
-    // Effect to fit map bounds to the route when routeCoordinates are available
+    // Effect to fit map bounds OR zoom to user when route appears/disappears
     useEffect(() => {
       if (routeCoordinates && routeCoordinates.length > 0 && mapRef.current) {
+        const map = mapRef.current;
         // Swap coordinates for Leaflet LatLngBoundsExpression: [lat, lon]
         const bounds = routeCoordinates.map(
           (coord) => [coord[1], coord[0]] as L.LatLngExpression
         );
-        if (bounds.length > 0) {
-          // Add user position to bounds if available, to ensure it's visible
-          if (userPosition) {
-            bounds.push([userPosition.lat, userPosition.lon]);
-          }
-          const latLngBounds = L.latLngBounds(bounds);
-          mapRef.current.fitBounds(latLngBounds, { padding: [50, 50] }); // Add padding
+        // If user position is known when route loads, zoom directly on user
+        if (userPosition) {
+          const userLatLng = L.latLng(userPosition.lat, userPosition.lon);
+          map.setView(userLatLng, 18, { animate: true }); // Zoom in directly on user
         }
-      } else if (!routeCoordinates && userPosition && mapRef.current) {
+        // Otherwise (user position not yet known), fit the route bounds
+        else if (bounds.length > 0) {
+          const latLngBounds = L.latLngBounds(bounds);
+          map.fitBounds(latLngBounds, { padding: [50, 50] });
+        }
+      } else if (!routeCoordinates && mapRef.current) {
         // If no route, but user position is shown, fly to user
-        mapRef.current.flyTo([userPosition.lat, userPosition.lon], zoom);
-      } else if (!routeCoordinates && !userPosition && mapRef.current) {
-        // If no route and no user position, center on the place
-        mapRef.current.flyTo([lat, lon], zoom);
+        if (userPosition) {
+          mapRef.current.flyTo([userPosition.lat, userPosition.lon], zoom);
+        } else {
+          // If no route and no user position, center on the place
+          mapRef.current.flyTo([lat, lon], zoom);
+        }
       }
       // Depend on routeCoordinates and userPosition presence
     }, [routeCoordinates, userPosition, lat, lon, zoom]);
@@ -210,6 +234,30 @@ const Map = forwardRef<MapHandle, MapProps>(
         });
       }
     }, [flyToTrigger, flyToCoords]);
+
+    // Effect to rotate user marker icon when heading changes
+    useEffect(() => {
+      // Find the arrow image within the DivIcon and rotate it
+      if (userMarkerRef.current) {
+        const markerElement = userMarkerRef.current.getElement();
+        if (markerElement) {
+          const arrowElement = markerElement.querySelector<HTMLElement>(
+            ".user-direction-arrow"
+          );
+          if (arrowElement) {
+            const heading = userPosition?.heading;
+            if (heading !== null && heading !== undefined) {
+              arrowElement.style.transformOrigin = "center center";
+              arrowElement.style.transform = `translate(-50%, -5px) rotate(${heading}deg)`; // Keep the translate part
+            } else {
+              // Reset rotation
+              arrowElement.style.transform =
+                "translate(-50%, -5px) rotate(0deg)";
+            }
+          }
+        }
+      }
+    }, [userPosition]); // Depend on the whole userPosition object
 
     // Prepare route points for Leaflet Polyline (swap lon/lat)
     const leafletRoutePoints: L.LatLngExpression[] | null = routeCoordinates
@@ -249,10 +297,11 @@ const Map = forwardRef<MapHandle, MapProps>(
           />
         )}
 
-        {userPosition && (
+        {userPosition && showUserPosition && (
           <Marker
             position={[userPosition.lat, userPosition.lon]}
             icon={userIcon}
+            ref={userMarkerRef}
           >
             <Popup>
               <div className="bg-[#FFF8F5] p-3 rounded-md min-w-[100px] text-center">
@@ -266,8 +315,8 @@ const Map = forwardRef<MapHandle, MapProps>(
         {leafletRoutePoints && (
           <Polyline
             positions={leafletRoutePoints}
-            color="blue"
-            weight={5}
+            color="red" // Use a distinct color for the route
+            weight={5} // Make it slightly thicker
             opacity={0.7}
           />
         )}
