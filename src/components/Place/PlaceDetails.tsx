@@ -119,7 +119,7 @@ const PlaceDetails = ({
     }
     // --- End Caching Logic ---
 
-    const apiKey = import.meta.env.VITE_OPENROUTESERVICE_API_KEY;
+    const apiKey = import.meta.env.VITE_ORS;
     if (!apiKey) {
       console.error(
         "OpenRouteService API key not found in environment variables."
