@@ -22,8 +22,6 @@ const FoodAndDrink = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
   const restaurantRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [showUserPosition, setShowUserPosition] = useState(false);
-  const [showPolyline, setShowPolyline] = useState(false);
   const [selectedType, setSelectedType] = useState<PlaceType>("restaurant");
   const [isPositionFixed, setIsPositionFixed] = useState(false);
   const positionWatchId = useRef<number | null>(null);
@@ -172,13 +170,26 @@ const FoodAndDrink = () => {
     getUserLocation();
   }, [getUserLocation]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const handleExpand = (index: number) => {
+    // Release position when expanding a different restaurant or collapsing
+    if (index !== expandedIndex) {
+      setIsPositionFixed(false);
+    }
 
-  const handleShowUserPosition = () => {
-    setShowUserPosition(true);
-    setShowPolyline(true);
+    setExpandedIndex(index === expandedIndex ? -1 : index);
+
+    setTimeout(() => {
+      const element = restaurantRefs.current[index];
+      const offset = 50;
+
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        window.scrollTo({
+          top: window.scrollY + rect.top - offset,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
   };
 
   const selectedTypeLabel =
@@ -252,30 +263,6 @@ const FoodAndDrink = () => {
       }
     };
   }, [isPositionFixed, handlePositionUpdate]);
-
-  const handleExpand = (index: number) => {
-    // Release position when expanding a different restaurant or collapsing
-    if (index !== expandedIndex) {
-      setIsPositionFixed(false);
-    }
-
-    setExpandedIndex(index === expandedIndex ? -1 : index);
-    setShowUserPosition(false);
-    setShowPolyline(false);
-
-    setTimeout(() => {
-      const element = restaurantRefs.current[index];
-      const offset = 50;
-
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        window.scrollTo({
-          top: window.scrollY + rect.top - offset,
-          behavior: "smooth",
-        });
-      }
-    }, 100);
-  };
 
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2 min-h-[calc(100vh-280px)]">
@@ -359,14 +346,7 @@ const FoodAndDrink = () => {
                   <PlaceDetails
                     place={foodplace}
                     icon={iconMapping[selectedType]}
-                    onShowUserPosition={handleShowUserPosition}
-                    showUserPosition={showUserPosition}
-                    showPolyline={showPolyline}
                     city={city ?? undefined}
-                    isPositionFixed={isPositionFixed}
-                    onTogglePositionFixed={() =>
-                      setIsPositionFixed(!isPositionFixed)
-                    }
                   />
                 )}
               </motion.div>
