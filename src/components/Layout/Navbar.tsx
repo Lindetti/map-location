@@ -11,7 +11,7 @@ const Navbar = () => {
 
   return (
     <nav className="flex bg-gray-100 h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
-      <div className="w-full md:w-2/4 flex flex-col gap-3 md:flex-row justify-between items-center">
+      <div className="w-full lg:w-2/4 flex flex-col gap-3 md:flex-row justify-between items-center">
         <NavLink to="/">
           <img src={Logo} alt="Logo" className="h-[45px] w-[230px]" />
         </NavLink>

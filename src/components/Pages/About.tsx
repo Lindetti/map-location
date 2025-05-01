@@ -9,7 +9,7 @@ const About = () => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <div className="flex flex-col gap-8 w-full md:w-2/4">
+      <div className="flex flex-col gap-8 w-full lg:w-2/4">
         {/* Header Section */}
         <div className="relative h-[300px] w-full rounded-md overflow-hidden shadow-md">
           <img

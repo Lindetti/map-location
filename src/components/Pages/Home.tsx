@@ -332,7 +332,7 @@ const Home = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full md:w-2/4 p-5 flex flex-col gap-6 mb-5 md:mt-2"
+      className="w-full lg:w-2/4 p-5 flex flex-col gap-6 mb-5 md:mt-2"
     >
       <Header
         city={city ?? undefined}

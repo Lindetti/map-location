@@ -109,7 +109,6 @@ const Shops = () => {
           }
 
           const data = await response.json();
-          console.log("Overpass API Response:", data);
 
           if (!data.elements || !Array.isArray(data.elements)) {
             console.error("Invalid response format:", data);
@@ -119,7 +118,6 @@ const Shops = () => {
           const places: Place[] = data.elements
             .filter((item: OverpassElement) => {
               if (!item.tags?.name) {
-                console.log("Skipping item without name:", item);
                 return false;
               }
               return true;
@@ -129,7 +127,6 @@ const Shops = () => {
               const lon = item.lon ?? item.center?.lon;
 
               if (lat === undefined || lon === undefined) {
-                console.log("Skipping item without coordinates:", item);
                 return null;
               }
 
@@ -253,26 +250,9 @@ const Shops = () => {
     getUserLocation();
   }, [getUserLocation]);
 
-  function getDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) *
-        Math.cos(lat2 * (Math.PI / 180)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Returnera avståndet i km
-
-    return distance;
-  }
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleExpand = (index: number) => {
     // Release position when expanding a different shop or collapsing
@@ -299,6 +279,27 @@ const Shops = () => {
   const selectedTypeLabel =
     placeOptions.find((p) => p.value === selectedType)?.singularLabel ||
     "plats";
+
+  function getDistance(
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Returnera avståndet i km
+
+    return distance;
+  }
 
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2 min-h-[calc(100vh-280px)]">
@@ -339,7 +340,7 @@ const Shops = () => {
           </p>
         </div>
       ) : (
-        <div className="w-full md:w-2/4 flex flex-col gap-4  min-h-[500px] ">
+        <div className="w-full lg:w-2/4 flex flex-col gap-4  min-h-[500px] ">
           {shops.slice(0, visibleCount).map((shop, index) => {
             const isExpanded = index === expandedIndex;
 

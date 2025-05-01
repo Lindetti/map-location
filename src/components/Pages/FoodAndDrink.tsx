@@ -59,9 +59,9 @@ const FoodAndDrink = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["amenity"="${selectedType}"](around:10000,${userLat},${userLon});
-          way["amenity"="${selectedType}"](around:10000,${userLat},${userLon});
-          relation["amenity"="${selectedType}"](around:10000,${userLat},${userLon});
+          node["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+          way["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+          relation["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
         );
         out center;
       `;
@@ -170,28 +170,6 @@ const FoodAndDrink = () => {
     getUserLocation();
   }, [getUserLocation]);
 
-  const handleExpand = (index: number) => {
-    // Release position when expanding a different restaurant or collapsing
-    if (index !== expandedIndex) {
-      setIsPositionFixed(false);
-    }
-
-    setExpandedIndex(index === expandedIndex ? -1 : index);
-
-    setTimeout(() => {
-      const element = restaurantRefs.current[index];
-      const offset = 50;
-
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        window.scrollTo({
-          top: window.scrollY + rect.top - offset,
-          behavior: "smooth",
-        });
-      }
-    }, 100);
-  };
-
   const selectedTypeLabel =
     placeOptions.find((p) => p.value === selectedType)?.singularLabel ||
     "plats";
@@ -264,6 +242,28 @@ const FoodAndDrink = () => {
     };
   }, [isPositionFixed, handlePositionUpdate]);
 
+  const handleExpand = (index: number) => {
+    // Release position when expanding a different restaurant or collapsing
+    if (index !== expandedIndex) {
+      setIsPositionFixed(false);
+    }
+
+    setExpandedIndex(index === expandedIndex ? -1 : index);
+
+    setTimeout(() => {
+      const element = restaurantRefs.current[index];
+      const offset = 50;
+
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        window.scrollTo({
+          top: window.scrollY + rect.top - offset,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  };
+
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2 min-h-[calc(100vh-280px)]">
       <Header
@@ -303,7 +303,7 @@ const FoodAndDrink = () => {
           </p>
         </div>
       ) : (
-        <div className="w-full md:w-2/4 flex flex-col gap-4 justify-center ">
+        <div className="w-full lg:w-2/4 flex flex-col gap-4 justify-center ">
           {foodAndDrink.slice(0, visibleCount).map((foodplace, index) => {
             const isExpanded = index === expandedIndex;
 
