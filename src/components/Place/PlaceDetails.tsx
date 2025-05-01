@@ -19,6 +19,11 @@ interface MinimalPlaceDetailsProps {
   city: PlaceDetailsProps["city"]; // Keep city
 }
 
+// Function to get today's date as YYYY-MM-DD string
+const getTodayDateString = () => {
+  return new Date().toISOString().split("T")[0];
+};
+
 const PlaceDetails = ({
   place,
   // onShowUserPosition, // Removed
@@ -88,8 +93,44 @@ const PlaceDetails = ({
   const fetchDirections = async (
     startCoords: Coordinate,
     endCoords: Coordinate,
-    profile: OrsProfile // Use the profile parameter
+    profile: OrsProfile
   ) => {
+    // --- Daily API Limit Check ---
+    const today = getTodayDateString();
+    const limitKey = "orsDailyLimitCount";
+    const dateKey = "orsLimitResetDate";
+    let currentCount = 0;
+
+    try {
+      const savedDate = localStorage.getItem(dateKey);
+      const savedCount = localStorage.getItem(limitKey);
+
+      if (savedDate === today && savedCount) {
+        currentCount = parseInt(savedCount, 10);
+      } else {
+        // It's a new day or first time, reset count and date
+        currentCount = 0;
+        localStorage.setItem(dateKey, today);
+        localStorage.setItem(limitKey, "0");
+      }
+
+      // Check if limit reached
+      const DAILY_LIMIT = 2000;
+      if (currentCount >= DAILY_LIMIT) {
+        console.warn(`Daily ORS request limit (${DAILY_LIMIT}) reached.`);
+        setDirectionsError(
+          `Gränsen för vägbeskrivningsanrop (${DAILY_LIMIT}/dag) har nåtts.`
+        );
+        setIsLoadingDirections(false); // Stop loading indicator
+        return; // Stop execution
+      }
+    } catch (error) {
+      console.error("Error handling API limit in localStorage:", error);
+      // Decide if we should proceed or block if localStorage fails?
+      // For now, let's proceed but log error.
+    }
+    // --- End Daily API Limit Check ---
+
     setIsLoadingDirections(true);
     setDirectionsError(null);
     setRouteCoordinates(null); // Clear previous route visually first
@@ -128,6 +169,15 @@ const PlaceDetails = ({
       setIsLoadingDirections(false);
       return;
     }
+
+    // --- Increment API Count (after passing limit check) ---
+    try {
+      const newCount = currentCount + 1;
+      localStorage.setItem(limitKey, newCount.toString());
+    } catch (error) {
+      console.error("Error updating API count in localStorage:", error);
+    }
+    // --- End Increment API Count ---
 
     // ORS uses longitude, latitude order
     const startLonLat = `${startCoords[0]},${startCoords[1]}`;

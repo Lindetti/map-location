@@ -83,8 +83,8 @@ const Home = () => {
     // Om vädret finns och det inte är för gammalt (t.ex. 30 minuter gammalt), använd den
     if (savedWeather && savedWeatherTime) {
       const timeElapsed = new Date().getTime() - parseInt(savedWeatherTime);
-      if (timeElapsed < 600000) {
-        // 30 minuter (30 * 60 * 1000)
+      if (timeElapsed < 1800000) {
+        // 30 minutes (30 * 60 * 1000)
         setWeather(JSON.parse(savedWeather));
         return;
       }
