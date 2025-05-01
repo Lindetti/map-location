@@ -23,8 +23,6 @@ const Shops = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
   const shopsRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [showUserPosition, setShowUserPosition] = useState(false);
-  const [showPolyline, setShowPolyline] = useState(false);
   const [isPositionFixed, setIsPositionFixed] = useState(false);
   const positionWatchId = useRef<number | null>(null);
   const [selectedType, setSelectedType] = useState<PlaceType>("supermarket");
@@ -255,19 +253,6 @@ const Shops = () => {
     getUserLocation();
   }, [getUserLocation]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const handleShowUserPosition = () => {
-    setShowUserPosition(true);
-    setShowPolyline(true);
-  };
-
-  const selectedTypeLabel =
-    placeOptions.find((p) => p.value === selectedType)?.singularLabel ||
-    "plats";
-
   function getDistance(
     lat1: number,
     lon1: number,
@@ -296,8 +281,6 @@ const Shops = () => {
     }
 
     setExpandedIndex(index === expandedIndex ? -1 : index);
-    setShowUserPosition(false);
-    setShowPolyline(false);
 
     setTimeout(() => {
       const element = shopsRefs.current[index];
@@ -312,6 +295,10 @@ const Shops = () => {
       }
     }, 100);
   };
+
+  const selectedTypeLabel =
+    placeOptions.find((p) => p.value === selectedType)?.singularLabel ||
+    "plats";
 
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2 min-h-[calc(100vh-280px)]">
@@ -394,14 +381,7 @@ const Shops = () => {
                   <PlaceDetails
                     place={shop}
                     icon={iconMapping[selectedType]}
-                    onShowUserPosition={handleShowUserPosition}
-                    showUserPosition={showUserPosition}
-                    showPolyline={showPolyline}
                     city={city ?? undefined}
-                    isPositionFixed={isPositionFixed}
-                    onTogglePositionFixed={() =>
-                      setIsPositionFixed(!isPositionFixed)
-                    }
                   />
                 )}
               </motion.div>

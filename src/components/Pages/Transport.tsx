@@ -19,8 +19,6 @@ const Transport = () => {
   const [visibleCount, setVisibleCount] = useState(5);
   const [expandedIndex, setExpandedIndex] = useState<number>(-1);
   const transportRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [showUserPosition, setShowUserPosition] = useState(false);
-  const [showPolyline, setShowPolyline] = useState(false);
   const [isPositionFixed, setIsPositionFixed] = useState(false);
   const positionWatchId = useRef<number | null>(null);
 
@@ -151,15 +149,6 @@ const Transport = () => {
     getUserLocation();
   }, [getUserLocation]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const handleShowUserPosition = () => {
-    setShowUserPosition(true);
-    setShowPolyline(true);
-  };
-
   function getDistance(
     lat1: number,
     lon1: number,
@@ -227,8 +216,6 @@ const Transport = () => {
     }
 
     setExpandedIndex(index === expandedIndex ? -1 : index);
-    setShowUserPosition(false);
-    setShowPolyline(false);
 
     setTimeout(() => {
       const element = transportRefs.current[index];
@@ -316,14 +303,7 @@ const Transport = () => {
                   <PlaceDetails
                     place={station}
                     icon={FuelIcon}
-                    onShowUserPosition={handleShowUserPosition}
-                    showUserPosition={showUserPosition}
-                    showPolyline={showPolyline}
                     city={city ?? undefined}
-                    isPositionFixed={isPositionFixed}
-                    onTogglePositionFixed={() =>
-                      setIsPositionFixed(!isPositionFixed)
-                    }
                   />
                 )}
               </motion.div>
