@@ -89,15 +89,15 @@ const PlaceDetails = ({
     }
   };
 
-  // Function to fetch directions from OpenRouteService
+  // Function to fetch directions by calling the Vercel serverless function
   const fetchDirections = async (
     startCoords: Coordinate,
     endCoords: Coordinate,
     profile: OrsProfile
   ) => {
-    // --- Daily API Limit Check ---
+    // --- Daily API Limit Check (Client-side pre-check) ---
     const today = getTodayDateString();
-    const limitKey = "orsDailyLimitCount";
+    const limitKey = "orsDailyLimitCount"; // Keep same key for client-side check
     const dateKey = "orsLimitResetDate";
     let currentCount = 0;
 
@@ -108,34 +108,36 @@ const PlaceDetails = ({
       if (savedDate === today && savedCount) {
         currentCount = parseInt(savedCount, 10);
       } else {
-        // It's a new day or first time, reset count and date
+        // Reset client-side count if new day or first time
+        // Note: This doesn't guarantee the *actual* limit hasn't been reached
+        // if multiple users/browsers are hitting the backend.
         currentCount = 0;
         localStorage.setItem(dateKey, today);
-        localStorage.setItem(limitKey, "0");
+        localStorage.setItem(limitKey, "0"); // Reset client-side check counter
       }
 
-      // Check if limit reached
-      const DAILY_LIMIT = 2000;
+      const DAILY_LIMIT = 2000; // Keep this for the client-side check
       if (currentCount >= DAILY_LIMIT) {
-        console.warn(`Daily ORS request limit (${DAILY_LIMIT}) reached.`);
-        setDirectionsError(
-          `Gränsen för vägbeskrivningsanrop (${DAILY_LIMIT}/dag) har nåtts.`
+        console.warn(
+          `Client-side check indicates daily ORS request limit (${DAILY_LIMIT}) might be reached.`
         );
-        setIsLoadingDirections(false); // Stop loading indicator
-        return; // Stop execution
+        setDirectionsError(
+          `Gränsen för vägbeskrivningsanrop (${DAILY_LIMIT}/dag) kan ha nåtts.`
+        );
+        setIsLoadingDirections(false);
+        return; // Stop execution based on client check
       }
     } catch (error) {
-      console.error("Error handling API limit in localStorage:", error);
-      // Decide if we should proceed or block if localStorage fails?
-      // For now, let's proceed but log error.
+      console.error("Error handling API limit check in localStorage:", error);
+      // Proceed cautiously if localStorage fails
     }
     // --- End Daily API Limit Check ---
 
     setIsLoadingDirections(true);
     setDirectionsError(null);
-    setRouteCoordinates(null); // Clear previous route visually first
+    setRouteCoordinates(null); // Clear previous route visually
 
-    // --- Caching Logic ---
+    // --- Caching Logic (Remains the same, uses same key structure) ---
     const cacheKey = `ors-route-${startCoords.join(",")}-${endCoords.join(
       ","
     )}-${profile}`;
@@ -143,82 +145,67 @@ const PlaceDetails = ({
       const cachedRoute = localStorage.getItem(cacheKey);
       if (cachedRoute) {
         const parsedRoute = JSON.parse(cachedRoute);
-        // Basic validation: check if it's an array
         if (Array.isArray(parsedRoute)) {
           console.log("Using cached route for:", cacheKey);
           setRouteCoordinates(parsedRoute as Coordinate[]);
           setIsLoadingDirections(false);
           return; // Skip API call
-        } else {
-          console.warn("Invalid cached route data found, removing.");
-          localStorage.removeItem(cacheKey);
         }
+        localStorage.removeItem(cacheKey);
       }
     } catch (error) {
       console.error("Error reading route from localStorage:", error);
-      // Proceed with fetching if cache reading fails
     }
     // --- End Caching Logic ---
 
-    const apiKey = import.meta.env.VITE_ORS;
-    if (!apiKey) {
-      console.error(
-        "OpenRouteService API key not found in environment variables."
-      );
-      setDirectionsError("API-nyckel saknas för att hämta vägbeskrivning.");
-      setIsLoadingDirections(false);
-      return;
-    }
-
-    // --- Increment API Count (after passing limit check) ---
-    try {
-      const newCount = currentCount + 1;
-      localStorage.setItem(limitKey, newCount.toString());
-    } catch (error) {
-      console.error("Error updating API count in localStorage:", error);
-    }
-    // --- End Increment API Count ---
-
-    // ORS uses longitude, latitude order
-    const startLonLat = `${startCoords[0]},${startCoords[1]}`;
-    const endLonLat = `${endCoords[0]},${endCoords[1]}`;
-    // Use 'driving-car', 'cycling-regular', 'foot-walking' etc. as needed
-    // const profile = "driving-car"; // Use the function parameter instead
-
-    const url = `https://api.openrouteservice.org/v2/directions/${profile}?api_key=${apiKey}&start=${startLonLat}&end=${endLonLat}`;
+    // Call the serverless function endpoint
+    const url = "/api/getDirections";
 
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ startCoords, endCoords, profile }),
+      });
+
+      const data = await response.json(); // Always expect JSON now
+
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("ORS API Error:", errorData);
-        throw new Error(
-          errorData.error?.message || `HTTP error! status: ${response.status}`
-        );
+        // Use the error message provided by the serverless function
+        throw new Error(data.error || `Server error: ${response.status}`);
       }
-      const data = await response.json();
 
-      // Extract coordinates from the first route's geometry
-      if (data.features && data.features.length > 0) {
-        const coordinates = data.features[0].geometry
-          .coordinates as Coordinate[];
-        setRouteCoordinates(coordinates); // Store as [lon, lat]
+      // Assuming the serverless function returns { routeCoordinates: [...] }
+      if (data.routeCoordinates && Array.isArray(data.routeCoordinates)) {
+        setRouteCoordinates(data.routeCoordinates as Coordinate[]);
 
         // --- Caching Logic: Save successful fetch ---
         try {
-          localStorage.setItem(cacheKey, JSON.stringify(coordinates));
+          localStorage.setItem(cacheKey, JSON.stringify(data.routeCoordinates));
           console.log("Saved route to cache:", cacheKey);
+
+          // --- Increment Client-Side Check Counter (only on successful fetch from backend) ---
+          // We only increment the *client-side* counter *after* a successful fetch
+          // to make the client-side pre-check slightly more accurate for the current user.
+          const newCount = currentCount + 1;
+          localStorage.setItem(limitKey, newCount.toString());
+          // --- End Increment Client-Side Counter ---
         } catch (error) {
           console.error("Error saving route to localStorage:", error);
-          // Don't block execution if caching fails (e.g., storage full)
         }
         // --- End Caching Logic ---
       } else {
-        throw new Error("Ingen rutt hittades.");
+        // This case might indicate an unexpected successful response format from the server
+        throw new Error("Ingen rutt hittades eller oväntat svar från server.");
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Failed to fetch directions:", error);
+      console.error(
+        "Failed to fetch directions via serverless function:",
+        error
+      );
       setDirectionsError(`Kunde inte hämta vägbeskrivning: ${message}`);
     } finally {
       setIsLoadingDirections(false);
