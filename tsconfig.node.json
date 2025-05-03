@@ -1,24 +1,35 @@
 {
   "compilerOptions": {
+    /* Output och metadata */
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+    /* Modern JS + ESM */
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
-    "skipLibCheck": true,
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
+    "moduleResolution": "Node",
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
 
-    /* Linting */
+    /* Bygg */
+    "noEmit": true,         // Vercel bygger TS själv, vi behöver inte emit
+    "skipLibCheck": true,
+
+    /* Lint / säkerhet */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Import/export interop */
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts",     // Vite config om du använder den
+    "api/**/*.ts",        // Alla dina serverless-funktioner
+    "types/**/*.ts"       // Eventuella globala typer
+  ]
 }

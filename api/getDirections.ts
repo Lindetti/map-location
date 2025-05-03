@@ -49,9 +49,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const orsResponse = await fetch(url);
 
     if (!orsResponse.ok) {
-      let errorData;
+      let errorData: { error?: { message?: string } }; // Define expected shape
       try {
-        errorData = await orsResponse.json();
+        errorData = (await orsResponse.json()) as {
+          error?: { message?: string };
+        }; // Add type assertion
       } catch {
         // Handle cases where the error response isn't valid JSON
         throw new Error(
@@ -69,12 +71,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    const data = await orsResponse.json();
+    const data = (await orsResponse.json()) as {
+      features?: { geometry?: { coordinates?: unknown } }[];
+    }; // Add type assertion
 
     // Extract coordinates from the first route's geometry
     if (data.features && data.features.length > 0) {
-      const coordinates = data.features[0].geometry.coordinates; // Should be [[lon, lat], ...]
-      return res.status(200).json({ routeCoordinates: coordinates });
+      const coordinates = data.features[0]?.geometry?.coordinates; // Add optional chaining for geometry
+      // Basic validation that coordinates look like an array (further checks might be needed)
+      if (Array.isArray(coordinates)) {
+        return res.status(200).json({ routeCoordinates: coordinates });
+      } else {
+        // Handle case where coordinates are missing or not an array
+        console.error("Invalid or missing coordinates in ORS response:", data);
+        return res
+          .status(500)
+          .json({ error: "Invalid coordinates format received from ORS." });
+      }
     } else {
       return res.status(404).json({ error: "No route found by ORS." });
     }
