@@ -1,9 +1,5 @@
 {
   "compilerOptions": {
-    /* Output och metadata */
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-
-    /* Modern JS + ESM */
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
@@ -11,25 +7,12 @@
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-
-    /* Bygg */
-    "noEmit": true,         // Vercel bygger TS själv, vi behöver inte emit
+    "noEmit": true,
     "skipLibCheck": true,
 
-    /* Lint / säkerhet */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-
-    /* Import/export interop */
     "esModuleInterop": true,
     "resolveJsonModule": true
   },
-  "include": [
-    "vite.config.ts",     // Vite config om du använder den
-    "api/**/*.ts",        // Alla dina serverless-funktioner
-    "types/**/*.ts"       // Eventuella globala typer
-  ]
+  "include": ["api/**/*.ts", "types/**/*.ts"]
 }
