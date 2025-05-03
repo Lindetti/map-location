@@ -1,13 +1,5 @@
 {
-    "functions": {
-      "api/**/*.ts": {
-        "runtime": "nodejs18.x"
-      }
-    },
     "rewrites": [
-      {
-        "source": "/(.*)",
-        "destination": "/"
-      }
+        {"source": "/(.*)", "destination": "/"}
     ]
-  }
+}
