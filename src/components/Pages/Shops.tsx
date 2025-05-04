@@ -25,13 +25,14 @@ const Shops = () => {
   const shopsRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [isPositionFixed, setIsPositionFixed] = useState(false);
   const positionWatchId = useRef<number | null>(null);
-  const [selectedType, setSelectedType] = useState<PlaceType>("supermarket");
+  const [selectedType, setSelectedType] = useState<PlaceType>("clothes");
   const placeOptions: {
     label: string;
     singularLabel: string;
     value: PlaceType;
   }[] = [
     { label: "Klädbutiker", singularLabel: "Klädbutik", value: "clothes" },
+
     {
       label: "Skobutiker",
       singularLabel: "Skobutik",
@@ -41,11 +42,6 @@ const Shops = () => {
       label: "Elektronik",
       singularLabel: "Elektronik",
       value: "electronics",
-    },
-    {
-      label: "Mat & Livsmedel",
-      singularLabel: "Livsmedelsbutik",
-      value: "supermarket",
     },
     {
       label: "Systembolag",
@@ -73,15 +69,9 @@ const Shops = () => {
         const overpassQuery = `
         [out:json];
         (
-          node["shop"="${
-            selectedType === "supermarket" ? "supermarket" : selectedType
-          }"](around:5000,${userLat},${userLon});
-          way["shop"="${
-            selectedType === "supermarket" ? "supermarket" : selectedType
-          }"](around:5000,${userLat},${userLon});
-          relation["shop"="${
-            selectedType === "supermarket" ? "supermarket" : selectedType
-          }"](around:5000,${userLat},${userLon});
+          node["shop"="${selectedType}"](around:5000,${userLat},${userLon});
+          way["shop"="${selectedType}"](around:5000,${userLat},${userLon});
+          relation["shop"="${selectedType}"](around:5000,${userLat},${userLon});
         );
         out body;
         >;

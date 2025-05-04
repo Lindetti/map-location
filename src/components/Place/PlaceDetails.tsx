@@ -5,6 +5,7 @@ import Link from "../../assets/icons/link.png";
 import Open from "../../assets/icons/open.png";
 import { useState, useEffect, useRef } from "react";
 import type { MapHandle } from "../Map";
+import PlatsGuidenIcon from "../../../public/websiteicon.png";
 
 // Define the structure for coordinates if needed elsewhere, otherwise inline
 type Coordinate = [number, number]; // Assuming [longitude, latitude] based on ORS
@@ -522,7 +523,7 @@ const PlaceDetails = ({
                 nedanför.
               </p>
             )}
-            <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center">
               {place.website ? (
                 <a
                   href={place.website}
@@ -550,6 +551,13 @@ const PlaceDetails = ({
                   Sök på Google
                 </a>
               )}
+
+              <div className="w-auto h-[50px] flex items-center justify-center">
+                <h1 className="text-base md:text-lg italic font-semibold text-gray-700">
+                  Platsguiden
+                  <span className="font-bold text-orange-500 text-2xl">.</span>
+                </h1>
+              </div>
             </div>
           </div>
         </div>

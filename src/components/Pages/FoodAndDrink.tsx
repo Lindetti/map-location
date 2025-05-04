@@ -36,6 +36,16 @@ const FoodAndDrink = () => {
       value: "restaurant",
     },
     { label: "Snabbmat", singularLabel: "Snabbmat", value: "fast_food" },
+    {
+      label: "Mat & Livsmedel",
+      singularLabel: "Livsmedelsbutik",
+      value: "supermarket",
+    },
+    {
+      label: "Kiosker",
+      singularLabel: "Kiosk",
+      value: "kiosk",
+    },
     { label: "Caféer", singularLabel: "Café", value: "cafe" },
     { label: "Barer", singularLabel: "Bar", value: "bar" },
   ];
@@ -56,12 +66,41 @@ const FoodAndDrink = () => {
         const userLat = position.coords.latitude;
         const userLon = position.coords.longitude;
 
-        const overpassQuery = `
+        let overpassQuery = `
         [out:json];
         (
-          node["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          way["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
-          relation["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+          // Om selectedType är 'supermarket', inkludera endast supermarket
+          ${
+            selectedType === "supermarket"
+              ? `
+              node["shop"="supermarket"](around:5000,${userLat},${userLon});
+              way["shop"="supermarket"](around:5000,${userLat},${userLon});
+              relation["shop"="supermarket"](around:5000,${userLat},${userLon});
+              `
+              : ""
+          }
+      
+          // Om selectedType är 'kiosk', inkludera endast kiosk
+          ${
+            selectedType === "kiosk"
+              ? `
+              node["shop"="kiosk"](around:5000,${userLat},${userLon});
+              way["shop"="kiosk"](around:5000,${userLat},${userLon});
+              relation["shop"="kiosk"](around:5000,${userLat},${userLon});
+              `
+              : ""
+          }
+      
+          // För alla andra val, inkludera baserat på 'amenity'
+          ${
+            selectedType !== "supermarket" && selectedType !== "kiosk"
+              ? `
+              node["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+              way["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+              relation["amenity"="${selectedType}"](around:5000,${userLat},${userLon});
+              `
+              : ""
+          }
         );
         out center;
       `;
