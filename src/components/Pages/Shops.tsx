@@ -303,18 +303,20 @@ const Shops = () => {
 
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2 min-h-[calc(100vh-280px)]">
-      <Header
-        city={city ?? undefined} // Tar första restaurangens stad (om det finns någon)
-        isLoading={isLoading}
-        onRefresh={getUserLocation}
-        placeType={
-          placeOptions.find((opt) => opt.value === selectedType)?.label || ""
-        }
-        placeOptions={placeOptions}
-        selectedType={selectedType}
-        onTypeChange={(val) => setSelectedType(val as PlaceType)}
-        showTypeSelect={true}
-      />
+      {!error && (
+        <Header
+          city={city ?? undefined}
+          isLoading={isLoading}
+          onRefresh={getUserLocation}
+          placeType={
+            placeOptions.find((opt) => opt.value === selectedType)?.label || ""
+          }
+          placeOptions={placeOptions}
+          selectedType={selectedType}
+          onTypeChange={(val) => setSelectedType(val as PlaceType)}
+          showTypeSelect={true}
+        />
+      )}
 
       {!isPositionFixed && (
         <AutoLocationUpdater onLocationUpdate={getUserLocation} />

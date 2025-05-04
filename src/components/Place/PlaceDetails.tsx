@@ -8,7 +8,6 @@ import type { MapHandle } from "../Map";
 
 // Define the structure for coordinates if needed elsewhere, otherwise inline
 type Coordinate = [number, number]; // Assuming [longitude, latitude] based on ORS
-type OrsProfile = "foot-walking" | "driving-car"; // Define allowed profiles
 
 // Remove onShowUserPosition and showUserPosition from props if they are only for the button
 interface MinimalPlaceDetailsProps {
@@ -41,8 +40,6 @@ const PlaceDetails = ({
   const [isLoadingDirections, setIsLoadingDirections] =
     useState<boolean>(false);
   const [directionsError, setDirectionsError] = useState<string | null>(null);
-  const [selectedProfile, setSelectedProfile] =
-    useState<OrsProfile>("foot-walking");
   const [isRouteActive, setIsRouteActive] = useState<boolean>(false);
 
   // State for the initial map (outside modal)
@@ -92,9 +89,9 @@ const PlaceDetails = ({
   // Function to fetch directions by calling the Vercel serverless function
   const fetchDirections = async (
     startCoords: Coordinate,
-    endCoords: Coordinate,
-    profile: OrsProfile
+    endCoords: Coordinate
   ) => {
+    const profile = "foot-walking"; // Hårdkoda profilen här
     // --- Daily API Limit Check (Client-side pre-check) ---
     const today = getTodayDateString();
     const limitKey = "orsDailyLimitCount"; // Keep same key for client-side check
@@ -119,7 +116,7 @@ const PlaceDetails = ({
       const DAILY_LIMIT = 2000; // Keep this for the client-side check
       if (currentCount >= DAILY_LIMIT) {
         console.warn(
-          `Client-side check indicates daily ORS request limit (${DAILY_LIMIT}) might be reached.`
+          `Client-side check indicates daily ORS request limit (${DAILY_LIMIT}/dag) might be reached.`
         );
         setDirectionsError(
           `Gränsen för vägbeskrivningsanrop (${DAILY_LIMIT}/dag) kan ha nåtts.`
@@ -140,7 +137,7 @@ const PlaceDetails = ({
     // --- Caching Logic (Remains the same, uses same key structure) ---
     const cacheKey = `ors-route-${startCoords.join(",")}-${endCoords.join(
       ","
-    )}-${profile}`;
+    )}-${profile}`; // Använd hårdkodad profil i nyckeln
     try {
       const cachedRoute = localStorage.getItem(cacheKey);
       if (cachedRoute) {
@@ -251,8 +248,8 @@ const PlaceDetails = ({
         const startCoords: Coordinate = [userLon, userLat];
         const endCoords: Coordinate = [place.lon, place.lat];
 
-        // Fetch directions
-        fetchDirections(startCoords, endCoords, selectedProfile)
+        // Fetch directions - anropa utan profil-argumentet
+        fetchDirections(startCoords, endCoords)
           .then(() => {
             // Start watching position only after directions are fetched (or attempt to fetch)
             const id = navigator.geolocation.watchPosition(
@@ -325,8 +322,6 @@ const PlaceDetails = ({
       setIsLoadingDirections(false);
       setCurrentDistance(null);
       setIsRouteActive(false);
-      // Optionally reset profile choice?
-      // setSelectedProfile("driving-car");
     };
     // Dependencies for the effect - watchId should NOT be here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -595,40 +590,17 @@ const PlaceDetails = ({
                 </div>
               )}
             </div>
-            {/* Bottom Panel: Initial State (Select Profile & Start) vs Active Route State */}
+            {/* Bottom Panel: Initial State (Start) vs Active Route State */}
             <div className="p-4 pb-12 bg-white border-t flex flex-col gap-4">
               {!isRouteActive ? (
                 <>
-                  {/* Profile Selection Buttons */}
-                  <div className="flex justify-center gap-4">
-                    <button
-                      onClick={() => setSelectedProfile("foot-walking")}
-                      className={`px-4 py-2 rounded font-semibold transition ${
-                        selectedProfile === "foot-walking"
-                          ? "bg-[#C53C07] text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      }`}
-                    >
-                      Gång
-                    </button>
-                    <button
-                      onClick={() => setSelectedProfile("driving-car")}
-                      className={`px-4 py-2 rounded font-semibold transition ${
-                        selectedProfile === "driving-car"
-                          ? "bg-[#C53C07] text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      }`}
-                    >
-                      Bil
-                    </button>
-                  </div>
                   {/* Start Route Button */}
                   <button
                     onClick={startRouteNavigation}
                     className="w-full py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition disabled:opacity-50"
                     disabled={isLoadingDirections} // Disable while loading
                   >
-                    {isLoadingDirections ? "Laddar..." : "Starta Rutt"}
+                    {isLoadingDirections ? "Laddar..." : "Starta Rutt (Gång)"}
                   </button>
                 </>
               ) : (

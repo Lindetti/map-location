@@ -23,8 +23,8 @@ const Navbar = () => {
             to="/"
             className={({ isActive }) =>
               isActive
-                ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
+                ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
+                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Hem
@@ -33,8 +33,8 @@ const Navbar = () => {
             to="/mat&dryck"
             className={({ isActive }) =>
               isActive
-                ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
+                ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
+                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Mat & Dryck
@@ -43,8 +43,8 @@ const Navbar = () => {
             to="/butiker"
             className={({ isActive }) =>
               isActive
-                ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
+                ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
+                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Butiker
@@ -53,8 +53,8 @@ const Navbar = () => {
             to="/boende"
             className={({ isActive }) =>
               isActive
-                ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
+                ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
+                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Boende
@@ -63,8 +63,8 @@ const Navbar = () => {
             to="/bensinstationer"
             className={({ isActive }) =>
               isActive
-                ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
+                ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
+                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Bensinstationer
@@ -73,8 +73,8 @@ const Navbar = () => {
             to="/om"
             className={({ isActive }) =>
               isActive
-                ? "text-black underline underline-offset-8 decoration-orange-500"
-                : "text-black hover hover:text-orange-600 transition ease-in-out duration-200"
+                ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
+                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Om Platsguiden
@@ -116,8 +116,8 @@ const Navbar = () => {
                 to="/"
                 className={({ isActive }) =>
                   isActive
-                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
-                    : "block text-lg hover:text-orange-500"
+                    ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
+                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -127,8 +127,8 @@ const Navbar = () => {
                 to="/mat&dryck"
                 className={({ isActive }) =>
                   isActive
-                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
-                    : "block text-lg hover:text-orange-500"
+                    ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
+                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -138,8 +138,8 @@ const Navbar = () => {
                 to="/butiker"
                 className={({ isActive }) =>
                   isActive
-                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
-                    : "block text-lg hover:text-orange-500"
+                    ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
+                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -149,8 +149,8 @@ const Navbar = () => {
                 to="/boende"
                 className={({ isActive }) =>
                   isActive
-                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
-                    : "block text-lg hover:text-orange-500"
+                    ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
+                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -160,8 +160,8 @@ const Navbar = () => {
                 to="/bensinstationer"
                 className={({ isActive }) =>
                   isActive
-                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
-                    : "block text-lg hover:text-orange-500"
+                    ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
+                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -171,8 +171,8 @@ const Navbar = () => {
                 to="/om"
                 className={({ isActive }) =>
                   isActive
-                    ? "block text-lg hover:text-orange-500 underline underline-offset-8 decoration-orange-500"
-                    : "block text-lg hover:text-orange-500"
+                    ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
+                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >

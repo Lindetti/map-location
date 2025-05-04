@@ -8,6 +8,7 @@ import Shops from "./components/Pages/Shops";
 import Transport from "./components/Pages/Transport";
 import Hotel from "./components/Pages/Hotel";
 import About from "./components/Pages/About";
+import PrivacyPolicy from "./components/Pages/PrivacyPolicy";
 import Footer from "./components/Layout/Footer";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
               <Route path="/boende" element={<Hotel />} />
               <Route path="/bensinstationer" element={<Transport />} />
               <Route path="/om" element={<About />} />
+              <Route path="/privacypolicy" element={<PrivacyPolicy />} />
             </Routes>
           </CityProvider>
         </main>

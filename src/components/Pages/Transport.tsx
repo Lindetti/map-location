@@ -237,13 +237,15 @@ const Transport = () => {
 
   return (
     <div className="w-full p-5 flex flex-col gap-4 items-center mb-5 md:mt-2 min-h-[calc(100vh-280px)]">
-      <Header
-        city={city ?? undefined}
-        isLoading={isLoading}
-        onRefresh={getUserLocation}
-        placeType="Bensinstationer"
-        showTypeSelect={false}
-      />
+      {!error && (
+        <Header
+          city={city ?? undefined}
+          onRefresh={getUserLocation}
+          placeType="Boenden"
+          showTypeSelect={false}
+          isLoading={isLoading}
+        />
+      )}
 
       {!isPositionFixed && (
         <AutoLocationUpdater onLocationUpdate={getUserLocation} />

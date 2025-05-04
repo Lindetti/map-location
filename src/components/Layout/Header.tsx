@@ -20,11 +20,11 @@ const Header = ({
   return (
     <div className=" flex flex-col gap-4 w-full lg:w-2/4 mt-3 md:mt-2">
       {isHome ? (
-        <div className="w-full lg:w-[550px] ">
+        <div className="w-full lg:w-[800px] ">
           <div className="flex flex-col gap-1">
-            <p className="font-semibold text-gray-500">
-              Upptäck restauranger, butiker och boenden i närheten där du
-              befinner dig.
+            <p className="lg:text-lg text-gray-500">
+              Upptäck vad som finns runt dig – från lokala matställen till
+              praktiska boendealternativ.
             </p>
             <div className="flex gap-1.5 items-center">
               <em>Du befinner dig i </em>

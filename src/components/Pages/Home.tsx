@@ -20,6 +20,9 @@ type Place = OverpassElement & {
   distance: number;
 };
 
+// Nyckeln för sessionStorage
+const WEATHER_LOADED_SESSION_KEY = "weatherInitialLoadComplete";
+
 const Home = () => {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
     null
@@ -41,6 +44,14 @@ const Home = () => {
     feelsLike: number;
     code: number;
   } | null>(null);
+
+  // Nytt state för att spåra initial väderladdning för sessionen
+  const [isInitialWeatherLoadDone, setIsInitialWeatherLoadDone] = useState(
+    () => {
+      // Kolla sessionStorage vid initiering
+      return sessionStorage.getItem(WEATHER_LOADED_SESSION_KEY) === "true";
+    }
+  );
 
   const placeOptions: {
     label: string;
@@ -75,48 +86,66 @@ const Home = () => {
     return distance;
   }
 
-  const fetchWeather = useCallback(async (lat: number, lon: number) => {
-    // Kolla om väderdata finns i localStorage
-    const savedWeather = localStorage.getItem("weatherData");
-    const savedWeatherTime = localStorage.getItem("weatherFetchTime");
-
-    // Om vädret finns och det inte är för gammalt (t.ex. 30 minuter gammalt), använd den
-    if (savedWeather && savedWeatherTime) {
-      const timeElapsed = new Date().getTime() - parseInt(savedWeatherTime);
-      if (timeElapsed < 1800000) {
-        // 30 minutes (30 * 60 * 1000)
-        setWeather(JSON.parse(savedWeather));
-        return;
-      }
-    }
-
-    try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=apparent_temperature&timezone=auto`
-      );
-      const data = await response.json();
-      const currentHour = new Date().getHours();
-      const apparentTempIndex = data.hourly.time.findIndex(
-        (time: string) => new Date(time).getHours() === currentHour
-      );
-
-      const feelsLike = data.hourly.apparent_temperature[apparentTempIndex];
-      const weatherData = {
-        temperature: data.current_weather.temperature,
-        windspeed: data.current_weather.windspeed,
-        code: data.current_weather.weathercode,
-        feelsLike,
+  const fetchWeather = useCallback(
+    async (lat: number, lon: number) => {
+      // Funktion för att markera initial laddning som klar
+      const markInitialLoadComplete = () => {
+        if (!isInitialWeatherLoadDone) {
+          setIsInitialWeatherLoadDone(true);
+          sessionStorage.setItem(WEATHER_LOADED_SESSION_KEY, "true");
+        }
       };
-      setWeather(weatherData);
 
-      // Spara väderdata i localStorage för framtida användning
-      localStorage.setItem("weatherData", JSON.stringify(weatherData));
-      localStorage.setItem("weatherFetchTime", new Date().getTime().toString());
-    } catch (err) {
-      console.error("Kunde inte hämta väderdata:", err);
-      setWeather(null);
-    }
-  }, []);
+      // Kolla om väderdata finns i localStorage (för cache)
+      const savedWeather = localStorage.getItem("weatherData");
+      const savedWeatherTime = localStorage.getItem("weatherFetchTime");
+
+      // Om vädret finns och det inte är för gammalt, använd den
+      if (savedWeather && savedWeatherTime) {
+        const timeElapsed = new Date().getTime() - parseInt(savedWeatherTime);
+        if (timeElapsed < 1800000) {
+          // 30 minuter
+          setWeather(JSON.parse(savedWeather));
+          markInitialLoadComplete(); // Markera som klar även vid cache-träff
+          return;
+        }
+      }
+
+      // Om ingen giltig cache, försök hämta från API
+      try {
+        const response = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=apparent_temperature&timezone=auto`
+        );
+        const data = await response.json();
+        const currentHour = new Date().getHours();
+        const apparentTempIndex = data.hourly.time.findIndex(
+          (time: string) => new Date(time).getHours() === currentHour
+        );
+
+        const weatherData = {
+          temperature: data.current_weather.temperature,
+          windspeed: data.current_weather.windspeed,
+          code: data.current_weather.weathercode,
+          feelsLike: data.hourly.apparent_temperature[apparentTempIndex],
+        };
+        setWeather(weatherData);
+
+        // Spara i localStorage för cache
+        localStorage.setItem("weatherData", JSON.stringify(weatherData));
+        localStorage.setItem(
+          "weatherFetchTime",
+          new Date().getTime().toString()
+        );
+
+        markInitialLoadComplete(); // Markera som klar efter lyckad API-hämtning
+      } catch (err) {
+        console.error("Kunde inte hämta väderdata:", err);
+        setWeather(null); // Sätt tillbaka till null vid fel
+        // Markera INTE som klar om det blev fel
+      }
+    },
+    [isInitialWeatherLoadDone]
+  );
 
   const getUserLocation = useCallback(async () => {
     if (!navigator.geolocation) {
@@ -145,8 +174,8 @@ const Home = () => {
       const query = `
         [out:json][timeout:25];
         (
-          node(around:10000,${latitude},${longitude})["amenity"~"restaurant|fast_food|bar|cafe|bar|hotel|hostel|shops"];
-          node(around:10000,${latitude},${longitude})["place"];
+          node(around:5000,${latitude},${longitude})["amenity"~"restaurant|fast_food|bar|cafe|bar|hotel|hostel|shops"];
+          node(around:5000,${latitude},${longitude})["place"];
         );
         out body;
       `;
@@ -332,15 +361,19 @@ const Home = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full lg:w-2/4 p-5 flex flex-col gap-6 mb-5 md:mt-2"
+      className="w-full lg:w-2/4 p-5 flex flex-col gap-6 md:mt-2 min-h-screen"
     >
-      <Header
-        city={city ?? undefined}
-        isLoading={isLoading}
-        placeOptions={placeOptions}
-        showTypeSelect={true}
-        isHome
-      />
+      {/* Visa Header endast om platsåtkomst INTE är nekad */}
+      {error !==
+        "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden." && (
+        <Header
+          city={city ?? undefined}
+          isLoading={isLoading}
+          placeOptions={placeOptions}
+          showTypeSelect={true}
+          isHome
+        />
+      )}
 
       <AutoLocationUpdater onLocationUpdate={getUserLocation} />
 
@@ -441,12 +474,12 @@ const Home = () => {
               </div>
             </div>
             <div className="flex-2">
-              {isLoading ? (
+              {!weather && !isInitialWeatherLoadDone ? (
                 <div className="h-[150px] flex flex-col gap-4 items-center justify-center">
                   <p className="text-gray-600">Hämtar aktuellt väder..</p>
                   <ClipLoader color="#F97316" size={40} />
                 </div>
-              ) : (
+              ) : weather ? (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -455,36 +488,34 @@ const Home = () => {
                     isNight() ? "bg-gray-800 text-gray-200" : "bg-blue-200"
                   }`}
                 >
-                  {weather && (
-                    <div className="flex gap-6 justify-center items-center w-full">
-                      <img
-                        className="h-[120px] w-[120px]"
-                        src={
-                          isNight()
-                            ? weatherIcons[weather.code]?.night.icon
-                            : weatherIcons[weather.code]?.day.icon
-                        }
-                        alt="icon"
-                      />
-                      <div className="flex flex-col gap-2">
-                        <p className="font-semibold text-base">
-                          Kl. {getCurrentTime()}
-                        </p>
-                        <p className="font-semibold text-4xl">
-                          {Math.round(weather.temperature)}°
-                        </p>
-                        <div className="flex gap-2 text-sm">
-                          <p>Känns som</p>
-                          <p>{Math.floor(Number(weather.feelsLike))}°</p>
-                        </div>
+                  <div className="flex gap-6 justify-center items-center w-full">
+                    <img
+                      className="h-[120px] w-[120px]"
+                      src={
+                        isNight()
+                          ? weatherIcons[weather.code]?.night.icon
+                          : weatherIcons[weather.code]?.day.icon
+                      }
+                      alt="icon"
+                    />
+                    <div className="flex flex-col gap-2">
+                      <p className="font-semibold text-base">
+                        Kl. {getCurrentTime()}
+                      </p>
+                      <p className="font-semibold text-4xl">
+                        {Math.round(weather.temperature)}°
+                      </p>
+                      <div className="flex gap-2 text-sm">
+                        <p>Känns som</p>
+                        <p>{Math.floor(Number(weather.feelsLike))}°</p>
                       </div>
                     </div>
-                  )}
+                  </div>
                   <div className="absolute bottom-1 left-1 text-sm">
                     <p className="text-gray-400">Powered by open-meteo.com</p>
                   </div>
                 </motion.div>
-              )}
+              ) : null}
             </div>
           </motion.div>
 
@@ -498,7 +529,7 @@ const Home = () => {
             {isLoading ? (
               <PulseLoader color="#F97316" size={5} />
             ) : (
-              <h1 className="font-sans font-semibold text-xl">
+              <h1 className="text-gray-600 font-sans  text-xl">
                 Dina närmaste platser just nu
               </h1>
             )}
@@ -575,7 +606,17 @@ const Home = () => {
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1">
-                            <p className="text-[#C53C07] bg-[#FFF8F5] w-[65px] text-center font-semibold p-2 text-sm rounded-sm">
+                            <p
+                              className={`
+                                w-[65px] text-center font-semibold p-2 text-sm rounded-sm
+                                ${
+                                  calculatedDistance !== null &&
+                                  calculatedDistance <= 0.2
+                                    ? "bg-green-50 text-gray-900"
+                                    : "bg-[#FFF8F5] text-[#C53C07]"
+                                }
+                              `}
+                            >
                               {calculatedDistance !== null
                                 ? calculatedDistance < 1
                                   ? `${Math.round(calculatedDistance * 1000)} m`
