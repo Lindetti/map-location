@@ -13,7 +13,7 @@ import Footer from "./components/Layout/Footer";
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden bg-white">
+    <div className="min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden bg-white dark:bg-gray-900">
       {/* Content */}
       <div className="relative w-full">
         <Navbar />

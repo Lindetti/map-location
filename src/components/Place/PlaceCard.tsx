@@ -41,7 +41,7 @@ const PlaceCard = ({
               <p className="text-base md:text-lg font-semibold leading-5 truncate">
                 {place.name}
               </p>
-              <p className="text-sm text-gray-500">{typeLabel}</p>
+              <p className="text-sm text-gray-500 dark:text-orange-400">{typeLabel}</p>
               {isOpen !== null && (
                 <div className="flex gap-2 items-center mt-2">
                   <div
@@ -52,7 +52,7 @@ const PlaceCard = ({
                     {isOpen ? "Öppet nu" : "Stängt"}
                   </div>
                   {nextChange && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-300">
                       {isOpen
                         ? `Stänger kl. ${nextChange.toLocaleTimeString([], {
                             hour: "2-digit",
@@ -73,7 +73,7 @@ const PlaceCard = ({
         <div className="flex flex-col items-end gap-1">
           <div className="h-[36px] flex items-center rounded-md bg-[#FFF8F5]">
             <div className="flex items-center gap-2 p-2">
-              <p className="font-semibold text-sm md:text-base text-[#C53C07]">
+              <p className="font-semibold text-sm md:text-base text-[#C53C07] dark:text-gray-800">
                 {place.distance < 1
                   ? `${Math.round(place.distance * 1000)} m`
                   : `${place.distance.toFixed(2)} km`}
@@ -93,7 +93,7 @@ const PlaceCard = ({
                 alt="location icon"
               />
             </div>
-            <p className="text-sm text-gray-500">{place.address}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-300">{place.address}</p>
           </div>
         ) : (
           <div></div>

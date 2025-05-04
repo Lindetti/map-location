@@ -442,7 +442,7 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="bg-gray-100 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-4 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
+              <div className="bg-gray-100 dark:bg-gray-800 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-4 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
                 <h1 className="hidden md:block text-center font-semibold text-base">
                   Snabbval
                 </h1>
@@ -467,9 +467,9 @@ const Home = () => {
                 </Link>
                 <Link
                   className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 w-[120px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                  to="/bensinstationer"
+                  to="/vard&halsa"
                 >
-                  Bensinstationer
+                  Vård & Hälsa
                 </Link>
               </div>
             </div>
@@ -484,7 +484,7 @@ const Home = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
-                  className={`relative h-[180px] flex justify-center items-center font-sans ${
+                  className={`relative h-[180px] flex justify-center items-center font-sans rounded-md ${
                     isNight() ? "bg-gray-800 text-gray-200" : "bg-blue-200"
                   }`}
                 >
@@ -529,14 +529,14 @@ const Home = () => {
             {isLoading ? (
               <PulseLoader color="#F97316" size={5} />
             ) : (
-              <h1 className="text-gray-600 font-sans  text-xl">
+              <h1 className="text-gray-700 dark:text-gray-200 font-sans text-xl">
                 Dina närmaste platser just nu
               </h1>
             )}
 
             {isLoading ? (
               <div className="flex flex-col gap-3 justify-center items-center h-full">
-                <p className="text-gray-600">Hämtar din position..</p>
+                <p className="text-gray-600 dark:text-gray-200">Hämtar din position..</p>
                 <ClipLoader color="#F97316" size={40} />
               </div>
             ) : nearbyPlaces.length === 0 ? (
@@ -576,7 +576,7 @@ const Home = () => {
                         ease: "easeOut",
                       }}
                       className={`
-                        bg-white w-full flex flex-col gap-4 p-4 md:p-5 text-black rounded-md shadow-sm
+                        bg-white text-black dark:bg-gray-800 dark:text-gray-200 w-full flex flex-col gap-4 p-4 md:p-5 rounded-md shadow-sm
                         border transition-all duration-300
                         ${
                           expandedIndex === index
@@ -600,13 +600,13 @@ const Home = () => {
                               <p className="font-medium truncate">
                                 {place.tags?.name}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-500 dark:text-orange-400">
                                 {placeLabel}
                               </p>
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1">
-                            <p className="w-[65px] text-center font-semibold p-2 text-sm rounded-sm bg-[#FFF8F5] text-[#C53C07]">
+                            <p className="w-[65px] text-center font-semibold p-2 text-sm rounded-sm bg-[#FFF8F5] text-[#C53C07] dark:text-gray-800">
                               {calculatedDistance !== null
                                 ? calculatedDistance < 1
                                   ? `${Math.round(calculatedDistance * 1000)} m`
@@ -647,7 +647,7 @@ const Home = () => {
                       {isExpanded &&
                         place.lat !== undefined &&
                         place.lon !== undefined && (
-                          <div className="flex flex-col gap-4 p-2 border-t-2">
+                          <div className="flex flex-col gap-4 p-2 border-t-2 dark:border-gray-300">
                             <div className="h-[300px] mt-2 mb-2">
                               <Map
                                 lat={place.lat}
@@ -674,7 +674,7 @@ const Home = () => {
                                     alt="link icon"
                                     className="h-6 w-6"
                                   />
-                                  <p className="text-gray-600">
+                                  <p className="text-gray-600 dark:text-gray-300">
                                     {(place.tags?.cuisine ?? "")
                                       .split(";")
                                       .slice(0, 3)
@@ -690,7 +690,7 @@ const Home = () => {
                                 {place.tags?.brand && (
                                   <div className="flex gap-2 items-center">
                                     <p className="text-gray-500">Kedja:</p>
-                                    <p className="font-semibold text-gray-700">
+                                    <p className="font-semibold text-gray-700 dark:text-gray-300">
                                       {place.tags?.brand}
                                     </p>
                                   </div>
@@ -698,7 +698,7 @@ const Home = () => {
                                 {place.tags?.operator && (
                                   <div className="flex gap-2 items-center">
                                     <p className="text-gray-500">Kedja:</p>
-                                    <p className="font-semibold text-gray-700">
+                                    <p className="font-semibold text-gray-700 dark:text-gray-300">
                                       {place.tags?.operator}
                                     </p>
                                   </div>
@@ -715,7 +715,7 @@ const Home = () => {
                                     />
                                     <a
                                       href={`${place.tags?.["contact:phone"]}`}
-                                      className="text-blue-500 hover:underline"
+                                      className="text-blue-500 dark:text-blue-300 hover:underline"
                                     >
                                       {place.tags?.phone}
                                     </a>
@@ -730,7 +730,7 @@ const Home = () => {
                                     />
                                     <a
                                       href={`mailto:${place.tags?.email}`}
-                                      className="text-blue-500 hover:underline"
+                                      className="text-blue-500 dark:text-blue-300 hover:underline"
                                     >
                                       {place.tags?.email}
                                     </a>
@@ -746,11 +746,11 @@ const Home = () => {
                                     alt="open icon"
                                     className="h-5 w-5"
                                   />
-                                  <p className="font-semibold text-gray-700">
+                                  <p className="font-semibold text-gray-700 dark:text-gray-300">
                                     Öppettider:
                                   </p>
                                 </div>
-                                <ul className="list-none pl-1 text-gray-600">
+                                <ul className="list-none pl-1 text-gray-700 dark:text-gray-300">
                                   {place.tags?.opening_hours
                                     .split(";")
                                     .map((hour, i) => (
@@ -767,7 +767,7 @@ const Home = () => {
                                 <></>
                               ) : (
                                 <div>
-                                  <p className="text-sm text-gray-500">
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">
                                     Om du känner att informationen är
                                     otillräcklig, prova gärna att söka vidare
                                     via webben – du hittar knappen "Sök på
@@ -782,7 +782,7 @@ const Home = () => {
                                   href={place.tags?.website}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                                  className="flex items-center gap-2 text-orange-500 dark:text-gray-200 hover:text-[#C2410C] font-semibold text-sm underline"
                                 >
                                   <img
                                     src={LinkIcon}
@@ -798,7 +798,7 @@ const Home = () => {
                                   )}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                                  className="flex items-center gap-2 text-[#F97316] dark:text-gray-200 hover:text-[#C2410C] font-semibold text-sm underline"
                                 >
                                   <img
                                     src={LinkIcon}

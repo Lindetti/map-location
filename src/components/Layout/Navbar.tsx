@@ -1,16 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "../../assets/icons/logo.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const html = document.documentElement;
+
+    if (isDark) {
+      html.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    } else {
+      html.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    }
+
+    setIsDark(!isDark);
+  };
 
   const handleMenuClick = () => {
     setIsOpen(!isOpen);
   };
 
   return (
-    <nav className="flex bg-gray-100 h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
+    <nav className="flex bg-gray-100 dark:bg-gray-800 h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
       <div className="w-full lg:w-2/4 flex flex-col gap-3 md:flex-row justify-between items-center">
         <NavLink to="/">
           <img src={Logo} alt="Logo" className="h-[45px] w-[230px]" />
@@ -24,7 +47,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Hem
@@ -34,7 +57,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Mat & Dryck
@@ -44,7 +67,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Butiker
@@ -54,7 +77,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Boende
@@ -64,7 +87,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Vård & Hälsa
@@ -74,11 +97,21 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Om Platsguiden
           </NavLink>
+          <button
+                onClick={toggleTheme}
+                className={`block  underline underline-offset-8 transition-all ease-in-out duration-200 ${
+                  isDark
+                    ? "decoration-orange-500 text-orange-500"
+                    : "text-gray-700 decoration-transparent hover:decoration-orange-500"
+                }`}
+              >
+                {isDark ? "🌙 Mörkt läge" : "☀️ Ljust läge"}
+              </button>
         </div>
 
         {/* Mobile Menu (Hamburger) */}
@@ -87,9 +120,9 @@ const Navbar = () => {
             onClick={handleMenuClick}
             className="flex flex-col gap-1.5 items-end"
           >
-            <div className="w-8 h-1 bg-black"></div>
-            <div className="w-6 h-1 bg-black"></div>
-            <div className="w-4 h-1 bg-black"></div>
+            <div className="w-8 h-1 bg-black dark:bg-gray-100"></div>
+            <div className="w-6 h-1 bg-black dark:bg-gray-100"></div>
+            <div className="w-4 h-1 bg-black dark:bg-gray-100"></div>
           </button>
         </div>
       </div>
@@ -178,6 +211,16 @@ const Navbar = () => {
               >
                 Om Platsguiden
               </NavLink>
+              <button
+                onClick={toggleTheme}
+                className={`block text-lg underline underline-offset-8 transition-all ease-in-out duration-200 pr-6 ${
+                  isDark
+                    ? "decoration-orange-500 text-orange-500"
+                    : "text-white decoration-transparent hover:decoration-orange-500"
+                }`}
+              >
+                {isDark ? "🌙 Mörkt läge" : "☀️ Ljust läge"}
+              </button>
             </nav>
 
             <div className=" w-full flex justify-center mt-10">
