@@ -606,17 +606,7 @@ const Home = () => {
                             </div>
                           </div>
                           <div className="flex flex-col items-end gap-1">
-                            <p
-                              className={`
-                                w-[65px] text-center font-semibold p-2 text-sm rounded-sm
-                                ${
-                                  calculatedDistance !== null &&
-                                  calculatedDistance <= 0.2
-                                    ? "bg-green-50 text-gray-900"
-                                    : "bg-[#FFF8F5] text-[#C53C07]"
-                                }
-                              `}
-                            >
+                            <p className="w-[65px] text-center font-semibold p-2 text-sm rounded-sm bg-[#FFF8F5] text-[#C53C07]">
                               {calculatedDistance !== null
                                 ? calculatedDistance < 1
                                   ? `${Math.round(calculatedDistance * 1000)} m`

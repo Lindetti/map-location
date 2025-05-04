@@ -60,14 +60,14 @@ const Navbar = () => {
             Boende
           </NavLink>
           <NavLink
-            to="/bensinstationer"
+            to="/vard&halsa"
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
                 : "text-gray-700 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
-            Bensinstationer
+            Vård & Hälsa
           </NavLink>
           <NavLink
             to="/om"
@@ -157,7 +157,7 @@ const Navbar = () => {
                 Boende
               </NavLink>
               <NavLink
-                to="/bensinstationer"
+                to="/vard&halsa"
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
@@ -165,7 +165,7 @@ const Navbar = () => {
                 }
                 onClick={handleMenuClick}
               >
-                Bensinstationer
+                Vård & Hälsa
               </NavLink>
               <NavLink
                 to="/om"

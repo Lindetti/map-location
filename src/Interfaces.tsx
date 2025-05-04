@@ -85,7 +85,10 @@ export type PlaceType =
   | "hotel"
   | "hostel"
   | "fuel"
-  | "convenience";
+  | "convenience"
+  | "pharmacy"
+  | "kiosk"
+  | "hospital"
 
 export const isPlaceType = (value: string): value is PlaceType => {
   return [
@@ -104,6 +107,9 @@ export const isPlaceType = (value: string): value is PlaceType => {
     "alcohol",
     "fuel",
     "convenience",
+    "pharmacy",
+    "kiosk",
+    "hospital"
   ].includes(value);
 };
 
@@ -125,6 +131,9 @@ export const iconMapping: { [key in PlaceType]: string } = {
   hostel: HotelIcon,
   fuel: FuelIcon,
   convenience: SuperMarketIcon,
+  pharmacy: SuperMarketIcon, // Placeholder icon for pharmacy
+  kiosk: SuperMarketIcon, // Placeholder icon for kiosk
+  hospital: SuperMarketIcon, // Placeholder icon for hospital
 };
 
 export interface LoadMoreButtonProps {
