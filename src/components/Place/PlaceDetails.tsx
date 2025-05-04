@@ -5,7 +5,7 @@ import Link from "../../assets/icons/link.png";
 import Open from "../../assets/icons/open.png";
 import { useState, useEffect, useRef } from "react";
 import type { MapHandle } from "../Map";
-import PlatsGuidenIcon from "../../../public/websiteicon.png";
+
 
 // Define the structure for coordinates if needed elsewhere, otherwise inline
 type Coordinate = [number, number]; // Assuming [longitude, latitude] based on ORS
