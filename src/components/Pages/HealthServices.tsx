@@ -304,7 +304,7 @@ const HealthServices = () => {
 
       {isLoading ? (
         <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[500px]">
-          <p>Hämtar din position..</p>
+         <p className="dark:text-gray-200">Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
@@ -313,12 +313,12 @@ const HealthServices = () => {
         </div>
       ) : healthServices.length === 0 ? (
         <div className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4">
-          <p className="text-gray-600 font-medium">
+          <p className="text-gray-600 dark:text-gray-300 font-medium">
             {selectedType === "hospital"
               ? "Inga Sjukhus hittades i närheten av din nuvarande position. Vid akuta behov - vänligen kontakta det lokala nödnumret."
               : `Inga träffar på ${selectedTypeLabel.toLowerCase()} hittades i närheten av din nuvarande position.`}
           </p>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-200">
             Prova att uppdatera din plats eller försök igen senare.
           </p>
         </div>
@@ -341,7 +341,7 @@ const HealthServices = () => {
                   delay: index * 0.1, // Fördröjning för att få varje div att komma i tur och ordning
                 }}
                 className={`
-                  bg-white w-full flex flex-col gap-5 p-3 md:p-5 text-black rounded-md shadow-sm
+                  bg-white text-black dark:bg-gray-800 dark:text-gray-200 w-full flex flex-col gap-5 p-3 md:p-5  rounded-md shadow-sm
                   border transition-all duration-300
                   ${
                     expandedIndex === index
@@ -386,7 +386,7 @@ const HealthServices = () => {
         />
       )}
       {healthServices.length > 0 && (
-        <p className="text-sm text-gray-600 mt-4 text-center">
+        <p className="text-sm text-gray-600 dark:text-gray-200 mt-4 text-center">
           Observera: Viss information kan vara inaktuell. Vissa platser kan ha
           stängt permanent, flyttat eller förändrats utan att det ännu har
           uppdaterats i tjänsten.

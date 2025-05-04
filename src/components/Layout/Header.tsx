@@ -22,11 +22,11 @@ const Header = ({
       {isHome ? (
         <div className="w-full lg:w-[800px] ">
           <div className="flex flex-col gap-1">
-            <p className="lg:text-lg text-gray-500">
+            <p className="lg:text-lg text-gray-500 dark:text-gray-300">
               Upptäck vad som finns runt dig – från lokala matställen till
               praktiska boendealternativ.
             </p>
-            <div className="flex gap-1.5 items-center">
+            <div className="flex gap-1.5 items-center dark:text-gray-300">
               <em>Du befinner dig i </em>
               {city ? (
                 <p className="font-semibold">{city}</p>
@@ -38,7 +38,7 @@ const Header = ({
         </div>
       ) : (
         <div className=" w-full flex flex-col gap-4 md:gap-0 md:flex-row md:justify-between mb-3 items-start">
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 dark:text-gray-300">
             <h1 className="text-2xl md:text-3xl font-bold">
               {placeType} i närheten
             </h1>

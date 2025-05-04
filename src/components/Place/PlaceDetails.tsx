@@ -398,7 +398,7 @@ const PlaceDetails = ({
   };
 
   return (
-    <div className="h-auto flex flex-col gap-5 border-t-2 border-gray-200">
+    <div className="h-auto flex flex-col gap-5 border-t-2 border-gray-200 dark:border-gray-300">
       <div className="h-[350px] mt-5">
         <Map
           lat={place.lat}
@@ -435,9 +435,9 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
                 <img src={icon} alt="cuisine icon" className="h-6 w-6" />
-                <h3 className="font-semibold text-gray-700">Köksstil</h3>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-200">Köksstil</h3>
               </div>
-              <p className="text-gray-600 pl-8">
+              <p className="text-gray-600 dark:text-gray-300 pl-8">
                 {(place.cuisine ?? "")
                   .split(";")
                   .slice(0, 3)
@@ -450,8 +450,8 @@ const PlaceDetails = ({
           {/* Brand/Operator Section */}
           {(place.brand || place.operator) && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-semibold text-gray-700">Kedja</h3>
-              <p className="text-gray-600 pl-8">
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300">Kedja</h3>
+              <p className="text-gray-600 dark:text-gray-200 pl-8">
                 {place.brand || place.operator}
               </p>
             </div>
@@ -460,8 +460,8 @@ const PlaceDetails = ({
           {/* Levels Section */}
           {place.levels && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-semibold text-gray-700">Antal våningar</h3>
-              <p className="text-gray-600 pl-8">{place.levels}</p>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300">Antal våningar</h3>
+              <p className="text-gray-600 dark:text-gray-200 pl-8">{place.levels}</p>
             </div>
           )}
 
@@ -470,14 +470,14 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
                 <img src={Phone} alt="phone icon" className="h-6 w-6" />
-                <h3 className="font-semibold text-gray-700">Kontakt</h3>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300">Kontakt</h3>
               </div>
               <div className="flex flex-col gap-2 pl-8">
                 {place.phone && (
                   <div className="flex gap-2 items-center">
                     <a
                       href={`tel:${place.phone}`}
-                      className="text-blue-500 hover:underline"
+                      className="text-blue-500 dark:text-blue-300 hover:underline"
                     >
                       {place.phone}
                     </a>
@@ -487,7 +487,7 @@ const PlaceDetails = ({
                   <div className="flex gap-2 items-center">
                     <a
                       href={`mailto:${place.email}`}
-                      className="text-blue-500 hover:underline"
+                      className="text-blue-500 dark:text-blue-300 hover:underline"
                     >
                       {place.email}
                     </a>
@@ -502,9 +502,9 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
                 <img src={Open} alt="opening hours icon" className="h-5 w-5" />
-                <h3 className="font-semibold text-gray-700">Öppettider</h3>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300">Öppettider</h3>
               </div>
-              <ul className="list-none pl-8 text-gray-600">
+              <ul className="list-none pl-8 text-gray-600 dark:text-gray-200">
                 {place.openingHours.split(";").map((hour, i) => (
                   <li key={i} className="py-1">
                     {hour.trim()}
@@ -517,7 +517,7 @@ const PlaceDetails = ({
           {/* Website/Google Search Section */}
           <div className="flex flex-col gap-4">
             {!place.website && (
-              <p className="text-sm text-gray-500 text-center md:text-left">
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center md:text-left">
                 Om du känner att informationen är otillräcklig, kan du söka
                 vidare via webben – du hittar knappen "Sök på Google" här
                 nedanför.
@@ -529,7 +529,7 @@ const PlaceDetails = ({
                   href={place.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                  className="flex items-center gap-2 text-[#F97316] dark:text-gray-300 hover:text-[#C2410C] font-semibold text-sm underline"
                 >
                   <img src={Link} alt="website icon" className="h-4 w-4" />
                   Besök webbplats
@@ -541,7 +541,7 @@ const PlaceDetails = ({
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[#F97316] hover:text-[#C2410C] font-semibold text-sm underline"
+                  className="flex items-center gap-2 text-[#F97316] dark:text-gray-300 hover:text-[#C2410C] font-semibold text-sm underline"
                 >
                   <img
                     src={Link}
@@ -553,7 +553,7 @@ const PlaceDetails = ({
               )}
 
               <div className="w-auto h-[50px] flex items-center justify-center">
-                <h1 className="text-base md:text-lg italic font-semibold text-gray-700">
+                <h1 className="text-base md:text-lg italic font-semibold text-gray-700 dark:text-gray-300">
                   Platsguiden
                   <span className="font-bold text-orange-500 text-2xl">.</span>
                 </h1>
@@ -567,13 +567,13 @@ const PlaceDetails = ({
       {showMapModal && (
         <div className="fixed inset-0 bg-black z-50">
           <div className="h-full flex flex-col">
-            <div className="flex justify-between items-center p-4 bg-white">
+            <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800">
               <h2 className="text-xl font-semibold truncate max-w-[80%]">
                 GPS Navigering - {place.name}
               </h2>
               <button
                 onClick={() => setShowMapModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-200"
               >
                 ✕
               </button>
@@ -599,7 +599,7 @@ const PlaceDetails = ({
               )}
             </div>
             {/* Bottom Panel: Initial State (Start) vs Active Route State */}
-            <div className="p-4 pb-12 bg-white border-t flex flex-col gap-4">
+            <div className="p-4 pb-12 bg-white dark:bg-gray-800 border-t flex flex-col gap-4">
               {!isRouteActive ? (
                 <>
                   {/* Start Route Button */}
@@ -608,7 +608,7 @@ const PlaceDetails = ({
                     className="w-full py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition disabled:opacity-50"
                     disabled={isLoadingDirections} // Disable while loading
                   >
-                    {isLoadingDirections ? "Laddar..." : "Starta Rutt (Gång)"}
+                    {isLoadingDirections ? "Laddar..." : "Starta Rutt"}
                   </button>
                 </>
               ) : (
