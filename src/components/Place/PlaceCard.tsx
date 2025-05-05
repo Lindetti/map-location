@@ -1,8 +1,8 @@
 import Location from "../../assets/icons/location.png";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
-import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkMode.png";
-import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkMode.png";
+import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkmode.png";
+import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkmode.png";
 import { PlaceCardProps } from "../../Interfaces";
 import OpeningHours from "opening_hours";
 
