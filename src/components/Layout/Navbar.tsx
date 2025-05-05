@@ -37,11 +37,11 @@ const Navbar = () => {
     <nav className="flex bg-gray-100 dark:bg-[#1a1a1a] h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
       <div className="w-full lg:w-2/4 flex flex-col gap-3 md:flex-row justify-between items-center">
         <NavLink to="/">
-         {!isDark ? (
-           <img src={Logo} alt="Logo" className="h-[45px] w-[230px]" />
-         ) : (
-          <img src={LogoDarkMode} alt="Logo" className="h-[45px] w-[230px]" />
-         )}
+          {!isDark ? (
+            <img src={Logo} alt="Logo" className="h-[45px] w-[230px]" />
+          ) : (
+            <img src={LogoDarkMode} alt="Logo" className="h-[45px] w-[230px]" />
+          )}
         </NavLink>
 
         {/* Desktop Menu */}
@@ -107,16 +107,16 @@ const Navbar = () => {
           >
             Om Platsguiden
           </NavLink>
-          <button
-            onClick={toggleTheme}
-            className={`block  underline underline-offset-8 transition-all ease-in-out duration-200 ${
-              isDark
-                ? "decoration-orange-500 text-orange-500"
-                : "text-gray-700 decoration-transparent hover:decoration-orange-500"
-            }`}
-          >
-            {isDark ? "🌙 Mörkt läge" : "☀️ Ljust läge"}
-          </button>
+          {/* New Toggle Switch for Desktop */}
+          <label className="inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isDark}
+              onChange={toggleTheme}
+              className="sr-only peer"
+            />
+            <div className="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-500"></div>
+          </label>
         </div>
 
         {/* Mobile Menu (Hamburger) */}
@@ -216,16 +216,18 @@ const Navbar = () => {
               >
                 Om Platsguiden
               </NavLink>
-              <button
-                onClick={toggleTheme}
-                className={`block text-lg underline underline-offset-8 transition-all ease-in-out duration-200 pr-6 ${
-                  isDark
-                    ? "decoration-orange-500 text-orange-500"
-                    : "text-white dark:text-gray-200 decoration-transparent hover:decoration-orange-500"
-                }`}
-              >
-                {isDark ? "🌙 Mörkt läge" : "☀️ Ljust läge"}
-              </button>
+              {/* New Toggle Switch for Mobile */}
+              <label className="inline-flex items-center cursor-pointer mt-2">
+                <input
+                  type="checkbox"
+                  checked={isDark}
+                  onChange={() => {
+                    toggleTheme();
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="relative w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 dark:after:bg-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-500"></div>
+              </label>
             </nav>
 
             <div className=" w-full flex justify-center mt-10">
