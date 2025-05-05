@@ -10,7 +10,7 @@ import AutoLocationUpdater from "../AutoLocationUpdater";
 import { weatherIcons } from "../WeatherIcons";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
-import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkMode.png";
+import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkmode.png";
 import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkMode.png";
 import { motion } from "framer-motion";
 import LinkIcon from "../../assets/icons/link.png";
@@ -538,7 +538,9 @@ const Home = () => {
 
             {isLoading ? (
               <div className="flex flex-col gap-3 justify-center items-center h-full">
-                <p className="text-gray-600 dark:text-gray-200">Hämtar din position..</p>
+                <p className="text-gray-600 dark:text-gray-200">
+                  Hämtar din position..
+                </p>
                 <ClipLoader color="#F97316" size={40} />
               </div>
             ) : nearbyPlaces.length === 0 ? (
@@ -637,16 +639,18 @@ const Home = () => {
                             <div> </div>
                           )}
                           <span className="text-xl">
-                          <img
-            src={isExpanded ? ArrowUp : ArrowDown}
-            alt="toggle arrow"
-            className="h-4 w-4 block dark:hidden"
-          />
-          <img
-            src={isExpanded ? ArrowUpDarkMode : ArrowDownDarkmode}
-            alt="toggle arrow dark"
-            className="h-4 w-4 hidden dark:block"
-          />
+                            <img
+                              src={isExpanded ? ArrowUp : ArrowDown}
+                              alt="toggle arrow"
+                              className="h-4 w-4 block dark:hidden"
+                            />
+                            <img
+                              src={
+                                isExpanded ? ArrowUpDarkMode : ArrowDownDarkmode
+                              }
+                              alt="toggle arrow dark"
+                              className="h-4 w-4 hidden dark:block"
+                            />
                           </span>
                         </div>
                       </div>
