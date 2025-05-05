@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
-import Logo from "../../assets/icons/logo.png";
+import Logo from "../../assets/icons/platsguidenlogoDefault.png";
+import LogoDarkMode from "../../assets/icons/platsguidenlogoDarkMode.png";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,10 +34,14 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex bg-gray-100 dark:bg-gray-800 h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
+    <nav className="flex bg-gray-100 dark:bg-[#1a1a1a] h-[130px] md:h-[100px] w-full items-center justify-center px-4 relative font-sans">
       <div className="w-full lg:w-2/4 flex flex-col gap-3 md:flex-row justify-between items-center">
         <NavLink to="/">
-          <img src={Logo} alt="Logo" className="h-[45px] w-[230px]" />
+         {!isDark ? (
+           <img src={Logo} alt="Logo" className="h-[45px] w-[230px]" />
+         ) : (
+          <img src={LogoDarkMode} alt="Logo" className="h-[45px] w-[230px]" />
+         )}
         </NavLink>
 
         {/* Desktop Menu */}
@@ -103,15 +108,15 @@ const Navbar = () => {
             Om Platsguiden
           </NavLink>
           <button
-                onClick={toggleTheme}
-                className={`block  underline underline-offset-8 transition-all ease-in-out duration-200 ${
-                  isDark
-                    ? "decoration-orange-500 text-orange-500"
-                    : "text-gray-700 decoration-transparent hover:decoration-orange-500"
-                }`}
-              >
-                {isDark ? "🌙 Mörkt läge" : "☀️ Ljust läge"}
-              </button>
+            onClick={toggleTheme}
+            className={`block  underline underline-offset-8 transition-all ease-in-out duration-200 ${
+              isDark
+                ? "decoration-orange-500 text-orange-500"
+                : "text-gray-700 decoration-transparent hover:decoration-orange-500"
+            }`}
+          >
+            {isDark ? "🌙 Mörkt läge" : "☀️ Ljust läge"}
+          </button>
         </div>
 
         {/* Mobile Menu (Hamburger) */}
@@ -120,9 +125,9 @@ const Navbar = () => {
             onClick={handleMenuClick}
             className="flex flex-col gap-1.5 items-end"
           >
-            <div className="w-8 h-1 bg-black dark:bg-gray-100"></div>
-            <div className="w-6 h-1 bg-black dark:bg-gray-100"></div>
-            <div className="w-4 h-1 bg-black dark:bg-gray-100"></div>
+            <div className="w-8 h-1 bg-black dark:bg-gray-200"></div>
+            <div className="w-6 h-1 bg-black dark:bg-gray-200"></div>
+            <div className="w-4 h-1 bg-black dark:bg-gray-200"></div>
           </button>
         </div>
       </div>
@@ -137,7 +142,7 @@ const Navbar = () => {
           ></div>
 
           {/* Sliding Menu */}
-          <div className="fixed top-0 right-0 h-full w-1/2 bg-gray-800 text-white z-50 shadow-lg transition-transform transform translate-x-0">
+          <div className="fixed top-0 right-0 h-full w-1/2 bg-gray-800 dark:bg-[#1a1a1a] text-white z-50 shadow-lg transition-transform transform translate-x-0">
             <button
               onClick={handleMenuClick}
               className="absolute top-4 right-5 text-white text-3xl"
@@ -150,7 +155,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -161,7 +166,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -172,7 +177,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -183,7 +188,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -194,7 +199,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -205,7 +210,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -216,7 +221,7 @@ const Navbar = () => {
                 className={`block text-lg underline underline-offset-8 transition-all ease-in-out duration-200 pr-6 ${
                   isDark
                     ? "decoration-orange-500 text-orange-500"
-                    : "text-white decoration-transparent hover:decoration-orange-500"
+                    : "text-white dark:text-gray-200 decoration-transparent hover:decoration-orange-500"
                 }`}
               >
                 {isDark ? "🌙 Mörkt läge" : "☀️ Ljust läge"}

@@ -10,6 +10,8 @@ import AutoLocationUpdater from "../AutoLocationUpdater";
 import { weatherIcons } from "../WeatherIcons";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
+import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkMode.png";
+import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkMode.png";
 import { motion } from "framer-motion";
 import LinkIcon from "../../assets/icons/link.png";
 import Phone from "../../assets/icons/phone.png";
@@ -442,7 +444,7 @@ const Home = () => {
                 </div>
               </div>
 
-              <div className="bg-gray-100 dark:bg-gray-800 py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-4 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
+              <div className="bg-gray-100 dark:bg-[#1e1e1e] py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-4 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
                 <h1 className="hidden md:block text-center font-semibold text-base">
                   Snabbval
                 </h1>
@@ -576,12 +578,12 @@ const Home = () => {
                         ease: "easeOut",
                       }}
                       className={`
-                        bg-white text-black dark:bg-gray-800 dark:text-gray-200 w-full flex flex-col gap-4 p-4 md:p-5 rounded-md shadow-sm
+                        bg-white text-black dark:bg-[#282828] dark:text-gray-200 w-full flex flex-col gap-4 p-4 md:p-5 rounded-md shadow-sm
                         border transition-all duration-300
                         ${
                           expandedIndex === index
                             ? "border-[1.5px] border-orange-500"
-                            : "border border-gray-300 hover:border-orange-500"
+                            : "border border-gray-300 dark:border-[#ffffff20] hover:border-orange-500"
                         }
                       `}
                     >
@@ -635,11 +637,16 @@ const Home = () => {
                             <div> </div>
                           )}
                           <span className="text-xl">
-                            <img
-                              src={isExpanded ? ArrowUp : ArrowDown}
-                              alt="toggle arrow"
-                              className="h-4 w-4"
-                            />
+                          <img
+            src={isExpanded ? ArrowUp : ArrowDown}
+            alt="toggle arrow"
+            className="h-4 w-4 block dark:hidden"
+          />
+          <img
+            src={isExpanded ? ArrowUpDarkMode : ArrowDownDarkmode}
+            alt="toggle arrow dark"
+            className="h-4 w-4 hidden dark:block"
+          />
                           </span>
                         </div>
                       </div>

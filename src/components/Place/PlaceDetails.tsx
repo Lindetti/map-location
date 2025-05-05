@@ -6,7 +6,6 @@ import Open from "../../assets/icons/open.png";
 import { useState, useEffect, useRef } from "react";
 import type { MapHandle } from "../Map";
 
-
 // Define the structure for coordinates if needed elsewhere, otherwise inline
 type Coordinate = [number, number]; // Assuming [longitude, latitude] based on ORS
 
@@ -435,7 +434,9 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
                 <img src={icon} alt="cuisine icon" className="h-6 w-6" />
-                <h3 className="font-semibold text-gray-700 dark:text-gray-200">Köksstil</h3>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-200">
+                  Köksstil
+                </h3>
               </div>
               <p className="text-gray-600 dark:text-gray-300 pl-8">
                 {(place.cuisine ?? "")
@@ -450,7 +451,9 @@ const PlaceDetails = ({
           {/* Brand/Operator Section */}
           {(place.brand || place.operator) && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-semibold text-gray-700 dark:text-gray-300">Kedja</h3>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+                Kedja
+              </h3>
               <p className="text-gray-600 dark:text-gray-200 pl-8">
                 {place.brand || place.operator}
               </p>
@@ -460,8 +463,12 @@ const PlaceDetails = ({
           {/* Levels Section */}
           {place.levels && (
             <div className="flex flex-col gap-2">
-              <h3 className="font-semibold text-gray-700 dark:text-gray-300">Antal våningar</h3>
-              <p className="text-gray-600 dark:text-gray-200 pl-8">{place.levels}</p>
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+                Antal våningar
+              </h3>
+              <p className="text-gray-600 dark:text-gray-200 pl-8">
+                {place.levels}
+              </p>
             </div>
           )}
 
@@ -470,7 +477,9 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
                 <img src={Phone} alt="phone icon" className="h-6 w-6" />
-                <h3 className="font-semibold text-gray-700 dark:text-gray-300">Kontakt</h3>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+                  Kontakt
+                </h3>
               </div>
               <div className="flex flex-col gap-2 pl-8">
                 {place.phone && (
@@ -502,7 +511,9 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
                 <img src={Open} alt="opening hours icon" className="h-5 w-5" />
-                <h3 className="font-semibold text-gray-700 dark:text-gray-300">Öppettider</h3>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300">
+                  Öppettider
+                </h3>
               </div>
               <ul className="list-none pl-8 text-gray-600 dark:text-gray-200">
                 {place.openingHours.split(";").map((hour, i) => (
@@ -567,7 +578,7 @@ const PlaceDetails = ({
       {showMapModal && (
         <div className="fixed inset-0 bg-black z-50">
           <div className="h-full flex flex-col">
-            <div className="flex justify-between items-center p-4 bg-white dark:bg-gray-800">
+            <div className="flex justify-between items-center p-4 bg-white dark:bg-[#282828]">
               <h2 className="text-xl font-semibold truncate max-w-[80%]">
                 GPS Navigering - {place.name}
               </h2>
@@ -599,7 +610,7 @@ const PlaceDetails = ({
               )}
             </div>
             {/* Bottom Panel: Initial State (Start) vs Active Route State */}
-            <div className="p-4 pb-12 bg-white dark:bg-gray-800 border-t flex flex-col gap-4">
+            <div className="p-4 pb-12 bg-white dark:bg-[#282828] border-t flex flex-col gap-4">
               {!isRouteActive ? (
                 <>
                   {/* Start Route Button */}

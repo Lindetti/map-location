@@ -304,7 +304,7 @@ const HealthServices = () => {
 
       {isLoading ? (
         <div className="md:w-2/4 flex flex-col gap-4 justify-center items-center h-[500px]">
-         <p className="dark:text-gray-200">Hämtar din position..</p>
+          <p className="dark:text-gray-200">Hämtar din position..</p>
           <ClipLoader color="#F97316" loading={isLoading} size={120} />
         </div>
       ) : error ? (
@@ -341,12 +341,12 @@ const HealthServices = () => {
                   delay: index * 0.1, // Fördröjning för att få varje div att komma i tur och ordning
                 }}
                 className={`
-                  bg-white text-black dark:bg-gray-800 dark:text-gray-200 w-full flex flex-col gap-5 p-3 md:p-5  rounded-md shadow-sm
+                  bg-white text-black dark:bg-[#282828] dark:text-gray-200 w-full flex flex-col gap-5 p-3 md:p-5  rounded-md shadow-sm
                   border transition-all duration-300
                   ${
                     expandedIndex === index
                       ? "border-[1.5px] border-orange-500"
-                      : "border border-gray-300 hover:border-orange-500"
+                      : "border border-gray-300 dark:border-[#ffffff20] dark:hover:border-orange-500 hover:border-orange-500"
                   }
                 `}
               >
