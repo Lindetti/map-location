@@ -11,7 +11,7 @@ import { weatherIcons } from "../WeatherIcons";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
 import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkmode.png";
-import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkMode.png";
+import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkmode.png";
 import { motion } from "framer-motion";
 import LinkIcon from "../../assets/icons/link.png";
 import Phone from "../../assets/icons/phone.png";
