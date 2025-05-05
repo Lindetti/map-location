@@ -51,7 +51,7 @@ const About = () => {
               <span className="text-orange-500">?</span>
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Hitta närmaste platser 📍
                 </h3>
@@ -62,7 +62,7 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Visa på karta 🗺️
                 </h3>
@@ -72,7 +72,7 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Detaljerad information ℹ️
                 </h3>
@@ -83,7 +83,7 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Exakt position 📡
                 </h3>
@@ -94,7 +94,7 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Aktivera GPS 📡
                 </h3>
@@ -105,7 +105,7 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Väder på aktuell plats 🌤️
                 </h3>
@@ -124,7 +124,7 @@ const About = () => {
               Kategorier i Platsguiden
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Mat & Dryck
                 </h3>
@@ -133,7 +133,7 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Butiker
                 </h3>
@@ -142,14 +142,14 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Boende
                 </h3>
                 <p className="text-gray-600 dark:text-gray-200">Hotell och vandrarhem</p>
               </div>
 
-              <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:border-[1.5px]">
+              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Vård & Hälsa
                 </h3>

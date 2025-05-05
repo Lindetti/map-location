@@ -27,7 +27,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="p-4 bg-gray-800 text-gray-400 text-center w-full h-[250px] md:h-[200px] flex flex-col gap-8 items-center justify-center">
+    <footer className="p-4 bg-gray-800 dark:bg-[#202020] text-gray-400 text-center w-full h-[250px] md:h-[200px] flex flex-col gap-8 items-center justify-center">
       <p>
         <span className="text-white font-semibold">
           © 2025 Platsguiden<span className="text-orange-500 text-3xl">.</span>

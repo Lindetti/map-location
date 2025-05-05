@@ -1,6 +1,8 @@
 import Location from "../../assets/icons/location.png";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
+import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkmode.png";
+import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkmode.png";
 import { PlaceCardProps } from "../../Interfaces";
 import OpeningHours from "opening_hours";
 
@@ -41,7 +43,9 @@ const PlaceCard = ({
               <p className="text-base md:text-lg font-semibold leading-5 truncate">
                 {place.name}
               </p>
-              <p className="text-sm text-gray-500 dark:text-orange-400">{typeLabel}</p>
+              <p className="text-sm text-gray-500 dark:text-orange-400">
+                {typeLabel}
+              </p>
               {isOpen !== null && (
                 <div className="flex gap-2 items-center mt-2">
                   <div
@@ -93,7 +97,9 @@ const PlaceCard = ({
                 alt="location icon"
               />
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-300">{place.address}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-300">
+              {place.address}
+            </p>
           </div>
         ) : (
           <div></div>
@@ -103,7 +109,12 @@ const PlaceCard = ({
           <img
             src={isExpanded ? ArrowUp : ArrowDown}
             alt="toggle arrow"
-            className="h-4 w-4"
+            className="h-4 w-4 block dark:hidden"
+          />
+          <img
+            src={isExpanded ? ArrowUpDarkMode : ArrowDownDarkmode}
+            alt="toggle arrow dark"
+            className="h-4 w-4 hidden dark:block"
           />
         </span>
       </div>
