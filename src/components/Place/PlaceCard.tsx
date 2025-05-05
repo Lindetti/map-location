@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import Location from "../../assets/icons/location.png";
 import ArrowUp from "../../assets/icons/arrowUp.png";
 import ArrowDown from "../../assets/icons/arrowDown.png";
