@@ -38,7 +38,7 @@ const Header = ({
         </div>
       ) : (
         <div className=" w-full flex flex-col gap-4 md:gap-0 md:flex-row md:justify-between mb-3 items-start">
-          <div className="flex flex-col gap-1 dark:text-gray-300">
+          <div className="flex flex-col gap-1 dark:text-gray-300 text-gray-700">
             <h1 className="text-2xl md:text-3xl font-bold">
               {placeType} i närheten
             </h1>
@@ -76,7 +76,7 @@ const Header = ({
                   </svg>
                 </button>
                 {isDropdownOpen && (
-                  <ul className="absolute z-10 mt-10 w-[160px] bg-white border border-gray-300 rounded shadow-md">
+                  <ul className="absolute z-10 mt-11 w-[160px] bg-white dark:bg-[#1e1e1e] dark:text-gray-300 border border-gray-300 dark:border-gray-500 rounded shadow-md">
                     {placeOptions
                       .filter((option) => option.value !== selectedType) // Ta bort valt alternativ
                       .map((option) => (
@@ -86,7 +86,7 @@ const Header = ({
                             onTypeChange(option.value);
                             setIsDropdownOpen(false);
                           }}
-                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 ${
+                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
                             selectedType === option.value
                               ? "font-bold bg-[#FCF9F8]"
                               : ""

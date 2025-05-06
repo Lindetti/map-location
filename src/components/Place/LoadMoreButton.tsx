@@ -21,7 +21,7 @@ const LoadMoreButton = ({
 
   return (
     <button
-      className="mt-4 px-4 py-2 border border-orange-500 text-[#C2410C] hover:text-[#9A2A06] dark:border-gray-100 dark:text-gray-100 dark:hover:text-gray-200 rounded font-semibold"
+      className="mt-4 px-4 py-2 border border-orange-500 text-[#C2410C] hover:text-[#9A2A06] dark:border-gray-100 dark:text-gray-300 dark:hover:text-gray-400 rounded font-semibold"
       onClick={onClick}
     >
       {visibleCount === maxCount ? "Visa mindre" : "Visa mer"}

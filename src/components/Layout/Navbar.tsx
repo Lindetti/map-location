@@ -52,7 +52,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Hem
@@ -62,7 +62,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Mat & Dryck
@@ -82,7 +82,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Boende
@@ -92,7 +92,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Vård & Hälsa
@@ -102,7 +102,7 @@ const Navbar = () => {
             className={({ isActive }) =>
               isActive
                 ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                : "text-gray-700 dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
             }
           >
             Om Platsguiden
@@ -155,7 +155,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -166,7 +166,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -177,7 +177,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -188,7 +188,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -199,7 +199,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
@@ -210,7 +210,7 @@ const Navbar = () => {
                 className={({ isActive }) =>
                   isActive
                     ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white dark:text-gray-200 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
+                    : "block text-lg text-white dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
                 }
                 onClick={handleMenuClick}
               >
