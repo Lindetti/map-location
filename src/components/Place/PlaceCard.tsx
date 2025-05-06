@@ -40,7 +40,7 @@ const PlaceCard = ({
           </div>
           <div className="flex flex-col">
             <div className="w-[180px] md:w-[450px]">
-              <p className="text-base md:text-lg font-medium leading-5 truncate text-gray-700 dark:text-gray-300">
+              <p className="text-base md:text-lg font-medium leading-5 truncate text-gray-800 dark:text-gray-300">
                 {place.name}
               </p>
               <p className="text-sm text-gray-500 dark:text-orange-400">

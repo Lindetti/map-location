@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ClipLoader, PulseLoader } from "react-spinners";
 import { HeaderProps, iconMapping } from "../../Interfaces";
 import Refresh1 from "../../assets/icons/refresh1.png";
@@ -16,6 +16,28 @@ const Header = ({
   isHome = false,
 }: HeaderProps) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <div className=" flex flex-col gap-4 w-full lg:w-2/4 mt-3 md:mt-2">
@@ -53,7 +75,7 @@ const Header = ({
           </div>
           <div className="flex gap-2 relative justify-center">
             {showTypeSelect && placeOptions && selectedType && onTypeChange && (
-              <div className="relative flex flex-grow">
+              <div className="relative flex flex-grow" ref={dropdownRef}>
                 <button
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center justify-between w-[160px] text-sm bg-[#FCF9F8] px-3 h-[40px] border border-gray-300 rounded font-semibold"
@@ -77,37 +99,35 @@ const Header = ({
                 </button>
                 {isDropdownOpen && (
                   <ul className="absolute z-10 mt-11 w-[160px] bg-white dark:bg-[#1e1e1e] dark:text-gray-300 border border-gray-300 dark:border-gray-500 rounded shadow-md">
-                    {placeOptions
-                      .filter((option) => option.value !== selectedType) // Ta bort valt alternativ
-                      .map((option) => (
-                        <li
-                          key={option.value}
-                          onClick={() => {
-                            onTypeChange(option.value);
-                            setIsDropdownOpen(false);
-                          }}
-                          className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                            selectedType === option.value
-                              ? "font-bold bg-[#FCF9F8]"
-                              : ""
-                          }`}
-                        >
-                          {iconMapping[
-                            option.value as keyof typeof iconMapping
-                          ] && (
-                            <img
-                              src={
-                                iconMapping[
-                                  option.value as keyof typeof iconMapping
-                                ]
-                              } // Hämta rätt ikon från iconMapping
-                              alt={`${option.value} icon`}
-                              className="h-5 w-5 mr-2 inline" // Lägg till margin till höger för att separera ikonen och texten
-                            />
-                          )}
-                          {option.label}
-                        </li>
-                      ))}
+                    {placeOptions.map((option) => (
+                      <li
+                        key={option.value}
+                        onClick={() => {
+                          onTypeChange(option.value);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 ${
+                          selectedType === option.value
+                            ? "font-bold bg-slate-100 dark:bg-gray-700"
+                            : ""
+                        }`}
+                      >
+                        {iconMapping[
+                          option.value as keyof typeof iconMapping
+                        ] && (
+                          <img
+                            src={
+                              iconMapping[
+                                option.value as keyof typeof iconMapping
+                              ]
+                            } // Hämta rätt ikon från iconMapping
+                            alt={`${option.value} icon`}
+                            className="h-5 w-5 mr-2 inline" // Lägg till margin till höger för att separera ikonen och texten
+                          />
+                        )}
+                        {option.label}
+                      </li>
+                    ))}
                   </ul>
                 )}
               </div>
