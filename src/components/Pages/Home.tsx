@@ -487,7 +487,9 @@ const Home = () => {
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
                   className={`relative h-[180px] flex justify-center items-center font-sans rounded-md ${
-                    isNight() ? "bg-gray-800 text-gray-200" : "bg-blue-200"
+                    isNight()
+                      ? "bg-gray-800 text-gray-200 dark:bg-[#1e1e1e] dark:text-gray-300"
+                      : "bg-blue-200 dark:bg-[#1e1e1e] dark:text-gray-300"
                   }`}
                 >
                   <div className="flex gap-6 justify-center items-center w-full">
@@ -584,8 +586,8 @@ const Home = () => {
                         border transition-all duration-300
                         ${
                           expandedIndex === index
-                            ? "border-[1.5px] border-orange-500"
-                            : "border border-gray-300 dark:border-[#ffffff20] hover:border-orange-500"
+                            ? "border-[1.5px] border-orange-500 dark:border-gray-400"
+                            : "border border-gray-300 dark:border-[#ffffff20] dark:hover:border-gray-400 hover:border-orange-500"
                         }
                       `}
                     >
@@ -601,7 +603,7 @@ const Home = () => {
                               alt="text"
                             />
                             <div>
-                              <p className="font-medium truncate">
+                              <p className="text-base md:text-lg font-medium leading-5 truncate text-gray-700 dark:text-gray-300">
                                 {place.tags?.name}
                               </p>
                               <p className="text-xs text-gray-500 dark:text-orange-400">
@@ -622,7 +624,7 @@ const Home = () => {
 
                         <div className="flex justify-between items-center">
                           {place.tags?.opening_hours ? (
-                            <div className="pl-4">
+                            <div className="pl-6">
                               <p
                                 className={`text-sm font-medium py-1 px-2 rounded-md text-white ${
                                   isOpen(place.tags.opening_hours)
@@ -819,6 +821,15 @@ const Home = () => {
                                   Sök på Google
                                 </a>
                               )}
+
+                              <div className="w-auto h-[50px] flex items-center justify-center">
+                                <h1 className="text-base md:text-lg italic font-semibold text-gray-700 dark:text-gray-300">
+                                  Platsguiden
+                                  <span className="font-bold text-orange-500 text-2xl">
+                                    .
+                                  </span>
+                                </h1>
+                              </div>
                             </div>
                           </div>
                         )}

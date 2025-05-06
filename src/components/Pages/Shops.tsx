@@ -354,8 +354,8 @@ const Shops = () => {
                   border transition-all duration-300
                   ${
                     expandedIndex === index
-                      ? "border-[1.5px] border-orange-500"
-                      : "border border-gray-300 dark:border-[#ffffff20] dark:hover:border-orange-500 hover:border-orange-500"
+                      ? "border-[1.5px] border-orange-500 dark:border-gray-400"
+                      : "border border-gray-300 dark:border-[#ffffff20] dark:hover:border-gray-400 hover:border-orange-500"
                   }
                 `}
               >

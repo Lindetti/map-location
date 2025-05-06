@@ -434,7 +434,7 @@ const PlaceDetails = ({
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
                 <img src={icon} alt="cuisine icon" className="h-6 w-6" />
-                <h3 className="font-semibold text-gray-700 dark:text-gray-200">
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300">
                   Köksstil
                 </h3>
               </div>

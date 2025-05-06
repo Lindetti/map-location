@@ -17,7 +17,7 @@ const About = () => {
             alt="Hero"
             className="absolute inset-0 w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black bg-opacity-60 dark:bg-opacity-55 flex items-center justify-center">
             <div className="text-center text-white px-4">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 Om Platsguiden<span className="text-orange-500">.</span>
@@ -138,7 +138,7 @@ const About = () => {
                   Butiker
                 </h3>
                 <p className="text-gray-600 dark:text-gray-200">
-                 kläder, skor, elektronik och Systembolag
+                  kläder, skor, elektronik och Systembolag
                 </p>
               </div>
 
@@ -146,14 +146,18 @@ const About = () => {
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Boende
                 </h3>
-                <p className="text-gray-600 dark:text-gray-200">Hotell och vandrarhem</p>
+                <p className="text-gray-600 dark:text-gray-200">
+                  Hotell och vandrarhem
+                </p>
               </div>
 
               <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
                 <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
                   Vård & Hälsa
                 </h3>
-                <p className="text-gray-600 dark:text-gray-200">Hitta vård och apotek nära dig</p>
+                <p className="text-gray-600 dark:text-gray-200">
+                  Hitta vård och apotek nära dig
+                </p>
               </div>
             </div>
           </div>

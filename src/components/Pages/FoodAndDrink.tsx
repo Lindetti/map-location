@@ -371,8 +371,8 @@ const FoodAndDrink = () => {
                   border transition-all duration-300
                   ${
                     expandedIndex === index
-                      ? "border-[1.5px] border-orange-500"
-                      : "border border-gray-300 dark:border-[#ffffff20] dark:hover:border-orange-500 hover:border-orange-500"
+                      ? "border-[1.5px] border-orange-500 dark:border-gray-400"
+                      : "border border-gray-300 dark:border-[#ffffff20] dark:hover:border-gray-400 hover:border-orange-500"
                   }
                 `}
               >
@@ -414,7 +414,7 @@ const FoodAndDrink = () => {
       )}
 
       {foodAndDrink.length > 0 && (
-        <p className="text-sm text-gray-600 dark:text-gray-200 mt-4 text-center">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 text-center">
           Observera: Viss information kan vara inaktuell. Vissa platser kan ha
           stängt permanent, flyttat eller förändrats utan att det ännu har
           uppdaterats i tjänsten.
