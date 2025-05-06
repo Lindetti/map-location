@@ -603,7 +603,7 @@ const Home = () => {
                               alt="text"
                             />
                             <div>
-                              <p className="text-base md:text-lg font-medium leading-5 truncate text-gray-700 dark:text-gray-300">
+                              <p className="text-base md:text-lg font-medium leading-5 truncate text-gray-800 dark:text-gray-300">
                                 {place.tags?.name}
                               </p>
                               <p className="text-xs text-gray-500 dark:text-orange-400">
