@@ -4,10 +4,4 @@
 @tailwind components;
 @tailwind utilities;
 
-.leaflet-popup-content-wrapper {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-.leaflet-popup-tip {
-  background: transparent !important;
-}
+/* Leaflet-specific styles removed */
