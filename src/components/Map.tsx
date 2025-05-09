@@ -90,24 +90,23 @@ const Map = forwardRef<MapHandle, MapProps>(
 
       mapRef.current = new maplibregl.Map({
         container: mapContainer.current,
-        style: `/api/mapProxy?mapPath=maps/streets-v2/style.json`, // Use the proxy for the main style
+        style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${
+          import.meta.env.VITE_MAPTILER_API_KEY
+        }`,
         center: [lon, lat],
         zoom: zoom,
         minZoom: 15,
         maxZoom: 18,
         transformRequest: (url) => {
           if (url.startsWith("https://api.maptiler.com/")) {
-            const mapTilerBasePath = "https://api.maptiler.com/".length;
-            const pathAndQuery = url.substring(mapTilerBasePath);
-            // Remove any existing key query parameter from the original URL if present
-            const pathWithoutKey = pathAndQuery.replace(/[?&]key=[^&]+/, "");
+            // Add the API key to all MapTiler requests
+            const separator = url.includes("?") ? "&" : "?";
             return {
-              url: `/api/mapProxy?mapPath=${encodeURIComponent(
-                pathWithoutKey
-              )}`,
+              url: `${url}${separator}key=${
+                import.meta.env.VITE_MAPTILER_API_KEY
+              }`,
             };
           }
-          // For non-MapTiler URLs (e.g., local assets, other domains), pass them through unchanged
           return { url };
         },
       });
