@@ -66,6 +66,8 @@ const Map = forwardRef<MapHandle, MapProps>(
     const placeMarkerRef = useRef<Marker | null>(null);
     const userPopupRef = useRef<Popup | null>(null);
     const placePopupRef = useRef<Popup | null>(null);
+    const [hasUserManuallyZoomed, setHasUserManuallyZoomed] = useState(false);
+    const isFlyingToRef = useRef(false); // To track if flyTo is active
 
     // Expose the stopWatching function via useImperativeHandle
     useImperativeHandle(ref, () => ({
@@ -84,24 +86,30 @@ const Map = forwardRef<MapHandle, MapProps>(
 
     // Initialize map
     useEffect(() => {
-      if (mapRef.current || !mapContainer.current) return; // Initialize map only once and if container is available
-
-      const mapTilerKey = import.meta.env.VITE_MAPTILER_KEY;
-      if (!mapTilerKey) {
-        console.error(
-          "MapTiler API key is missing. Please set VITE_MAPTILER_KEY environment variable."
-        );
-        // Optionally, render a fallback or show an error message to the user
-        return;
-      }
+      if (mapRef.current || !mapContainer.current) return;
 
       mapRef.current = new maplibregl.Map({
         container: mapContainer.current,
-        style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerKey}`,
-        center: [lon, lat], // MapLibre uses [lon, lat]
+        style: `/api/mapProxy?mapPath=maps/streets-v2/style.json`, // Use the proxy for the main style
+        center: [lon, lat],
         zoom: zoom,
-        minZoom: 15, // Adjusted minZoom
+        minZoom: 15,
         maxZoom: 18,
+        transformRequest: (url) => {
+          if (url.startsWith("https://api.maptiler.com/")) {
+            const mapTilerBasePath = "https://api.maptiler.com/".length;
+            const pathAndQuery = url.substring(mapTilerBasePath);
+            // Remove any existing key query parameter from the original URL if present
+            const pathWithoutKey = pathAndQuery.replace(/[?&]key=[^&]+/, "");
+            return {
+              url: `/api/mapProxy?mapPath=${encodeURIComponent(
+                pathWithoutKey
+              )}`,
+            };
+          }
+          // For non-MapTiler URLs (e.g., local assets, other domains), pass them through unchanged
+          return { url };
+        },
       });
 
       mapRef.current.addControl(
@@ -136,6 +144,34 @@ const Map = forwardRef<MapHandle, MapProps>(
         }
       };
     }, [lat, lon, zoom, name]); // Ensure map re-initializes if these core props change (though ideally, they don't after first load)
+
+    // Listen to map events for manual zoom detection
+    useEffect(() => {
+      if (!mapRef.current) return;
+      const map = mapRef.current;
+
+      const onZoomStart = () => {
+        // If zoom starts and it wasn't initiated by our flyTo, assume user interaction
+        if (!isFlyingToRef.current) {
+          setHasUserManuallyZoomed(true);
+        }
+      };
+      const onFlyStart = () => {
+        isFlyingToRef.current = true;
+      };
+
+      map.on("zoomstart", onZoomStart);
+      map.on("movestart", onZoomStart); // Consider pan as well for resetting auto-zoom intention
+      // Track flyTo calls to distinguish them from manual zooms
+      map.on("flystart", onFlyStart); // Hypothetical event, MapLibre might not have direct flystart/flyend
+      // We will manage isFlyingToRef around flyTo calls instead.
+
+      return () => {
+        map.off("zoomstart", onZoomStart);
+        map.off("movestart", onZoomStart);
+        map.off("flystart", onFlyStart);
+      };
+    }, []); // Empty dependency array, runs once when map is initialized
 
     // Effect for getting/watching user position
     useEffect(() => {
@@ -199,11 +235,18 @@ const Map = forwardRef<MapHandle, MapProps>(
             }
 
             if (routeCoordinates && mapRef.current) {
-              mapRef.current.flyTo({
-                center: [userLon, userLat],
-                zoom: 18,
-                duration: 1000,
-              });
+              if (!hasUserManuallyZoomed) {
+                isFlyingToRef.current = true;
+                mapRef.current.flyTo({
+                  center: [userLon, userLat],
+                  zoom: 18,
+                  duration: 1000,
+                });
+                setTimeout(() => (isFlyingToRef.current = false), 1000); // Reset after flyTo duration
+              } else {
+                // If user has manually zoomed, only pan to the new user location
+                mapRef.current.panTo([userLon, userLat]);
+              }
             }
           }
         };
@@ -266,6 +309,10 @@ const Map = forwardRef<MapHandle, MapProps>(
       if (!mapRef.current) return;
       const map = mapRef.current;
 
+      // Reset manual zoom flag when route changes or is removed
+      setHasUserManuallyZoomed(false);
+      isFlyingToRef.current = false; // Reset flying ref too
+
       const routeSource = map.getSource("route") as GeoJSONSource;
       if (routeCoordinates && routeCoordinates.length > 0) {
         const geojsonRoute = {
@@ -301,11 +348,13 @@ const Map = forwardRef<MapHandle, MapProps>(
         }
 
         if (userPosition) {
+          isFlyingToRef.current = true;
           map.flyTo({
             center: [userPosition.lon, userPosition.lat],
-            zoom: 18,
+            zoom: 18, // Initial zoom when route starts with user position
             duration: 1000,
           });
+          setTimeout(() => (isFlyingToRef.current = false), 1000);
         } else {
           const bounds = routeCoordinates.reduce((bounds, coord) => {
             return bounds.extend(coord as LngLatLike);
@@ -317,17 +366,23 @@ const Map = forwardRef<MapHandle, MapProps>(
           map.removeLayer("route");
           map.removeSource("route");
         }
+        // Reset flag if route is removed
+        setHasUserManuallyZoomed(false);
+        isFlyingToRef.current = false;
+
         // If no route, but user position is shown, fly to user
         if (userPosition && showUserPosition) {
-          // Check showUserPosition as well
+          isFlyingToRef.current = true;
           map.flyTo({
             center: [userPosition.lon, userPosition.lat],
             zoom: zoom,
             duration: 1000,
           });
+          setTimeout(() => (isFlyingToRef.current = false), 1000);
         } else {
-          // If no route and no user position (or not shown), center on the place
+          isFlyingToRef.current = true;
           map.flyTo({ center: [lon, lat], zoom: zoom, duration: 1000 });
+          setTimeout(() => (isFlyingToRef.current = false), 1000);
         }
       }
     }, [routeCoordinates, userPosition, lat, lon, zoom, showUserPosition]);
@@ -335,11 +390,14 @@ const Map = forwardRef<MapHandle, MapProps>(
     // Effect to handle programmatic fly-to requests
     useEffect(() => {
       if (flyToTrigger && flyToCoords && mapRef.current) {
+        setHasUserManuallyZoomed(false); // Programmatic fly-to should reset manual zoom
+        isFlyingToRef.current = true;
         mapRef.current.flyTo({
           center: flyToCoords, // Expects [lon, lat]
-          zoom: mapRef.current.getZoom(),
+          zoom: mapRef.current.getZoom(), // Or a specific zoom if desired
           duration: 1500,
         });
+        setTimeout(() => (isFlyingToRef.current = false), 1500);
       }
     }, [flyToTrigger, flyToCoords]);
 
