@@ -5,41 +5,31 @@ import {
   forwardRef,
   useImperativeHandle,
 } from "react";
-import {
-  MapContainer,
-  TileLayer,
+import maplibregl, {
+  Map as MaplibreMap,
   Marker,
   Popup,
-  Polyline,
-} from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+  LngLatLike,
+  GeoJSONSource,
+} from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import userIconPosition from "../assets/icons/usericon.png";
 import userArrowIcon from "../assets/icons/arrowDown.png";
 
-// Define Coordinate type consistent with ORS output
-type Coordinate = [number, number]; // [longitude, latitude]
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
+// Define Coordinate type consistent with ORS output (longitude, latitude)
+type Coordinate = [number, number];
 
 // Define the props for the Map component
 type MapProps = {
-  lat: number;
-  lon: number;
+  lat: number; // Latitude
+  lon: number; // Longitude
   zoom?: number;
   name?: string;
   centerOnUser?: boolean;
   showUserPosition?: boolean;
   showPolyLine?: boolean;
-  routeCoordinates?: Coordinate[] | null; // Add new prop for ORS route
-  flyToCoords?: [number, number] | null; // Coords to fly to (lat, lon)
+  routeCoordinates?: Coordinate[] | null; // ORS route [lon, lat]
+  flyToCoords?: [number, number] | null; // Coords to fly to [lon, lat]
   flyToTrigger?: number | null; // Trigger for the fly-to action
 };
 
@@ -47,38 +37,6 @@ type MapProps = {
 export type MapHandle = {
   stopWatching: () => void;
 };
-
-const customIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-});
-
-// Create a custom DivIcon to layer the dot and the arrow
-const userIcon = L.divIcon({
-  className: "user-location-marker", // Custom class for potential styling
-  html: `
-    <img src="${userArrowIcon}" class="user-direction-arrow" alt="direction arrow" style="width: 30px; height: 30px; position: absolute; left: 50%; top: 100%; transform: translate(-50%, -5px);" />
-    <img src="${userIconPosition}" class="user-location-dot" alt="user location" style="width: 42px; height: 42px; position: relative; z-index: 1;" />
-  `,
-  iconSize: [42, 42], // Base size of the main dot icon
-  iconAnchor: [21, 42], // Anchor at the bottom-center of the dot
-  popupAnchor: [0, -45], // Adjust popup anchor relative to the dot's bottom
-});
-
-const popupStyle = `
-  .leaflet-popup-content-wrapper {
-    padding: 0;
-    overflow: hidden;
-  }
-  .leaflet-popup-content {
-    margin: 0;
-  }
-  .leaflet-popup-tip-container {
-    display: none;
-  }
-`;
 
 // Use forwardRef to allow parent component to call functions on this component
 const Map = forwardRef<MapHandle, MapProps>(
@@ -96,14 +54,18 @@ const Map = forwardRef<MapHandle, MapProps>(
     },
     ref // The ref passed from the parent
   ) => {
+    const mapContainer = useRef<HTMLDivElement | null>(null);
+    const mapRef = useRef<MaplibreMap | null>(null);
     const [userPosition, setUserPosition] = useState<{
-      lat: number;
       lon: number;
+      lat: number;
       heading: number | null;
     } | null>(null);
-    const mapRef = useRef<L.Map | null>(null);
-    const watchIdRef = useRef<number | null>(null); // Use ref to store watchId for imperative cleanup
-    const userMarkerRef = useRef<L.Marker | null>(null); // Ref for the user marker instance
+    const watchIdRef = useRef<number | null>(null);
+    const userMarkerRef = useRef<Marker | null>(null);
+    const placeMarkerRef = useRef<Marker | null>(null);
+    const userPopupRef = useRef<Popup | null>(null);
+    const placePopupRef = useRef<Popup | null>(null);
 
     // Expose the stopWatching function via useImperativeHandle
     useImperativeHandle(ref, () => ({
@@ -112,61 +74,153 @@ const Map = forwardRef<MapHandle, MapProps>(
           navigator.geolocation.clearWatch(watchIdRef.current);
           watchIdRef.current = null;
         }
-        // Also clear the user position marker when stopping externally
         setUserPosition(null);
+        if (userMarkerRef.current) {
+          userMarkerRef.current.remove();
+          userMarkerRef.current = null;
+        }
       },
     }));
 
-    // Effect for getting/watching user position (used for marker AND panning/zooming during route)
+    // Initialize map
     useEffect(() => {
-      // Clear previous watch before starting a new one (belt-and-suspenders)
+      if (mapRef.current || !mapContainer.current) return; // Initialize map only once and if container is available
+
+      const mapTilerKey = import.meta.env.VITE_MAPTILER_KEY;
+      if (!mapTilerKey) {
+        console.error(
+          "MapTiler API key is missing. Please set VITE_MAPTILER_KEY environment variable."
+        );
+        // Optionally, render a fallback or show an error message to the user
+        return;
+      }
+
+      mapRef.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: `https://api.maptiler.com/maps/streets-v2/style.json?key=${mapTilerKey}`,
+        center: [lon, lat], // MapLibre uses [lon, lat]
+        zoom: zoom,
+        minZoom: 15, // Adjusted minZoom
+        maxZoom: 18,
+      });
+
+      mapRef.current.addControl(
+        new maplibregl.NavigationControl(),
+        "top-right"
+      );
+
+      // Add a marker for the main place
+      if (mapRef.current) {
+        const placePopupNode = document.createElement("div");
+        placePopupNode.innerHTML = `
+          <div class="bg-[#FFF8F5] p-3 rounded-md min-w-[150px] text-center">
+            <h2 class="text-[#C53C07] font-semibold">${name}</h2>
+          </div>
+        `;
+        placePopupRef.current = new maplibregl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          offset: 25,
+        }).setDOMContent(placePopupNode);
+
+        placeMarkerRef.current = new maplibregl.Marker()
+          .setLngLat([lon, lat])
+          .setPopup(placePopupRef.current)
+          .addTo(mapRef.current);
+      }
+
+      return () => {
+        if (mapRef.current) {
+          mapRef.current.remove();
+          mapRef.current = null;
+        }
+      };
+    }, [lat, lon, zoom, name]); // Ensure map re-initializes if these core props change (though ideally, they don't after first load)
+
+    // Effect for getting/watching user position
+    useEffect(() => {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
       }
 
       if (showUserPosition && navigator.geolocation) {
-        // Get initial position first for faster marker display
+        const handlePositionSuccess = (position: GeolocationPosition) => {
+          const userLon = position.coords.longitude;
+          const userLat = position.coords.latitude;
+          const userHeading = position.coords.heading;
+
+          setUserPosition({
+            lon: userLon,
+            lat: userLat,
+            heading: userHeading,
+          });
+
+          if (mapRef.current) {
+            if (!userMarkerRef.current) {
+              const el = document.createElement("div");
+              el.className = "user-location-marker";
+              el.style.width = "42px";
+              el.style.height = "42px";
+              el.innerHTML = `
+                <img src="${userArrowIcon}" class="user-direction-arrow" alt="direction arrow" style="width: 30px; height: 30px; position: absolute; left: 50%; top: 100%; transform: translate(-50%, -5px) rotate(${
+                userHeading || 0
+              }deg); transform-origin: center center;" />
+                <img src="${userIconPosition}" class="user-location-dot" alt="user location" style="width: 42px; height: 42px; position: relative; z-index: 1;" />
+              `;
+
+              const userPopupNode = document.createElement("div");
+              userPopupNode.innerHTML = `
+                <div class="bg-[#FFF8F5] p-3 rounded-md min-w-[100px] text-center">
+                  <h2 class="text-[#C53C07] font-semibold">Du är här</h2>
+                </div>
+              `;
+              userPopupRef.current = new maplibregl.Popup({
+                closeButton: false,
+                closeOnClick: false,
+                offset: 25,
+              }).setDOMContent(userPopupNode);
+
+              userMarkerRef.current = new maplibregl.Marker(el)
+                .setLngLat([userLon, userLat])
+                .setPopup(userPopupRef.current)
+                .addTo(mapRef.current);
+            } else {
+              userMarkerRef.current.setLngLat([userLon, userLat]);
+              const markerElement = userMarkerRef.current.getElement();
+              const arrowElement = markerElement.querySelector<HTMLElement>(
+                ".user-direction-arrow"
+              );
+              if (arrowElement) {
+                arrowElement.style.transform = `translate(-50%, -5px) rotate(${
+                  userHeading || 0
+                }deg)`;
+              }
+            }
+
+            if (routeCoordinates && mapRef.current) {
+              mapRef.current.flyTo({
+                center: [userLon, userLat],
+                zoom: 18,
+                duration: 1000,
+              });
+            }
+          }
+        };
+
+        const handlePositionError = (error: GeolocationPositionError) => {
+          console.error("Error getting/watching position:", error);
+        };
+
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setUserPosition({
-              lat: position.coords.latitude,
-              lon: position.coords.longitude,
-              heading: position.coords.heading,
-            });
-          },
-          (error) =>
-            console.error("Error getting initial position for marker:", error),
+          handlePositionSuccess,
+          handlePositionError,
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
 
-        // Then start watching for updates
         watchIdRef.current = navigator.geolocation.watchPosition(
-          (position) => {
-            const userLat = position.coords.latitude;
-            const userLon = position.coords.longitude;
-            const userHeading = position.coords.heading;
-            const userLatLng = L.latLng(userLat, userLon);
-
-            setUserPosition({
-              lat: userLat,
-              lon: userLon,
-              heading: userHeading,
-            });
-
-            // Center map exactly on user and zoom *if* route is active
-            if (routeCoordinates && mapRef.current) {
-              const map = mapRef.current;
-              map.setView(userLatLng, 18, {
-                animate: true,
-                duration: 1.0, // Smooth transition
-                noMoveStart: true,
-              });
-            }
-          },
-          (error) => {
-            console.error("Error watching position:", error);
-          },
+          handlePositionSuccess,
+          handlePositionError,
           {
             enableHighAccuracy: true,
             timeout: 5000,
@@ -175,165 +229,178 @@ const Map = forwardRef<MapHandle, MapProps>(
         );
       } else {
         setUserPosition(null);
+        if (userMarkerRef.current) {
+          userMarkerRef.current.remove();
+          userMarkerRef.current = null;
+        }
       }
 
-      // Cleanup function for this effect
       return () => {
         if (watchIdRef.current !== null) {
           navigator.geolocation.clearWatch(watchIdRef.current);
           watchIdRef.current = null;
         }
       };
-    }, [showUserPosition, zoom, routeCoordinates]);
+    }, [showUserPosition, routeCoordinates]); // Removed zoom from deps as flyTo handles zoom during route
 
+    // Effect to update user marker rotation (if marker exists)
     useEffect(() => {
-      const style = document.createElement("style");
-      style.textContent = popupStyle;
-      document.head.appendChild(style);
-      return () => {
-        document.head.removeChild(style);
-      };
-    }, []);
-
-    // Effect to fit map bounds OR zoom to user when route appears/disappears
-    useEffect(() => {
-      if (routeCoordinates && routeCoordinates.length > 0 && mapRef.current) {
-        const map = mapRef.current;
-        // Swap coordinates for Leaflet LatLngBoundsExpression: [lat, lon]
-        const bounds = routeCoordinates.map(
-          (coord) => [coord[1], coord[0]] as L.LatLngExpression
+      if (
+        userMarkerRef.current &&
+        userPosition?.heading !== null &&
+        userPosition?.heading !== undefined
+      ) {
+        const markerElement = userMarkerRef.current.getElement();
+        const arrowElement = markerElement.querySelector<HTMLElement>(
+          ".user-direction-arrow"
         );
-        // If user position is known when route loads, zoom directly on user
-        if (userPosition) {
-          const userLatLng = L.latLng(userPosition.lat, userPosition.lon);
-          map.setView(userLatLng, 18, { animate: true }); // Zoom in directly on user
-        }
-        // Otherwise (user position not yet known), fit the route bounds
-        else if (bounds.length > 0) {
-          const latLngBounds = L.latLngBounds(bounds);
-          map.fitBounds(latLngBounds, { padding: [50, 50] });
-        }
-      } else if (!routeCoordinates && mapRef.current) {
-        // If no route, but user position is shown, fly to user
-        if (userPosition) {
-          mapRef.current.flyTo([userPosition.lat, userPosition.lon], zoom);
-        } else {
-          // If no route and no user position, center on the place
-          mapRef.current.flyTo([lat, lon], zoom);
+        if (arrowElement) {
+          arrowElement.style.transformOrigin = "center center";
+          arrowElement.style.transform = `translate(-50%, -5px) rotate(${userPosition.heading}deg)`;
         }
       }
-      // Depend on routeCoordinates and userPosition presence
-    }, [routeCoordinates, userPosition, lat, lon, zoom]);
+    }, [userPosition?.heading]);
+
+    // Effect to handle route display and map bounds
+    useEffect(() => {
+      if (!mapRef.current) return;
+      const map = mapRef.current;
+
+      const routeSource = map.getSource("route") as GeoJSONSource;
+      if (routeCoordinates && routeCoordinates.length > 0) {
+        const geojsonRoute = {
+          type: "Feature" as const,
+          properties: {},
+          geometry: {
+            type: "LineString" as const,
+            coordinates: routeCoordinates, // Already [lon, lat]
+          },
+        };
+
+        if (routeSource) {
+          routeSource.setData(geojsonRoute);
+        } else {
+          map.addSource("route", {
+            type: "geojson",
+            data: geojsonRoute,
+          });
+          map.addLayer({
+            id: "route",
+            type: "line",
+            source: "route",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-color": "red",
+              "line-width": 5,
+              "line-opacity": 0.7,
+            },
+          });
+        }
+
+        if (userPosition) {
+          map.flyTo({
+            center: [userPosition.lon, userPosition.lat],
+            zoom: 18,
+            duration: 1000,
+          });
+        } else {
+          const bounds = routeCoordinates.reduce((bounds, coord) => {
+            return bounds.extend(coord as LngLatLike);
+          }, new maplibregl.LngLatBounds(routeCoordinates[0] as LngLatLike, routeCoordinates[0] as LngLatLike));
+          map.fitBounds(bounds, { padding: 50, duration: 1000 });
+        }
+      } else {
+        if (routeSource) {
+          map.removeLayer("route");
+          map.removeSource("route");
+        }
+        // If no route, but user position is shown, fly to user
+        if (userPosition && showUserPosition) {
+          // Check showUserPosition as well
+          map.flyTo({
+            center: [userPosition.lon, userPosition.lat],
+            zoom: zoom,
+            duration: 1000,
+          });
+        } else {
+          // If no route and no user position (or not shown), center on the place
+          map.flyTo({ center: [lon, lat], zoom: zoom, duration: 1000 });
+        }
+      }
+    }, [routeCoordinates, userPosition, lat, lon, zoom, showUserPosition]);
 
     // Effect to handle programmatic fly-to requests
     useEffect(() => {
       if (flyToTrigger && flyToCoords && mapRef.current) {
-        mapRef.current.flyTo(flyToCoords, mapRef.current.getZoom(), {
-          animate: true,
-          duration: 1.5,
+        mapRef.current.flyTo({
+          center: flyToCoords, // Expects [lon, lat]
+          zoom: mapRef.current.getZoom(),
+          duration: 1500,
         });
       }
     }, [flyToTrigger, flyToCoords]);
 
-    // Effect to rotate user marker icon when heading changes
+    // Simple polyline between user and place (if no route and showPolyLine)
     useEffect(() => {
-      // Find the arrow image within the DivIcon and rotate it
-      if (userMarkerRef.current) {
-        const markerElement = userMarkerRef.current.getElement();
-        if (markerElement) {
-          const arrowElement = markerElement.querySelector<HTMLElement>(
-            ".user-direction-arrow"
-          );
-          if (arrowElement) {
-            const heading = userPosition?.heading;
-            if (heading !== null && heading !== undefined) {
-              arrowElement.style.transformOrigin = "center center";
-              arrowElement.style.transform = `translate(-50%, -5px) rotate(${heading}deg)`; // Keep the translate part
-            } else {
-              // Reset rotation
-              arrowElement.style.transform =
-                "translate(-50%, -5px) rotate(0deg)";
-            }
-          }
+      if (!mapRef.current) return;
+      const map = mapRef.current;
+      const simplePolylineSource = map.getSource(
+        "simple-polyline"
+      ) as GeoJSONSource;
+
+      if (showPolyLine && userPosition && !routeCoordinates) {
+        const polylineData = {
+          type: "Feature" as const,
+          properties: {},
+          geometry: {
+            type: "LineString" as const,
+            coordinates: [
+              [userPosition.lon, userPosition.lat],
+              [lon, lat], // Main place coordinates
+            ],
+          },
+        };
+        if (simplePolylineSource) {
+          simplePolylineSource.setData(polylineData);
+        } else {
+          map.addSource("simple-polyline", {
+            type: "geojson",
+            data: polylineData,
+          });
+          map.addLayer({
+            id: "simple-polyline",
+            type: "line",
+            source: "simple-polyline",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-color": "blue",
+              "line-width": 3,
+              "line-opacity": 0.5,
+            },
+          });
+        }
+      } else {
+        if (simplePolylineSource) {
+          if (map.getLayer("simple-polyline"))
+            map.removeLayer("simple-polyline");
+          if (map.getSource("simple-polyline"))
+            map.removeSource("simple-polyline");
         }
       }
-    }, [userPosition]); // Depend on the whole userPosition object
-
-    // Prepare route points for Leaflet Polyline (swap lon/lat)
-    const leafletRoutePoints: L.LatLngExpression[] | null = routeCoordinates
-      ? routeCoordinates.map((coord) => [coord[1], coord[0]])
-      : null;
+    }, [showPolyLine, userPosition, routeCoordinates, lat, lon]);
 
     return (
-      <MapContainer
-        center={[lat, lon]}
-        zoom={zoom}
-        scrollWheelZoom={false}
-        minZoom={16} // Begränsa hur långt man kan zooma ut
-        maxZoom={18}
+      <div
+        ref={mapContainer}
         className="h-full w-full rounded shadow-md z-0"
-        ref={mapRef}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-        />
-        <Marker position={[lat, lon]} icon={customIcon}>
-          <Popup>
-            <div className="bg-[#FFF8F5] p-3 rounded-md min-w-[150px] text-center">
-              <h2 className="text-[#C53C07] font-semibold">{name}</h2>
-            </div>
-          </Popup>
-        </Marker>
-        {userPosition && showPolyLine && (
-          <Polyline
-            positions={[
-              [userPosition.lat, userPosition.lon],
-              [lat, lon],
-            ]}
-            color="blue"
-            weight={3}
-            opacity={0.5}
-          />
-        )}
-
-        {userPosition && showUserPosition && (
-          <Marker
-            position={[userPosition.lat, userPosition.lon]}
-            icon={userIcon}
-            ref={userMarkerRef}
-          >
-            <Popup>
-              <div className="bg-[#FFF8F5] p-3 rounded-md min-w-[100px] text-center">
-                <h2 className="text-[#C53C07] font-semibold">Du är här</h2>
-              </div>
-            </Popup>
-          </Marker>
-        )}
-
-        {/* Render the OpenRouteService route if available */}
-        {leafletRoutePoints && (
-          <Polyline
-            positions={leafletRoutePoints}
-            color="red" // Use a distinct color for the route
-            weight={5} // Make it slightly thicker
-            opacity={0.7}
-          />
-        )}
-
-        {/* Fallback: Render simple polyline if no route and showPolyLine is true */}
-        {!leafletRoutePoints && userPosition && showPolyLine && (
-          <Polyline
-            positions={[
-              [userPosition.lat, userPosition.lon],
-              [lat, lon],
-            ]}
-            color="blue"
-            weight={3}
-            opacity={0.5}
-          />
-        )}
-      </MapContainer>
+        // MapLibre controls its own children, so no <MapContainer> needed
+      />
     );
   }
 );
