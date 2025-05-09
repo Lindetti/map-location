@@ -238,7 +238,7 @@ const Map = forwardRef<MapHandle, MapProps>(
                 isFlyingToRef.current = true;
                 mapRef.current.flyTo({
                   center: [userLon, userLat],
-                  zoom: 18,
+                  zoom: 17,
                   duration: 1000,
                 });
                 setTimeout(() => (isFlyingToRef.current = false), 1000); // Reset after flyTo duration
