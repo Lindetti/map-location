@@ -6,33 +6,25 @@ import Open from "../../assets/icons/open.png";
 import { useState, useEffect, useRef } from "react";
 import type { MapHandle } from "../Map";
 
-// Define the structure for coordinates if needed elsewhere, otherwise inline
-type Coordinate = [number, number]; // Assuming [longitude, latitude] based on ORS
+type Coordinate = [number, number]; 
 
-// Remove onShowUserPosition and showUserPosition from props if they are only for the button
 interface MinimalPlaceDetailsProps {
-  place: PlaceDetailsProps["place"]; // Keep place
-  // showUserPosition?: boolean; // Remove if controlled locally
-  // showPolyline?: boolean; // Removed as it's no longer used here
-  icon: PlaceDetailsProps["icon"]; // Keep icon
-  city: PlaceDetailsProps["city"]; // Keep city
+  place: PlaceDetailsProps["place"];
+  icon: PlaceDetailsProps["icon"]; 
+  city: PlaceDetailsProps["city"]; 
 }
 
-// Function to get today's date as YYYY-MM-DD string
 const getTodayDateString = () => {
   return new Date().toISOString().split("T")[0];
 };
 
 const PlaceDetails = ({
   place,
-  // onShowUserPosition, // Removed
-  // showUserPosition, // Removed
-  // showPolyline, // Removed
   icon,
   city,
 }: MinimalPlaceDetailsProps) => {
   const [showMapModal, setShowMapModal] = useState(false);
-  const [currentDistance, setCurrentDistance] = useState<number | null>(null); // Initialize as null
+  const [currentDistance, setCurrentDistance] = useState<number | null>(null); 
   const [watchId, setWatchId] = useState<number | null>(null);
   const [routeCoordinates, setRouteCoordinates] = useState<Coordinate[] | null>(
     null
@@ -42,7 +34,7 @@ const PlaceDetails = ({
   const [directionsError, setDirectionsError] = useState<string | null>(null);
   const [isRouteActive, setIsRouteActive] = useState<boolean>(false);
 
-  // State for the initial map (outside modal)
+
   const [showInitialUserMarker, setShowInitialUserMarker] =
     useState<boolean>(false);
   const [showInitialPolyline, setShowInitialPolyline] =
@@ -54,10 +46,9 @@ const PlaceDetails = ({
     number | null
   >(null);
 
-  // Ref for the initial Map component
+
   const initialMapRef = useRef<MapHandle>(null);
 
-  // Handler for the "Visa min position" button on the initial map
   const handleShowInitialUserPosition = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -65,14 +56,13 @@ const PlaceDetails = ({
           const userLat = position.coords.latitude;
           const userLon = position.coords.longitude;
 
-          setShowInitialUserMarker(true); // Show the marker
-          setShowInitialPolyline(true); // Show the simple polyline
-          setInitialMapFlyToTarget([userLat, userLon]); // Set coords to fly to
-          setInitialMapFlyToTrigger(Date.now()); // Trigger the fly-to effect in Map
+          setShowInitialUserMarker(true); 
+          setShowInitialPolyline(true); 
+          setInitialMapFlyToTarget([userLat, userLon]); 
+          setInitialMapFlyToTrigger(Date.now()); 
         },
         (error) => {
           console.error("Geolocation error:", error);
-          // Optionally show an error message to the user
         },
         {
           enableHighAccuracy: true,
@@ -82,19 +72,16 @@ const PlaceDetails = ({
       );
     } else {
       console.error("Geolocation not supported");
-      // Optionally show an error message
     }
   };
 
-  // Function to fetch directions by calling the Vercel serverless function
   const fetchDirections = async (
     startCoords: Coordinate,
     endCoords: Coordinate
   ) => {
-    const profile = "foot-walking"; // Hårdkoda profilen här
-    // --- Daily API Limit Check (Client-side pre-check) ---
+    const profile = "foot-walking"; 
     const today = getTodayDateString();
-    const limitKey = "orsDailyLimitCount"; // Keep same key for client-side check
+    const limitKey = "orsDailyLimitCount"; 
     const dateKey = "orsLimitResetDate";
     let currentCount = 0;
 
@@ -105,15 +92,12 @@ const PlaceDetails = ({
       if (savedDate === today && savedCount) {
         currentCount = parseInt(savedCount, 10);
       } else {
-        // Reset client-side count if new day or first time
-        // Note: This doesn't guarantee the *actual* limit hasn't been reached
-        // if multiple users/browsers are hitting the backend.
         currentCount = 0;
         localStorage.setItem(dateKey, today);
-        localStorage.setItem(limitKey, "0"); // Reset client-side check counter
+        localStorage.setItem(limitKey, "0"); 
       }
 
-      const DAILY_LIMIT = 2000; // Keep this for the client-side check
+      const DAILY_LIMIT = 2000; 
       if (currentCount >= DAILY_LIMIT) {
         console.warn(
           `Client-side check indicates daily ORS request limit (${DAILY_LIMIT}/dag) might be reached.`
@@ -122,22 +106,20 @@ const PlaceDetails = ({
           `Gränsen för vägbeskrivningsanrop (${DAILY_LIMIT}/dag) kan ha nåtts.`
         );
         setIsLoadingDirections(false);
-        return; // Stop execution based on client check
+        return; 
       }
     } catch (error) {
       console.error("Error handling API limit check in localStorage:", error);
-      // Proceed cautiously if localStorage fails
     }
-    // --- End Daily API Limit Check ---
 
     setIsLoadingDirections(true);
     setDirectionsError(null);
     setRouteCoordinates(null); // Clear previous route visually
 
-    // --- Caching Logic (Remains the same, uses same key structure) ---
+
     const cacheKey = `ors-route-${startCoords.join(",")}-${endCoords.join(
       ","
-    )}-${profile}`; // Använd hårdkodad profil i nyckeln
+    )}-${profile}`; 
     try {
       const cachedRoute = localStorage.getItem(cacheKey);
       if (cachedRoute) {
@@ -146,14 +128,13 @@ const PlaceDetails = ({
           console.log("Using cached route for:", cacheKey);
           setRouteCoordinates(parsedRoute as Coordinate[]);
           setIsLoadingDirections(false);
-          return; // Skip API call
+          return;
         }
         localStorage.removeItem(cacheKey);
       }
     } catch (error) {
       console.error("Error reading route from localStorage:", error);
     }
-    // --- End Caching Logic ---
 
     // Call the serverless function endpoint
     const url = "/api/getDirections";
@@ -167,34 +148,26 @@ const PlaceDetails = ({
         body: JSON.stringify({ startCoords, endCoords, profile }),
       });
 
-      const data = await response.json(); // Always expect JSON now
+      const data = await response.json(); 
 
       if (!response.ok) {
-        // Use the error message provided by the serverless function
         throw new Error(data.error || `Server error: ${response.status}`);
       }
 
-      // Assuming the serverless function returns { routeCoordinates: [...] }
       if (data.routeCoordinates && Array.isArray(data.routeCoordinates)) {
         setRouteCoordinates(data.routeCoordinates as Coordinate[]);
 
-        // --- Caching Logic: Save successful fetch ---
         try {
           localStorage.setItem(cacheKey, JSON.stringify(data.routeCoordinates));
           console.log("Saved route to cache:", cacheKey);
 
-          // --- Increment Client-Side Check Counter (only on successful fetch from backend) ---
-          // We only increment the *client-side* counter *after* a successful fetch
-          // to make the client-side pre-check slightly more accurate for the current user.
           const newCount = currentCount + 1;
           localStorage.setItem(limitKey, newCount.toString());
-          // --- End Increment Client-Side Counter ---
         } catch (error) {
           console.error("Error saving route to localStorage:", error);
         }
         // --- End Caching Logic ---
       } else {
-        // This case might indicate an unexpected successful response format from the server
         throw new Error("Ingen rutt hittades eller oväntat svar från server.");
       }
     } catch (error) {
@@ -215,7 +188,7 @@ const PlaceDetails = ({
     lat2: number,
     lon2: number
   ): number => {
-    const R = 6371e3; // Earth's radius in meters
+    const R = 6371e3; 
     const φ1 = (lat1 * Math.PI) / 180;
     const φ2 = (lat2 * Math.PI) / 180;
     const Δφ = ((lat2 - lat1) * Math.PI) / 180;
@@ -229,7 +202,6 @@ const PlaceDetails = ({
     return R * c;
   };
 
-  // Function to start navigation: get location, fetch route, start tracking
   const startRouteNavigation = () => {
     if (!navigator.geolocation) {
       setDirectionsError("Geolocation stöds inte av din webbläsare.");
@@ -248,10 +220,8 @@ const PlaceDetails = ({
         const startCoords: Coordinate = [userLon, userLat];
         const endCoords: Coordinate = [place.lon, place.lat];
 
-        // Fetch directions - anropa utan profil-argumentet
         fetchDirections(startCoords, endCoords)
           .then(() => {
-            // Start watching position only after directions are fetched (or attempt to fetch)
             const id = navigator.geolocation.watchPosition(
               (pos) => {
                 const currentLat = pos.coords.latitude;
@@ -262,21 +232,19 @@ const PlaceDetails = ({
                   place.lat,
                   place.lon
                 );
-                setCurrentDistance(dist); // Update distance continuously
+                setCurrentDistance(dist); 
               },
               (error) => console.error("Error watching position:", error),
               { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
             );
             setWatchId(id);
-            setIsRouteActive(true); // Activate route state
-            setIsLoadingDirections(false); // Stop loading indicator
+            setIsRouteActive(true);
+            setIsLoadingDirections(false); 
           })
           .catch(() => {
-            // Handle potential error from fetchDirections if needed
             setIsLoadingDirections(false);
           });
 
-        // Calculate initial distance immediately
         const initialDistance = getDistanceInMeters(
           userLat,
           userLon,
@@ -294,27 +262,15 @@ const PlaceDetails = ({
     );
   };
 
-  // Effect to handle GPS activation and fetching directions when modal opens
   useEffect(() => {
-    // This effect now only handles cleanup when the modal is closed.
-    // Initial setup happens in startRouteNavigation.
-
-    // Capture the ref's current value inside the effect
     const mapRefCurrent = initialMapRef.current;
-
-    // Cleanup function for component unmount or modal close
     return () => {
       // Stop watching position if active
       if (watchId !== null) {
         navigator.geolocation.clearWatch(watchId);
         setWatchId(null);
       }
-      // We ensure the initial map's watch is stopped in handleGPSActivation
-      // and potentially here again if the component unmounts while modal is closed
-      // but the initial marker was shown.
       mapRefCurrent?.stopWatching();
-
-      // Reset state when modal closes or component unmounts
       setShowInitialUserMarker(false);
       setShowInitialPolyline(false);
       setRouteCoordinates(null);
@@ -323,18 +279,15 @@ const PlaceDetails = ({
       setCurrentDistance(null);
       setIsRouteActive(false);
     };
-    // Dependencies for the effect - watchId should NOT be here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showMapModal, place.lat, place.lon]);
 
   const handleGPSActivation = () => {
-    // Explicitly stop watching on the initial map *before* opening modal logic
     initialMapRef.current?.stopWatching();
 
     setShowMapModal(true);
-    // Reset state when activating GPS, before starting route
-    setShowInitialUserMarker(false); // Stop showing marker/watching on initial map
-    setShowInitialPolyline(false); // Hide simple polyline on initial map
+    setShowInitialUserMarker(false); 
+    setShowInitialPolyline(false); 
     setIsRouteActive(false);
     setRouteCoordinates(null);
     setCurrentDistance(null);
@@ -355,8 +308,6 @@ const PlaceDetails = ({
     setRouteCoordinates(null);
     setCurrentDistance(null);
     setDirectionsError(null);
-    // Don't close modal here, let the close button handle it
-    // setShowMapModal(false);
   };
 
   const translateCuisine = (cuisine: string): string => {
@@ -403,18 +354,18 @@ const PlaceDetails = ({
           lat={place.lat}
           lon={place.lon}
           name={place.name}
-          showUserPosition={showInitialUserMarker} // Use local state
-          showPolyLine={showInitialPolyline} // Use state for simple polyline
-          flyToCoords={initialMapFlyToTarget} // Pass fly-to target
-          flyToTrigger={initialMapFlyToTrigger} // Pass fly-to trigger
-          ref={initialMapRef} // Pass the ref to the initial map
+          showUserPosition={showInitialUserMarker} 
+          showPolyLine={showInitialPolyline} 
+          flyToCoords={initialMapFlyToTarget} 
+          flyToTrigger={initialMapFlyToTrigger} 
+          ref={initialMapRef} 
         />
       </div>
 
       <div className="flex justify-between gap-4 p-2">
         <button
           className="group flex items-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
-          onClick={handleShowInitialUserPosition} // Use the new handler
+          onClick={handleShowInitialUserPosition} 
           disabled={showMapModal}
         >
           Visa min position
@@ -648,7 +599,7 @@ const PlaceDetails = ({
                       </span>
                       <button
                         className="mt-2 w-full py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition"
-                        onClick={handleDeactivateGPS} // Use deactivate to reset state
+                        onClick={handleDeactivateGPS} // deactivate to reset state
                       >
                         Avsluta Rutt
                       </button>

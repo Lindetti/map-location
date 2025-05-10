@@ -3,8 +3,8 @@ import React from "react";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title?: string; // Valfri titel
-  children: React.ReactNode; // Innehållet i modalen
+  title?: string; 
+  children: React.ReactNode; 
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {

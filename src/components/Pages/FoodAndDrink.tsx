@@ -66,7 +66,7 @@ const FoodAndDrink = () => {
         const userLat = position.coords.latitude;
         const userLon = position.coords.longitude;
 
-        let overpassQuery = `
+        const overpassQuery = `
         [out:json];
         (
           // Om selectedType är 'supermarket', inkludera endast supermarket
@@ -148,7 +148,6 @@ const FoodAndDrink = () => {
               };
             });
 
-          // Filtrera bort resultat som är för långt bort (t.ex. default-koordinater)
           const filteredPlaces = places.filter((p) => p.distance < 10);
 
           const sortedPlaces = filteredPlaces.sort(
@@ -287,7 +286,6 @@ const FoodAndDrink = () => {
   }, [isPositionFixed, handlePositionUpdate]);
 
   const handleExpand = (index: number) => {
-    // Release position when expanding a different restaurant or collapsing
     if (index !== expandedIndex) {
       setIsPositionFixed(false);
     }
@@ -359,12 +357,12 @@ const FoodAndDrink = () => {
                 ref={(el) => {
                   restaurantRefs.current[index] = el;
                 }}
-                initial={{ opacity: 0, x: -70 }} // Startar från vänster med låg opacitet
-                animate={{ opacity: 1, x: 0 }} // Animerar till full opacitet och rätt position
-                exit={{ opacity: 0.5, x: 100 }} // När elementet tas bort, gå åt höger och bli osynligt
+                initial={{ opacity: 0, x: -70 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                exit={{ opacity: 0.5, x: 100 }} 
                 transition={{
-                  duration: 0.1, // Tidsinställning för animeringen
-                  delay: index * 0.1, // Fördröjning för att få varje div att komma i tur och ordning
+                  duration: 0.1, 
+                  delay: index * 0.1, 
                 }}
                 className={`
                   bg-white text-black dark:bg-[#282828] dark:text-gray-200 w-full flex flex-col gap-5 p-3 md:p-5 rounded-md shadow-sm
