@@ -14,7 +14,7 @@ const Footer = () => {
         if (response.ok) {
           const data = await response.json();
           const copyrightInfo = data.osm3s.copyright;
-          setCopyright(copyrightInfo); // Sätt copyright-infon
+          setCopyright(copyrightInfo); 
         } else {
           setCopyright("Kunde inte hämta copyright-info");
         }

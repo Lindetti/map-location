@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Modal from "./Modal";
 
 interface LocationPermissionProps {
-  onPermissionGranted: () => void; // Callback när platsåtkomst beviljas
+  onPermissionGranted: () => void;
 }
 
 const LocationPermission: React.FC<LocationPermissionProps> = ({
@@ -12,7 +12,7 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const reloadPage = () => {
-    window.location.reload(); // Ladda om sidan när "Försök igen" klickas
+    window.location.reload();
   };
 
   const checkLocationPermission = async () => {
@@ -28,7 +28,6 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
       });
 
       if (permissionStatus.state === "granted") {
-        // Platsåtkomst är redan tillåten
         onPermissionGranted();
         reloadPage();
       } else if (permissionStatus.state === "denied") {
@@ -51,7 +50,7 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
   const requestLocation = () => {
     navigator.geolocation.getCurrentPosition(
       () => {
-        onPermissionGranted(); // Anropa callback när platsåtkomst beviljas
+        onPermissionGranted();
       },
       (error) => {
         if (error.code === error.PERMISSION_DENIED) {
@@ -67,7 +66,7 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
   return (
     <>
       <button
-        onClick={checkLocationPermission} // Använd funktionen för att kontrollera behörigheten
+        onClick={checkLocationPermission}
         className="mt-2 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition"
       >
         Försök igen

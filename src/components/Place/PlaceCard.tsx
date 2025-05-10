@@ -20,7 +20,7 @@ const PlaceCard = ({
   if (place.openingHours) {
     try {
       const oh = new OpeningHours(place.openingHours);
-      isOpen = oh.getState(now); // true/false beroende på aktuell tid
+      isOpen = oh.getState(now); 
       nextChange = oh.getNextChange(now);
     } catch (err) {
       console.warn("Kunde inte tolka opening_hours:", err);

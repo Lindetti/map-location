@@ -122,7 +122,7 @@ const Header = ({
                               ]
                             } // Hämta rätt ikon från iconMapping
                             alt={`${option.value} icon`}
-                            className="h-5 w-5 mr-2 inline" // Lägg till margin till höger för att separera ikonen och texten
+                            className="h-5 w-5 mr-2 inline" 
                           />
                         )}
                         {option.label}

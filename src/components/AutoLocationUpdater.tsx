@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 
-// Uppdatera typen för 'onLocationUpdate' för att acceptera en asynkron funktion
 interface AutoLocationUpdaterProps {
-  onLocationUpdate: () => Promise<void>; // Funktion som returnerar en Promise
+  onLocationUpdate: () => Promise<void>;
 }
 
 const AutoLocationUpdater: React.FC<AutoLocationUpdaterProps> = ({
@@ -11,13 +10,13 @@ const AutoLocationUpdater: React.FC<AutoLocationUpdaterProps> = ({
   useEffect(() => {
     // Funktion för att uppdatera plats varje minut
     const interval = setInterval(() => {
-      onLocationUpdate(); 
-    }, 180000); 
+      onLocationUpdate();
+    }, 180000);
 
-    return () => clearInterval(interval); // Städa upp intervallet när komponenten tas bort
+    return () => clearInterval(interval);
   }, [onLocationUpdate]);
 
-  return null; // Kommer inte rendera något, används endast för att uppdatera plats
+  return null;
 };
 
 export default AutoLocationUpdater;

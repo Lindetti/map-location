@@ -1,13 +1,11 @@
 import { useEffect } from "react";
 
 const PrivacyPolicy = () => {
-  // Scrolla till toppen när komponenten monteras
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []); // Tom dependency array = körs bara vid mount
+  }, []); 
 
   return (
-    // Centrerad container med maxbredd och padding
     <div className="max-w-4xl mx-auto p-6 md:p-10 bg-white dark:bg-transparent rounded-lg mt-5 mb-10">
       <h1 className="text-3xl font-bold mb-6 border-b pb-3 dark:text-gray-300">
         Integritetspolicy

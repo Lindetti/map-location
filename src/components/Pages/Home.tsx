@@ -22,7 +22,6 @@ type Place = OverpassElement & {
   distance: number;
 };
 
-// Nyckeln för sessionStorage
 const WEATHER_LOADED_SESSION_KEY = "weatherInitialLoadComplete";
 
 const Home = () => {
@@ -30,7 +29,6 @@ const Home = () => {
     null
   );
   const [city, setCity] = useState<string | null>(() => {
-    // Check localStorage for saved city on initial mount
     const savedCity = localStorage.getItem("savedCity");
     return savedCity || null;
   });
@@ -47,10 +45,8 @@ const Home = () => {
     code: number;
   } | null>(null);
 
-  // Nytt state för att spåra initial väderladdning för sessionen
   const [isInitialWeatherLoadDone, setIsInitialWeatherLoadDone] = useState(
     () => {
-      // Kolla sessionStorage vid initiering
       return sessionStorage.getItem(WEATHER_LOADED_SESSION_KEY) === "true";
     }
   );
@@ -90,7 +86,6 @@ const Home = () => {
 
   const fetchWeather = useCallback(
     async (lat: number, lon: number) => {
-      // Funktion för att markera initial laddning som klar
       const markInitialLoadComplete = () => {
         if (!isInitialWeatherLoadDone) {
           setIsInitialWeatherLoadDone(true);
@@ -102,7 +97,6 @@ const Home = () => {
       const savedWeather = localStorage.getItem("weatherData");
       const savedWeatherTime = localStorage.getItem("weatherFetchTime");
 
-      // Om vädret finns och det inte är för gammalt, använd den
       if (savedWeather && savedWeatherTime) {
         const timeElapsed = new Date().getTime() - parseInt(savedWeatherTime);
         if (timeElapsed < 1800000) {
@@ -142,8 +136,7 @@ const Home = () => {
         markInitialLoadComplete(); // Markera som klar efter lyckad API-hämtning
       } catch (err) {
         console.error("Kunde inte hämta väderdata:", err);
-        setWeather(null); // Sätt tillbaka till null vid fel
-        // Markera INTE som klar om det blev fel
+        setWeather(null); 
       }
     },
     [isInitialWeatherLoadDone]
@@ -263,8 +256,8 @@ const Home = () => {
 
   const getCurrentTime = () => {
     const now = new Date();
-    const hours = now.getHours().toString().padStart(2, "0"); // Timmar, med ledande nolla om det behövs
-    const minutes = now.getMinutes().toString().padStart(2, "0"); // Minuter, med ledande nolla om det behövs
+    const hours = now.getHours().toString().padStart(2, "0"); 
+    const minutes = now.getMinutes().toString().padStart(2, "0"); 
     return `${hours}:${minutes}`;
   };
 
@@ -284,11 +277,10 @@ const Home = () => {
     setShowPolyline(false);
 
     if (index !== expandedIndex) {
-      // Add a small delay to ensure the div is rendered before scrolling
       setTimeout(() => {
         const element = document.getElementById(`place-${index}`);
         if (element) {
-          const offset = 50; // Offset to account for header and spacing
+          const offset = 50; 
           const elementPosition = element.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - offset;
 
@@ -340,11 +332,11 @@ const Home = () => {
 
   const isOpen = (openingHours: string): boolean => {
     const now = new Date();
-    const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const currentDay = now.getDay(); 
     const currentTime = now.getHours() * 60 + now.getMinutes(); // Convert to minutes
 
     const hours = openingHours.split(";");
-    const todayHours = hours[currentDay === 0 ? 6 : currentDay - 1]; // Adjust for Sunday being 0
+    const todayHours = hours[currentDay === 0 ? 6 : currentDay - 1]; 
 
     if (!todayHours || todayHours.toLowerCase().includes("stängt")) {
       return false;
