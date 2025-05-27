@@ -88,7 +88,7 @@ export type PlaceType =
   | "convenience"
   | "pharmacy"
   | "kiosk"
-  | "hospital"
+  | "hospital";
 
 export const isPlaceType = (value: string): value is PlaceType => {
   return [
@@ -109,31 +109,31 @@ export const isPlaceType = (value: string): value is PlaceType => {
     "convenience",
     "pharmacy",
     "kiosk",
-    "hospital"
+    "hospital",
   ].includes(value);
 };
 
 export const iconMapping: { [key in PlaceType]: string } = {
   restaurant: RestaurantIcon,
-  fast_food: FastFoodIcon, // Placeholder icon for fast food
+  fast_food: FastFoodIcon,
   bar: BarIcon,
-  pub: BarIcon, // Placeholder icon for pub
+  pub: BarIcon,
   clothes: ClothesIcon,
   shoes: ShoesIcon,
-  supermarket: SuperMarketIcon, // Placeholder icon for supermarket
+  supermarket: SuperMarketIcon,
   electronics: ElectronicsIcon,
-  nightclub: ClothesIcon, // Placeholder icon for flowers
+  nightclub: ClothesIcon,
   cafe: CafeIcon,
   flowers: ClothesIcon,
   after_party: ClothesIcon,
-  alcohol: AlcoholIcon, // Placeholder icon for concert hall
+  alcohol: AlcoholIcon,
   hotel: HotelIcon,
   hostel: HotelIcon,
   fuel: FuelIcon,
   convenience: SuperMarketIcon,
-  pharmacy: SuperMarketIcon, // Placeholder icon for pharmacy
-  kiosk: SuperMarketIcon, // Placeholder icon for kiosk
-  hospital: SuperMarketIcon, // Placeholder icon for hospital
+  pharmacy: SuperMarketIcon,
+  kiosk: SuperMarketIcon,
+  hospital: SuperMarketIcon,
 };
 
 export interface LoadMoreButtonProps {
