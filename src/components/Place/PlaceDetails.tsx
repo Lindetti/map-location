@@ -545,7 +545,7 @@ const PlaceDetails = ({
                 lat={place.lat}
                 lon={place.lon}
                 name={place.name}
-                showUserPosition={isRouteActive} // Show user only when route is active
+                showUserPosition={isRouteActive} 
                 routeCoordinates={routeCoordinates}
               />
               {/* Display Loading/Error State */}
@@ -568,7 +568,7 @@ const PlaceDetails = ({
                   <button
                     onClick={startRouteNavigation}
                     className="w-full py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition disabled:opacity-50"
-                    disabled={isLoadingDirections} // Disable while loading
+                    disabled={isLoadingDirections} 
                   >
                     {isLoadingDirections ? "Laddar..." : "Starta Rutt"}
                   </button>
@@ -599,7 +599,7 @@ const PlaceDetails = ({
                       </span>
                       <button
                         className="mt-2 w-full py-2 bg-green-600 text-white rounded font-semibold hover:bg-green-700 transition"
-                        onClick={handleDeactivateGPS} // deactivate to reset state
+                        onClick={handleDeactivateGPS} 
                       >
                         Avsluta Rutt
                       </button>

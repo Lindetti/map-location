@@ -16,7 +16,6 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import userIconPosition from "../assets/icons/usericon.png";
 import userArrowIcon from "../assets/icons/arrowDown.png";
 
-// Define Coordinate type consistent with ORS output (longitude, latitude)
 type Coordinate = [number, number];
 
 // Define the props for the Map component
@@ -33,12 +32,10 @@ type MapProps = {
   flyToTrigger?: number | null; // Trigger for the fly-to action
 };
 
-// Define the type for the imperative handle
 export type MapHandle = {
   stopWatching: () => void;
 };
 
-// Use forwardRef to allow parent component to call functions on this component
 const Map = forwardRef<MapHandle, MapProps>(
   (
     {
@@ -52,7 +49,7 @@ const Map = forwardRef<MapHandle, MapProps>(
       flyToCoords,
       flyToTrigger,
     },
-    ref // The ref passed from the parent
+    ref 
   ) => {
     const mapContainer = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<MaplibreMap | null>(null);
@@ -67,7 +64,7 @@ const Map = forwardRef<MapHandle, MapProps>(
     const userPopupRef = useRef<Popup | null>(null);
     const placePopupRef = useRef<Popup | null>(null);
     const [hasUserManuallyZoomed, setHasUserManuallyZoomed] = useState(false);
-    const isFlyingToRef = useRef(false); // To track if flyTo is active
+    const isFlyingToRef = useRef(false);
 
     // Expose the stopWatching function via useImperativeHandle
     useImperativeHandle(ref, () => ({
@@ -99,7 +96,6 @@ const Map = forwardRef<MapHandle, MapProps>(
         maxZoom: 18,
         transformRequest: (url) => {
           if (url.startsWith("https://api.maptiler.com/")) {
-            // Add the API key to all MapTiler requests
             const separator = url.includes("?") ? "&" : "?";
             return {
               url: `${url}${separator}key=${
@@ -390,7 +386,7 @@ const Map = forwardRef<MapHandle, MapProps>(
       }
     }, [flyToTrigger, flyToCoords]);
 
-    // Simple polyline between user and place (if no route and showPolyLine)
+
     useEffect(() => {
       if (!mapRef.current) return;
       const map = mapRef.current;
