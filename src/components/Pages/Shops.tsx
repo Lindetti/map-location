@@ -44,6 +44,11 @@ const Shops = () => {
       value: "electronics",
     },
     {
+      label: "Apotek",
+      singularLabel: "Apotek",
+      value: "pharmacy",
+    },
+    {
       label: "Systembolag",
       singularLabel: "Systembolag",
       value: "alcohol",
@@ -66,12 +71,14 @@ const Shops = () => {
         const userLat = position.coords.latitude;
         const userLon = position.coords.longitude;
 
+        const tagKey = selectedType === "pharmacy" ? "amenity" : "shop";
+
         const overpassQuery = `
         [out:json];
         (
-          node["shop"="${selectedType}"](around:5000,${userLat},${userLon});
-          way["shop"="${selectedType}"](around:5000,${userLat},${userLon});
-          relation["shop"="${selectedType}"](around:5000,${userLat},${userLon});
+       node["${tagKey}"="${selectedType}"](around:5000,${userLat},${userLon});
+  way["${tagKey}"="${selectedType}"](around:5000,${userLat},${userLon});
+  relation["${tagKey}"="${selectedType}"](around:5000,${userLat},${userLon});
         );
         out body;
         >;
@@ -341,11 +348,11 @@ const Shops = () => {
                   shopsRefs.current[index] = el;
                 }}
                 initial={{ opacity: 0, x: -70 }}
-                animate={{ opacity: 1, x: 0 }} 
-                exit={{ opacity: 0.5, x: 100 }} 
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0.5, x: 100 }}
                 transition={{
-                  duration: 0.1, 
-                  delay: index * 0.1, 
+                  duration: 0.1,
+                  delay: index * 0.1,
                 }}
                 className={`
                   bg-white text-black dark:bg-[#282828] dark:text-gray-200 w-full flex flex-col gap-5 p-3 md:p-5 rounded-md shadow-sm
