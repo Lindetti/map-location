@@ -88,16 +88,6 @@ const Navbar = () => {
             Boende
           </NavLink>
           <NavLink
-            to="/vard&halsa"
-            className={({ isActive }) =>
-              isActive
-                ? "underline underline-offset-8 decoration-orange-500 text-orange-500"
-                : "text-gray-700 dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
-            }
-          >
-            Vård & Hälsa
-          </NavLink>
-          <NavLink
             to="/om"
             className={({ isActive }) =>
               isActive
@@ -193,17 +183,6 @@ const Navbar = () => {
                 onClick={handleMenuClick}
               >
                 Boende
-              </NavLink>
-              <NavLink
-                to="/vard&halsa"
-                className={({ isActive }) =>
-                  isActive
-                    ? "block text-lg underline underline-offset-8 decoration-orange-500 text-orange-500"
-                    : "block text-lg text-white dark:text-gray-300 hover:underline underline-offset-8 decoration-transparent hover:decoration-orange-500 transition-all ease-in-out duration-200"
-                }
-                onClick={handleMenuClick}
-              >
-                Vård & Hälsa
               </NavLink>
               <NavLink
                 to="/om"
