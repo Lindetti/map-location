@@ -25,7 +25,19 @@ export interface Place {
   operator?: string;
   levels?: string;
   brand?: string;
-  typeLabel?: string; // Nytt fält för typ av plats
+  typeLabel?: string;
+  type?: string;
+  tags?: {
+    name?: string;
+    "addr:street"?: string;
+    "addr:city"?: string;
+    "addr:housenumber"?: string;
+    "contact:phone"?: string;
+    opening_hours?: string;
+    website?: string;
+    cuisine?: string;
+    amenity?: string;
+  };
 }
 
 export interface OverpassElement {
@@ -41,6 +53,7 @@ export interface OverpassElement {
     name?: string;
     "addr:street"?: string;
     "addr:city"?: string;
+    "addr:housenumber"?: string;
     "contact:phone"?: string;
     "building:levels"?: string;
     place?: string;
@@ -144,12 +157,26 @@ export interface LoadMoreButtonProps {
 }
 
 export interface PlaceCardProps {
-  place: Place;
-  isExpanded: boolean;
+  place: {
+    name: string;
+    lat: number;
+    lon: number;
+    distance: number;
+    tags?: {
+      name?: string;
+      "addr:street"?: string;
+      "addr:city"?: string;
+      "addr:housenumber"?: string;
+      "contact:phone"?: string;
+      opening_hours?: string;
+      website?: string;
+      cuisine?: string;
+      amenity?: string;
+    };
+  };
   onClick: () => void;
   typeLabel?: string;
   icon?: string;
-  walkingTime?: number;
 }
 
 export interface PlaceDetailsProps {

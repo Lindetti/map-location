@@ -1,68 +1,64 @@
-import { useEffect, useState, useCallback } from "react";
-import { ClipLoader, PulseLoader } from "react-spinners";
-import { OverpassElement, PlaceType, iconMapping } from "../../Interfaces";
-import HomeImage from "../../assets/homeImages/homepicture.jpg";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Header from "../Layout/Header";
-import Map from "../Map";
+import { OverpassElement, PlaceType, iconMapping } from "../../Interfaces";
 import LocationPermission from "../LocationPermission";
 import AutoLocationUpdater from "../AutoLocationUpdater";
-import { weatherIcons } from "../WeatherIcons";
-import ArrowUp from "../../assets/icons/arrowUp.png";
-import ArrowDown from "../../assets/icons/arrowDown.png";
-import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkmode.png";
-import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkmode.png";
-import { motion } from "framer-motion";
-import LinkIcon from "../../assets/icons/link.png";
-import Phone from "../../assets/icons/phone.png";
-import Email from "../../assets/icons/email.png";
-import Open from "../../assets/icons/open.png";
+import { ClipLoader } from "react-spinners";
+import { MapPin, Info, Shield, LayoutGrid, Map } from "lucide-react";
+import PlaceCard from "../Place/PlaceCard";
+import SearchOptionsSelector from "../SearchOptionsSelector";
+import PlacesMap from "../PlacesMap";
+import {
+  fetchRestaurants,
+  fetchFastFood,
+  fetchShops,
+  fetchAccommodation,
+} from "../CategoryFetchers";
 
-type Place = OverpassElement & {
+interface ExtendedOverpassElement extends OverpassElement {
   distance: number;
-};
-
-const WEATHER_LOADED_SESSION_KEY = "weatherInitialLoadComplete";
+}
 
 const Home = () => {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
     null
   );
-  const [city, setCity] = useState<string | null>(() => {
-    const savedCity = localStorage.getItem("savedCity");
-    return savedCity || null;
-  });
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [nearbyPlaces, setNearbyPlaces] = useState<OverpassElement[]>([]);
-  const [showUserPosition, setShowUserPosition] = useState(false);
-  const [showPolyline, setShowPolyline] = useState(false);
-  const [expandedIndex, setExpandedIndex] = useState<number>(-1);
-  const [weather, setWeather] = useState<{
-    temperature: number;
-    windspeed: number;
-    feelsLike: number;
-    code: number;
-  } | null>(null);
-
-  const [isInitialWeatherLoadDone, setIsInitialWeatherLoadDone] = useState(
-    () => {
-      return sessionStorage.getItem(WEATHER_LOADED_SESSION_KEY) === "true";
-    }
+  const [nearbyPlaces, setNearbyPlaces] = useState<ExtendedOverpassElement[]>(
+    []
   );
+  const [showPlaces, setShowPlaces] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] =
+    useState<PlaceType>("restaurant");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState<boolean>(false);
+  const [showNotification, setShowNotification] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
-  const placeOptions: {
-    label: string;
-    singularLabel: string;
-    value: PlaceType;
-  }[] = [
-    { label: "Restauranger", singularLabel: "Restaurang", value: "restaurant" },
-    { label: "Snabbmat", singularLabel: "Snabbmat", value: "fast_food" },
-    { label: "Caféer", singularLabel: "Café", value: "cafe" },
-    { label: "Barer", singularLabel: "Bar", value: "bar" },
-    { label: "Hotell", singularLabel: "Hotell", value: "hotel" },
-    { label: "Vandrarhem", singularLabel: "Vandrarhem", value: "hostel" },
-  ];
+  // När komponenten laddas, återställ showPlaces om platsdata saknas
+  useEffect(() => {
+    if (!location) {
+      setShowPlaces(false);
+    }
+  }, [location]);
+
+  // Reset notification when starting new search
+  useEffect(() => {
+    if (isSearching || isUpdatingLocation) {
+      setShowNotification(false);
+    }
+  }, [isSearching, isUpdatingLocation]);
+
+  // Show notification when results are loaded
+  useEffect(() => {
+    if (!isSearching && !isUpdatingLocation && showPlaces) {
+      setShowNotification(true);
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 3000); // Hide after 3 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isSearching, isUpdatingLocation, showPlaces]);
 
   function getDistance(
     lat1: number,
@@ -84,756 +80,420 @@ const Home = () => {
     return distance;
   }
 
-  const fetchWeather = useCallback(
-    async (lat: number, lon: number) => {
-      const markInitialLoadComplete = () => {
-        if (!isInitialWeatherLoadDone) {
-          setIsInitialWeatherLoadDone(true);
-          sessionStorage.setItem(WEATHER_LOADED_SESSION_KEY, "true");
-        }
-      };
-
-      // Kolla om väderdata finns i localStorage (för cache)
-      const savedWeather = localStorage.getItem("weatherData");
-      const savedWeatherTime = localStorage.getItem("weatherFetchTime");
-
-      if (savedWeather && savedWeatherTime) {
-        const timeElapsed = new Date().getTime() - parseInt(savedWeatherTime);
-        if (timeElapsed < 1800000) {
-          // 30 minuter
-          setWeather(JSON.parse(savedWeather));
-          markInitialLoadComplete(); // Markera som klar även vid cache-träff
-          return;
-        }
-      }
-
-      // Om ingen giltig cache, försök hämta från API
-      try {
-        const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=apparent_temperature&timezone=auto`
-        );
-        const data = await response.json();
-        const currentHour = new Date().getHours();
-        const apparentTempIndex = data.hourly.time.findIndex(
-          (time: string) => new Date(time).getHours() === currentHour
-        );
-
-        const weatherData = {
-          temperature: data.current_weather.temperature,
-          windspeed: data.current_weather.windspeed,
-          code: data.current_weather.weathercode,
-          feelsLike: data.hourly.apparent_temperature[apparentTempIndex],
-        };
-        setWeather(weatherData);
-
-        // Spara i localStorage för cache
-        localStorage.setItem("weatherData", JSON.stringify(weatherData));
-        localStorage.setItem(
-          "weatherFetchTime",
-          new Date().getTime().toString()
-        );
-
-        markInitialLoadComplete(); // Markera som klar efter lyckad API-hämtning
-      } catch (err) {
-        console.error("Kunde inte hämta väderdata:", err);
-        setWeather(null); 
-      }
-    },
-    [isInitialWeatherLoadDone]
-  );
-
-  const getUserLocation = useCallback(async () => {
-    if (!navigator.geolocation) {
-      setError("Geolocation stöds inte i denna webbläsare.");
-      setIsLoading(false);
-      return;
-    }
-
+  const getPlacesNearby = async (lat: number, lon: number, type: PlaceType) => {
     setIsLoading(true);
-
     try {
-      const position = await new Promise<GeolocationPosition>(
-        (resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0,
-          });
-        }
-      );
+      let places: ExtendedOverpassElement[] = [];
 
-      const { latitude, longitude } = position.coords;
-      setLocation({ lat: latitude, lon: longitude });
-      fetchWeather(latitude, longitude);
-
-      const query = `
-        [out:json][timeout:25];
-        (
-          node(around:5000,${latitude},${longitude})["amenity"~"restaurant|fast_food|bar|cafe|bar|hotel|hostel|shops"];
-          node(around:5000,${latitude},${longitude})["place"];
-        );
-        out body;
-      `;
-
-      const response = await fetch("https://overpass-api.de/api/interpreter", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: `data=${encodeURIComponent(query)}`,
-      });
-      const data = await response.json();
-      const elements: OverpassElement[] = data.elements;
-
-      const placesWithDistance: Place[] = elements
-        .filter(
-          (el) =>
-            el.tags?.name &&
-            (el.tags.amenity || el.tags.shop) &&
-            el.lat !== undefined &&
-            el.lon !== undefined
-        )
-        .map((el) => ({
-          ...el,
-          distance: getDistance(latitude, longitude, el.lat!, el.lon!),
-        }));
-
-      const filteredPlaces = placesWithDistance.filter((p) => p.distance < 10);
-      const sortedPlaces = filteredPlaces.sort(
-        (a, b) => a.distance - b.distance
-      );
-      setNearbyPlaces(sortedPlaces.slice(0, 5));
-
-      const place = elements.find(
-        (el) =>
-          el.tags?.place === "city" ||
-          el.tags?.place === "town" ||
-          el.tags?.place === "village"
-      );
-      const cityName = place?.tags?.name ?? "Okänd plats";
-
-      // Check if city has changed
-      const savedCity = localStorage.getItem("savedCity");
-      if (savedCity !== cityName) {
-        setCity(cityName);
-        localStorage.setItem("savedCity", cityName);
+      switch (type) {
+        case "restaurant":
+          places = await fetchRestaurants(lat, lon, getDistance);
+          break;
+        case "fast_food":
+          places = await fetchFastFood(lat, lon, getDistance);
+          break;
+        case "clothes":
+        case "shoes":
+        case "electronics":
+          places = await fetchShops(lat, lon, getDistance);
+          break;
+        case "hotel":
+        case "hostel":
+          places = await fetchAccommodation(lat, lon, getDistance);
+          break;
+        default:
+          console.warn("Unsupported category type:", type);
+          places = [];
       }
-    } catch (err: unknown) {
-      if (err instanceof GeolocationPositionError) {
-        switch (err.code) {
-          case 1:
-            setError(
-              "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden."
-            );
-            break;
-          case 2:
-            setError("Platsinformation är inte tillgänglig.");
-            break;
-          case 3:
-            setError("Det tog för lång tid att hämta din plats.");
-            break;
-          default:
-            setError("Ett okänt fel inträffade vid hämtning av plats.");
-        }
-      } else {
-        setError("Ett okänt fel inträffade.");
-      }
+
+      setNearbyPlaces(places);
+    } catch (error) {
+      console.error("Error fetching nearby places:", error);
+      setNearbyPlaces([]);
     } finally {
       setIsLoading(false);
     }
-  }, [fetchWeather]);
-
-  useEffect(() => {
-    getUserLocation();
-  }, [getUserLocation]);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
-  const getPlaceLabel = (placeType: string | undefined): string => {
-    const match = placeOptions.find((option) => option.value === placeType);
-    return match ? match.singularLabel : "Okänd plats";
   };
 
-  const getCurrentTime = () => {
-    const now = new Date();
-    const hours = now.getHours().toString().padStart(2, "0"); 
-    const minutes = now.getMinutes().toString().padStart(2, "0"); 
-    return `${hours}:${minutes}`;
+  const handleCategorySelect = (category: PlaceType) => {
+    setSelectedCategory(category);
+    setShowPlaces(false);
+    setNearbyPlaces([]);
   };
 
-  const isNight = () => {
-    const hour = new Date().getHours();
-    return hour < 6 || hour > 20;
-  };
-
-  const handleShowUserPosition = () => {
-    setShowUserPosition(true);
-    setShowPolyline(true);
-  };
-
-  const handleExpand = (index: number) => {
-    setExpandedIndex(index === expandedIndex ? -1 : index);
-    setShowUserPosition(false);
-    setShowPolyline(false);
-
-    if (index !== expandedIndex) {
-      setTimeout(() => {
-        const element = document.getElementById(`place-${index}`);
-        if (element) {
-          const offset = 50; 
-          const elementPosition = element.getBoundingClientRect().top;
-          const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth",
-          });
-        }
-      }, 100);
+  const handleFindNearby = async () => {
+    if (location) {
+      setIsSearching(true);
+      await getPlacesNearby(location.lat, location.lon, selectedCategory);
+      setShowPlaces(true);
+      setIsSearching(false);
     }
   };
 
-  const translateCuisine = (cuisine: string): string => {
-    const translations: Record<string, string> = {
-      burger: "Hamburgare",
-      italian_pizza: "Italiensk pizza",
-      pizza: "Pizza",
-      sushi: "Sushi",
-      chinese: "Kinesiskt",
-      japanese: "Japanskt",
-      american: "Amerikanskt",
-      greek: "Grekiskt",
-      indian: "Indiskt",
-      kebab: "Kebab",
-      mexican: "Mexikanskt",
-      thai: "Thailändskt",
-      coffee_shop: "Café",
-      cafe: "Café",
-      bakery: "Bageri",
-      fast_food: "Snabbmat",
-      sandwich: "Smörgåsar",
-      seafood: "Skaldjur",
-      asian: "Asiatiskt",
-      italian: "Italienskt",
-      steak_house: "Grill",
-      bubble_tea: "Bubbelte",
-      regional: "Husmanskost",
-    };
+  const handleUpdate = async () => {
+    setIsUpdatingLocation(true);
+    setIsSearching(true);
+    setShowPlaces(false); // Hide current results
 
-    const trimmed = cuisine.trim().toLowerCase();
-    return (
-      translations[trimmed] ??
-      trimmed
-        .split("_")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")
-    );
+    if ("geolocation" in navigator) {
+      try {
+        const position = await new Promise<GeolocationPosition>(
+          (resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0,
+            });
+          }
+        );
+
+        const newLocation = {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude,
+        };
+
+        setLocation(newLocation);
+        await getPlacesNearby(
+          newLocation.lat,
+          newLocation.lon,
+          selectedCategory
+        );
+        setShowPlaces(true);
+      } catch (error) {
+        console.error("Error getting location:", error);
+      } finally {
+        setIsUpdatingLocation(false);
+        setIsSearching(false);
+      }
+    }
   };
 
-  const isOpen = (openingHours: string): boolean => {
-    const now = new Date();
-    const currentDay = now.getDay(); 
-    const currentTime = now.getHours() * 60 + now.getMinutes(); // Convert to minutes
-
-    const hours = openingHours.split(";");
-    const todayHours = hours[currentDay === 0 ? 6 : currentDay - 1]; 
-
-    if (!todayHours || todayHours.toLowerCase().includes("stängt")) {
-      return false;
+  const getCategoryButtonText = () => {
+    if (isSearching) {
+      switch (selectedCategory) {
+        case "restaurant":
+          return "Söker efter restauranger...";
+        case "fast_food":
+          return "Söker efter snabbmat...";
+        case "clothes":
+        case "shoes":
+        case "electronics":
+          return "Söker efter butiker...";
+        case "hotel":
+        case "hostel":
+          return "Söker efter boende...";
+        default:
+          return "Söker efter platser...";
+      }
     }
 
-    const [openTime, closeTime] = todayHours.split("-").map((time) => {
-      const [hours, minutes] = time.trim().split(":").map(Number);
-      return hours * 60 + (minutes || 0);
-    });
+    switch (selectedCategory) {
+      case "restaurant":
+        return "Hitta restauranger nära mig";
+      case "fast_food":
+        return "Hitta snabbmat nära mig";
+      case "clothes":
+      case "shoes":
+      case "electronics":
+        return "Hitta butiker nära mig";
+      case "hotel":
+      case "hostel":
+        return "Hitta boende nära mig";
+      default:
+        return "Hitta platser nära mig";
+    }
+  };
 
-    return currentTime >= openTime && currentTime <= closeTime;
+  const getCategoryTypeLabel = (type: PlaceType): string => {
+    switch (type) {
+      case "restaurant":
+        return "Restaurang";
+      case "fast_food":
+        return "Snabbmat"; // This will show "Snabbmat i närheten" in the UI
+      case "clothes":
+      case "shoes":
+      case "electronics":
+        return "Butik";
+      case "hotel":
+      case "hostel":
+        return "Boende"; // This will show "Boende i närheten" in the UI
+      default:
+        return type;
+    }
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="w-full lg:w-2/4 p-5 flex flex-col gap-6 md:mt-2 min-h-screen"
-    >
-      {/* Visa Header endast om platsåtkomst INTE är nekad */}
-      {error !==
-        "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden." && (
-        <Header
-          city={city ?? undefined}
-          isLoading={isLoading}
-          placeOptions={placeOptions}
-          showTypeSelect={true}
-          isHome
+    <div className="flex flex-col items-center justify-center w-full min-h-screen text-white relative">
+      {/* Background gradient - positioned below hero */}
+      <div className="absolute inset-0 bg-gradient-to-br" />
+
+      {/* Hero section with solid background */}
+      <div className="relative w-full pt-16 h-[350px]">
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="relative w-full px-8 text-center">
+          <div className="flex items-center justify-center mb-6">
+            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-full p-3 md:p-4 mr-4">
+              <MapPin className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-5xl md:text-6xl font-bold text-white">
+              Plats
+              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+                Guiden
+              </span>
+            </h1>
+          </div>
+          <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-4xl mx-auto leading-relaxed">
+            Upptäck fantastiska restauranger, snabbmat, butiker och boende i din
+            närhet
+          </p>
+
+          {/* Navigation Links */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
+            <Link
+              to="/om"
+              className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-full transition-all duration-300"
+            >
+              <Info className="w-4 h-4 mr-2" />
+              Om appen
+            </Link>
+            <Link
+              to="/privacypolicy"
+              className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-full transition-all duration-300"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              Integritetspolicy
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Category grid - directly under hero */}
+      <SearchOptionsSelector
+        selectedType={selectedCategory}
+        onTypeChange={handleCategorySelect}
+      />
+
+      {/* Main content */}
+      <div className="w-full flex-1 relative z-10 mt-6 mb-10">
+        {!showPlaces && (
+          <div className="flex gap-2 items-center justify-center mt-0 md:mt-4">
+            <button
+              onClick={handleFindNearby}
+              disabled={isSearching}
+              className={`
+        relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 
+        hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 
+        rounded-full shadow-lg transform transition-all duration-300 
+        inline-flex items-center gap-3
+        ${isSearching ? "scale-95" : "hover:scale-105"} 
+        ${isSearching ? "animate-pulse-glow" : ""}
+        disabled:cursor-not-allowed
+      `}
+            >
+              <span className="flex items-center">
+                {isSearching ? (
+                  <ClipLoader color="#ffffff" size={20} />
+                ) : (
+                  <MapPin className="h-5 w-5" />
+                )}
+              </span>
+              <span>{getCategoryButtonText()}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Location handlers */}
+        <LocationPermission
+          onLocationReceived={(pos: GeolocationPosition) =>
+            setLocation({ lat: pos.coords.latitude, lon: pos.coords.longitude })
+          }
         />
-      )}
 
-      <AutoLocationUpdater onLocationUpdate={getUserLocation} />
+        {location && (
+          <AutoLocationUpdater
+            onLocationUpdate={(pos: GeolocationPosition) =>
+              setLocation({
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude,
+              })
+            }
+          />
+        )}
 
-      {/* Error Handling */}
-      {error ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-col items-center text-center gap-4 mt-10 max-w-md mx-auto px-4"
-        >
-          {error ===
-          "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda Platsguiden." ? (
-            <div className="flex flex-col gap-4">
-              <h2 className="text-xl font-semibold text-red-600">
-                Platsåtkomst nekad
-              </h2>
-              <p className="text-gray-700">
-                För att Platsguiden ska kunna visa ställen nära dig behöver vi
-                åtkomst till din plats. Du har nekat åtkomst, vilket gör att vi
-                inte kan hämta några resultat.
-              </p>
-              <p className="text-sm text-gray-500">
-                Tillåt platsåtkomst i webbläsarens inställningar.
-              </p>
-              <LocationPermission onPermissionGranted={getUserLocation} />
-            </div>
-          ) : (
-            <div>
-              <h2 className="text-xl font-semibold text-red-600">
-                Ett fel inträffade
-              </h2>
-              <p className="text-gray-700">{error}</p>
-            </div>
-          )}
-        </motion.div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex flex-col md:flex-row gap-6 mt-2"
-        >
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex-1 flex flex-col gap-6"
-          >
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-1 h-[300px] md:h-[350px] shadow-sm rounded-md relative overflow-hidden">
-                <img
-                  className="object-cover object-center h-full w-full rounded-md shadow-sm"
-                  src={HomeImage}
-                  alt="home-image"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                  <div className="text-center text-white px-4">
-                    <h1 className="text-3xl md:text-4xl font-bold mb-3">
-                      Upptäck platsen
-                    </h1>
-                    <p className="text-lg md:text-xl">
-                      Hitta de bästa platserna i närheten
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-100 dark:bg-[#1e1e1e] py-5 md:py-0 h-[140px] md:h-[300px] shadow-sm rounded-md flex flex-wrap md:flex-col gap-4 items-center justify-center w-full md:w-[220px] p-4 md:hidden">
-                <h1 className="hidden md:block text-center font-semibold text-base">
-                  Snabbval
-                </h1>
-
-                <Link
-                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 md:w-[120px] w-[125px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                  to="/mat&dryck"
-                >
-                  Mat & Dryck
-                </Link>
-                <Link
-                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 w-[120px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                  to="/butiker"
-                >
-                  Butiker
-                </Link>
-                <Link
-                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 w-[120px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                  to="/boende"
-                >
-                  Boende
-                </Link>
-                <Link
-                  className="flex items-center justify-center text-center bg-[#FCF9F8] text-black p-2 w-[120px] text-sm border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                  to="/vard&halsa"
-                >
-                  Vård & Hälsa
-                </Link>
-              </div>
-            </div>
-            <div className="flex-2">
-              {!weather && !isInitialWeatherLoadDone ? (
-                <div className="h-[150px] flex flex-col gap-4 items-center justify-center">
-                  <p className="text-gray-600">Hämtar aktuellt väder..</p>
-                  <ClipLoader color="#F97316" size={40} />
-                </div>
-              ) : weather ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className={`relative h-[180px] flex justify-center items-center font-sans rounded-md ${
-                    isNight()
-                      ? "bg-gray-800 text-gray-200 dark:bg-[#1e1e1e] dark:text-gray-300"
-                      : "bg-blue-200 dark:bg-[#1e1e1e] dark:text-gray-300"
-                  }`}
-                >
-                  <div className="flex gap-6 justify-center items-center w-full">
-                    <img
-                      className="h-[120px] w-[120px]"
-                      src={
-                        isNight()
-                          ? weatherIcons[weather.code]?.night.icon
-                          : weatherIcons[weather.code]?.day.icon
-                      }
-                      alt="icon"
-                    />
-                    <div className="flex flex-col gap-2">
-                      <p className="font-semibold text-base">
-                        Kl. {getCurrentTime()}
+        {/* Results section */}
+        {showPlaces && (
+          <div className="w-full md:max-w-[90rem] mx-auto px-4 md:px-8">
+            {location && (
+              <>
+                {/* Info */}
+                <div className="mb-5 md:mb-8 max-w-[90rem] mx-auto md:px-4">
+                  <div className="bg-white/10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-lg">
+                    <div className="flex gap-2 items-center justify-center">
+                      <Info className="h-4 w-4 text-blue-300 mt-1" />
+                      <p className="text-gray-200 text-sm ">
+                        <strong>Observera:</strong> Viss information kan vara
+                        inaktuell. Vissa platser kan ha stängt permanent,
+                        flyttat eller förändrats utan att det ännu har
+                        uppdaterats i tjänsten.
                       </p>
-                      <p className="font-semibold text-4xl">
-                        {Math.round(weather.temperature)}°
-                      </p>
-                      <div className="flex gap-2 text-sm">
-                        <p>Känns som</p>
-                        <p>{Math.floor(Number(weather.feelsLike))}°</p>
-                      </div>
                     </div>
                   </div>
-                  <div className="absolute bottom-1 left-1 text-sm">
-                    <p className="text-gray-400">Powered by open-meteo.com</p>
+                </div>
+
+                <div className="flex justify-center mb-6 md:mb-4 max-w-[90rem] mx-auto px-4 md:px-8">
+                  <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                    <MapPin className="h-5 w-5 mr-2" />
+                    Din position: {location.lat.toFixed(4)},{" "}
+                    {location.lon.toFixed(4)}
                   </div>
-                </motion.div>
-              ) : null}
+                </div>
+              </>
+            )}
+
+            <div className="flex flex-col md:flex-row md:justify-between mb-4 px-4">
+              <h2 className="text-2xl font-bold text-center md:text-left order-2 md:order-1 mt-8 md:mt-0">
+                {selectedCategory === "restaurant"
+                  ? "Restauranger"
+                  : selectedCategory === "fast_food"
+                  ? "Snabbmat"
+                  : getCategoryTypeLabel(selectedCategory)}{" "}
+                i närheten ({nearbyPlaces.length})
+              </h2>
+              <div className="flex justify-center md:justify-end items-center gap-2 order-1 md:order-2">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-1  flex gap-1 border border-white/20">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-2 rounded-md transition-colors flex items-center gap-2 ${
+                      viewMode === "grid"
+                        ? "bg-white text-black"
+                        : "text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                    <span>Lista</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode("map")}
+                    className={`p-2 rounded-md transition-colors flex items-center gap-2 ${
+                      viewMode === "map"
+                        ? "bg-white text-black"
+                        : "text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <Map className="w-4 h-4" />
+                    <span>Karta</span>
+                  </button>
+                </div>
+                <button
+                  onClick={handleUpdate}
+                  disabled={isUpdatingLocation || isSearching}
+                  className="flex items-center gap-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/20"
+                >
+                  {isUpdatingLocation || isSearching ? (
+                    <>
+                      <ClipLoader color="#ffffff" size={16} />
+                      <span>Uppdaterar...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Uppdatera</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-          </motion.div>
 
-          {/* Nearby places */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="w-full md:w-[500px] flex flex-col gap-4 h-auto rounded-md overflow-auto px-3 mt-5 md:mt-0"
-          >
-            {isLoading ? (
-              <PulseLoader color="#F97316" size={5} />
-            ) : (
-              <h1 className="text-gray-700 dark:text-gray-200 font-sans text-xl">
-                Dina närmaste platser just nu
-              </h1>
-            )}
-
-            {isLoading ? (
-              <div className="flex flex-col gap-3 justify-center items-center h-full">
-                <p className="text-gray-600 dark:text-gray-200">
-                  Hämtar din position..
+            {isLoading || isUpdatingLocation || (isSearching && !showPlaces) ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <ClipLoader color="#ffffff" size={40} className="mb-4" />
+                <p className="text-white text-lg">
+                  {isUpdatingLocation
+                    ? "Uppdaterar position..."
+                    : `Söker ${getCategoryTypeLabel(
+                        selectedCategory
+                      ).toLowerCase()}er...`}
                 </p>
-                <ClipLoader color="#F97316" size={40} />
               </div>
-            ) : nearbyPlaces.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center">
-                Inga platser hittades.
-              </p>
+            ) : viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:px-4">
+                {nearbyPlaces.map((place) => (
+                  <PlaceCard
+                    key={place.id}
+                    place={{
+                      name: place.tags?.name || "",
+                      lat: place.lat || place.center?.lat || 0,
+                      lon: place.lon || place.center?.lon || 0,
+                      distance: place.distance || 0,
+                      tags: place.tags,
+                    }}
+                    onClick={() => {}}
+                    typeLabel={getCategoryTypeLabel(selectedCategory)}
+                    icon={iconMapping[selectedCategory]}
+                  />
+                ))}
+              </div>
             ) : (
-              <div className="flex flex-col gap-3 mb-2">
-                {nearbyPlaces.map((place, index) => {
-                  const isExpanded = index === expandedIndex;
-                  let calculatedDistance = null;
-
-                  if (location && place.lat && place.lon) {
-                    calculatedDistance = getDistance(
-                      location.lat,
-                      location.lon,
-                      place.lat,
-                      place.lon
-                    );
-                  }
-
-                  const placeLabel = getPlaceLabel(
-                    place.tags?.amenity || place.tags?.shop
-                  );
-                  const placeType = place.tags?.amenity || place.tags?.shop;
-                  const IconComponent = iconMapping[placeType as PlaceType];
-
-                  return (
-                    <motion.div
-                      key={index}
-                      id={`place-${index}`}
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        duration: 0.3,
-                        delay: index * 0.1,
-                        ease: "easeOut",
-                      }}
-                      className={`
-                        bg-white text-black dark:bg-[#282828] dark:text-gray-200 w-full flex flex-col gap-4 p-4 md:p-5 rounded-md shadow-sm
-                        border transition-all duration-300
-                        ${
-                          expandedIndex === index
-                            ? "border-[1.5px] border-orange-500 dark:border-gray-400"
-                            : "border border-gray-300 dark:border-[#ffffff20] dark:hover:border-gray-400 hover:border-orange-500"
-                        }
-                      `}
-                    >
-                      <div
-                        className="flex flex-col gap-3 cursor-pointer"
-                        onClick={() => handleExpand(index)}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex gap-2 max-w-[180px]">
-                            <img
-                              className="h-5 w-5"
-                              src={IconComponent}
-                              alt="text"
-                            />
-                            <div>
-                              <p className="text-base md:text-lg font-medium leading-5 truncate text-gray-800 dark:text-gray-300">
-                                {place.tags?.name}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-orange-400">
-                                {placeLabel}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <p className="w-[65px] text-center font-semibold p-2 text-sm rounded-sm bg-[#FFF8F5] text-[#C53C07] dark:text-gray-800">
-                              {calculatedDistance !== null
-                                ? calculatedDistance < 1
-                                  ? `${Math.round(calculatedDistance * 1000)} m`
-                                  : `${calculatedDistance.toFixed(2)} km`
-                                : "Okänt avstånd"}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex justify-between items-center">
-                          {place.tags?.opening_hours ? (
-                            <div className="pl-6">
-                              <p
-                                className={`text-sm font-medium py-1 px-2 rounded-md text-white ${
-                                  isOpen(place.tags.opening_hours)
-                                    ? "bg-green-600"
-                                    : "bg-red-500"
-                                }`}
-                              >
-                                {isOpen(place.tags.opening_hours)
-                                  ? "Öppet"
-                                  : "Stängt"}
-                              </p>
-                            </div>
-                          ) : (
-                            <div> </div>
-                          )}
-                          <span className="text-xl">
-                            <img
-                              src={isExpanded ? ArrowUp : ArrowDown}
-                              alt="toggle arrow"
-                              className="h-4 w-4 block dark:hidden"
-                            />
-                            <img
-                              src={
-                                isExpanded ? ArrowUpDarkMode : ArrowDownDarkmode
-                              }
-                              alt="toggle arrow dark"
-                              className="h-4 w-4 hidden dark:block"
-                            />
-                          </span>
-                        </div>
-                      </div>
-
-                      {isExpanded &&
-                        place.lat !== undefined &&
-                        place.lon !== undefined && (
-                          <div className="flex flex-col gap-4 p-2 border-t-2 dark:border-gray-300">
-                            <div className="h-[300px] mt-2 mb-2">
-                              <Map
-                                lat={place.lat}
-                                lon={place.lon}
-                                zoom={16}
-                                name={place.tags?.name}
-                                showUserPosition={showUserPosition}
-                                showPolyLine={showPolyline}
-                              />
-                            </div>
-                            <div className="flex justify-start mb-4">
-                              <button
-                                className="flex items-center justify-center gap-2 text-sm bg-[#FCF9F8] text-black px-3 h-[35px] border border-gray-300 rounded hover:bg-[#FFF8F5] hover:text-[#C53C07] font-semibold transition"
-                                onClick={handleShowUserPosition}
-                              >
-                                Visa min position
-                              </button>
-                            </div>
-                            <div className="flex flex-col gap-3">
-                              {place.tags?.cuisine && (
-                                <div className="flex gap-2 items-center">
-                                  <img
-                                    src={IconComponent}
-                                    alt="link icon"
-                                    className="h-6 w-6"
-                                  />
-                                  <p className="text-gray-600 dark:text-gray-300">
-                                    {(place.tags?.cuisine ?? "")
-                                      .split(";")
-                                      .slice(0, 3)
-                                      .map((cuisine) =>
-                                        translateCuisine(cuisine)
-                                      )
-                                      .join(", ")}
-                                  </p>
-                                </div>
-                              )}
-
-                              <div className="flex flex-col gap-2">
-                                {place.tags?.brand && (
-                                  <div className="flex gap-2 items-center">
-                                    <p className="text-gray-500">Kedja:</p>
-                                    <p className="font-semibold text-gray-700 dark:text-gray-300">
-                                      {place.tags?.brand}
-                                    </p>
-                                  </div>
-                                )}
-                                {place.tags?.operator && (
-                                  <div className="flex gap-2 items-center">
-                                    <p className="text-gray-500">Kedja:</p>
-                                    <p className="font-semibold text-gray-700 dark:text-gray-300">
-                                      {place.tags?.operator}
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="flex flex-col gap-2">
-                                {place.tags?.phone && (
-                                  <div className="flex gap-2 items-center">
-                                    <img
-                                      src={Phone}
-                                      alt="phone icon"
-                                      className="h-5 w-5"
-                                    />
-                                    <a
-                                      href={`${place.tags?.["contact:phone"]}`}
-                                      className="text-blue-500 dark:text-blue-300 hover:underline"
-                                    >
-                                      {place.tags?.phone}
-                                    </a>
-                                  </div>
-                                )}
-                                {place.tags?.email && (
-                                  <div className="flex gap-2 items-center">
-                                    <img
-                                      src={Email}
-                                      alt="link icon"
-                                      className="h-5 w-5"
-                                    />
-                                    <a
-                                      href={`mailto:${place.tags?.email}`}
-                                      className="text-blue-500 dark:text-blue-300 hover:underline"
-                                    >
-                                      {place.tags?.email}
-                                    </a>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            {place.tags?.opening_hours && (
-                              <div className="flex flex-col gap-2">
-                                <div className="flex gap-2 items-center">
-                                  <img
-                                    src={Open}
-                                    alt="open icon"
-                                    className="h-5 w-5"
-                                  />
-                                  <p className="font-semibold text-gray-700 dark:text-gray-300">
-                                    Öppettider:
-                                  </p>
-                                </div>
-                                <ul className="list-none pl-1 text-gray-700 dark:text-gray-300">
-                                  {place.tags?.opening_hours
-                                    .split(";")
-                                    .map((hour, i) => (
-                                      <li key={i} className="py-1">
-                                        {hour.trim()}
-                                      </li>
-                                    ))}
-                                </ul>
-                              </div>
-                            )}
-
-                            <div>
-                              {place.tags?.website ? (
-                                <></>
-                              ) : (
-                                <div>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Om du känner att informationen är
-                                    otillräcklig, prova gärna att söka vidare
-                                    via webben – du hittar knappen "Sök på
-                                    Google" här nedanför.
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex justify-between p-1">
-                              {place.tags?.website ? (
-                                <a
-                                  href={place.tags?.website}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-2 text-orange-500 dark:text-gray-200 hover:text-[#C2410C] font-semibold text-sm underline"
-                                >
-                                  <img
-                                    src={LinkIcon}
-                                    alt="link icon"
-                                    className="h-4 w-4"
-                                  />
-                                  Besök webbplats
-                                </a>
-                              ) : (
-                                <a
-                                  href={`https://www.google.com/search?q=${encodeURIComponent(
-                                    place.tags?.name + " " + city
-                                  )}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-2 text-[#F97316] dark:text-gray-200 hover:text-[#C2410C] font-semibold text-sm underline"
-                                >
-                                  <img
-                                    src={LinkIcon}
-                                    alt="link icon"
-                                    className="h-4 w-4"
-                                  />
-                                  Sök på Google
-                                </a>
-                              )}
-
-                              <div className="w-auto h-[50px] flex items-center justify-center">
-                                <h1 className="text-base md:text-lg italic font-semibold text-gray-700 dark:text-gray-300">
-                                  Platsguiden
-                                  <span className="font-bold text-orange-500 text-2xl">
-                                    .
-                                  </span>
-                                </h1>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                    </motion.div>
-                  );
-                })}
+              <div className="rounded-xl overflow-hidden shadow-lg h-[400px]">
+                <PlacesMap
+                  places={nearbyPlaces}
+                  userLocation={location}
+                  selectedCategory={selectedCategory}
+                />
               </div>
             )}
-          </motion.div>
-        </motion.div>
+
+            {nearbyPlaces.length === 0 && !isLoading && (
+              <div className="bg-purple-800 bg-opacity-50 p-8 rounded-lg text-center mx-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-12 w-12 mx-auto mb-4 text-gray-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <p>
+                  Inga platser hittades i närheten. Försök med en annan kategori
+                  eller uppdatera din position.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Results notification */}
+      {showNotification && nearbyPlaces.length > 0 && (
+        <div className="fixed bottom-4 right-4 bg-white text-purple-900 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out opacity-90 hover:opacity-100 z-50">
+          <p className="font-medium">Platser hittade!</p>
+          <p className="text-sm text-purple-700">
+            Hittade {nearbyPlaces.length}{" "}
+            {selectedCategory === "restaurant"
+              ? "restauranger"
+              : selectedCategory === "fast_food"
+              ? "snabbmatsställen"
+              : selectedCategory === "hotel" || selectedCategory === "hostel"
+              ? "boenden"
+              : "butiker"}{" "}
+            i närheten.
+          </p>
+        </div>
       )}
-    </motion.div>
+
+      <footer className="bg-black/20 backdrop-blur-sm border-t border-white/10 py-8 w-full mt-5">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-gray-300">
+            Byggd med Overpass API och Geolocation
+          </p>
+        </div>
+      </footer>
+    </div>
   );
 };
 

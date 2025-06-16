@@ -1,122 +1,170 @@
-import Location from "../../assets/icons/location.png";
-import ArrowUp from "../../assets/icons/arrowUp.png";
-import ArrowDown from "../../assets/icons/arrowDown.png";
-import ArrowUpDarkMode from "../../assets/icons/arrowUpDarkmode.png";
-import ArrowDownDarkmode from "../../assets/icons/arrowDownDarkmode.png";
 import { PlaceCardProps } from "../../Interfaces";
-import OpeningHours from "opening_hours";
+
+import {
+  MapPin,
+  Utensils,
+  Clock,
+  Phone,
+  Globe,
+  Navigation,
+  Share2,
+  Store,
+  Hotel,
+  Zap,
+} from "lucide-react";
 
 const PlaceCard = ({
   place,
-  isExpanded,
   onClick,
   typeLabel = "Restaurang",
   icon,
 }: PlaceCardProps) => {
-  const now = new Date();
-  let isOpen: boolean | null = null;
-  let nextChange: Date | null | undefined;
+  const openInGoogleMaps = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}`;
+    window.open(url, "_blank");
+  };
 
-  if (place.openingHours) {
+  const openGoogleMapsPlace = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const url = `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lon}`;
+    window.open(url, "_blank");
+  };
+
+  const sharePlace = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const shareData = {
+      title: place.name || "Delad plats",
+      text: `Kolla in ${place.name} på RestaurantFinder!`,
+      url: `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lon}`,
+    };
+
     try {
-      const oh = new OpeningHours(place.openingHours);
-      isOpen = oh.getState(now); 
-      nextChange = oh.getNextChange(now);
+      await navigator.share(shareData);
     } catch (err) {
-      console.warn("Kunde inte tolka opening_hours:", err);
+      console.log("Error sharing:", err);
     }
-  }
+  };
+
+  const getIcon = () => {
+    switch (typeLabel) {
+      case "Restaurang":
+        return <Utensils className="w-6 h-6" />;
+      case "Snabbmat":
+        return <Zap className="w-6 h-6" />;
+      case "Butik":
+        return <Store className="w-6 h-6" />;
+      case "Boende":
+        return <Hotel className="w-6 h-6" />;
+      default:
+        return icon || <MapPin className="w-6 h-6" />;
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-4 cursor-pointer" onClick={onClick}>
-      <div className="flex justify-between">
-        <div className="flex gap-2">
-          <div className="h-[25px] w-[25px]">
-            <img
-              className="w-full h-full object-cover"
-              src={icon}
-              alt={`${typeLabel} ikon`}
-            />
-          </div>
-          <div className="flex flex-col">
-            <div className="w-[180px] md:w-[450px]">
-              <p className="text-base md:text-lg font-medium leading-5 truncate text-gray-800 dark:text-gray-300">
-                {place.name}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-orange-400">
-                {typeLabel}
-              </p>
-              {isOpen !== null && (
-                <div className="flex gap-2 items-center mt-2">
-                  <div
-                    className={`text-sm font-medium py-1 px-2 rounded-md text-white ${
-                      isOpen ? "bg-green-600" : "bg-red-500"
-                    }`}
-                  >
-                    {isOpen ? "Öppet nu" : "Stängt"}
-                  </div>
-                  {nextChange && (
-                    <p className="text-xs text-gray-500 dark:text-gray-300">
-                      {isOpen
-                        ? `Stänger kl. ${nextChange.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}`
-                        : `Öppnar kl. ${nextChange.toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}`}
-                    </p>
-                  )}
-                </div>
-              )}
+    <div
+      className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg hover:bg-white/15 transition-all duration-300 hover:scale-105 flex flex-col min-h-[320px]"
+      onClick={onClick}
+    >
+      {/* Content section - will grow to fill available space */}
+      <div className="flex-grow">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="flex items-center space-x-2 mb-2">
+              {getIcon()}
+              <span className="text-sm text-gray-300">{typeLabel}</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">{place.name}</h3>
+            <div className="flex items-center text-green-400 mb-2">
+              <MapPin className="w-4 h-4 mr-1" />
+              <span className="text-sm font-semibold">
+                {place.distance < 1
+                  ? `${Math.round(place.distance * 1000)} m bort`
+                  : `${place.distance.toFixed(2)} km bort`}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1">
-          <div className="h-[36px] flex items-center rounded-md bg-[#FFF8F5]">
-            <div className="flex items-center gap-2 p-2">
-              <p className="font-semibold text-sm md:text-base text-[#C53C07] dark:text-gray-800">
-                {place.distance < 1
-                  ? `${Math.round(place.distance * 1000)} m`
-                  : `${place.distance.toFixed(2)} km`}
-              </p>
+        <div className="space-y-2">
+          {place.tags?.cuisine && (
+            <div className="flex items-center text-gray-300">
+              <Utensils className="w-4 h-4 mr-2" />
+              <span className="text-sm capitalize">
+                {place.tags.cuisine.replace(";", ", ")}
+              </span>
             </div>
-          </div>
+          )}
+
+          {place.tags?.["addr:street"] && (
+            <div className="flex items-center text-gray-300">
+              <MapPin className="w-4 h-4 mr-2" />
+              <span className="text-sm">
+                {`${place.tags["addr:street"]} ${
+                  place.tags["addr:housenumber"] || ""
+                }`}
+              </span>
+            </div>
+          )}
+
+          {place.tags?.opening_hours && (
+            <div className="flex items-center text-gray-300">
+              <Clock className="w-4 h-4 mr-2" />
+              <span className="text-sm">{place.tags.opening_hours}</span>
+            </div>
+          )}
+
+          {place.tags?.["contact:phone"] && (
+            <div className="flex items-center text-gray-300">
+              <Phone className="w-4 h-4 mr-2" />
+              <span className="text-sm">{place.tags["contact:phone"]}</span>
+            </div>
+          )}
+
+          {place.tags?.website && (
+            <div className="flex items-center text-gray-300">
+              <Globe className="w-4 h-4 mr-2" />
+              <a
+                href={place.tags.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-400 hover:text-blue-300 underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Besök webbsida
+              </a>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex justify-between">
-        {place.address ? (
-          <div className="flex gap-1 items-center pl-7">
-            <div className="h-[18px] w-[18px]">
-              <img
-                className="w-full h-full object-cover"
-                src={Location}
-                alt="location icon"
-              />
-            </div>
-            <p className="text-sm text-gray-500 dark:text-gray-300">
-              {place.address}
-            </p>
-          </div>
-        ) : (
-          <div></div>
-        )}
+      {/* Button section - will stay at the bottom */}
+      <div className="mt-6 pt-4 border-t border-white/10 space-y-2">
+        <button
+          onClick={openInGoogleMaps}
+          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+        >
+          <Navigation className="w-4 h-4" />
+          <span>Vägbeskrivning</span>
+        </button>
 
-        <span className="text-xl">
-          <img
-            src={isExpanded ? ArrowUp : ArrowDown}
-            alt="toggle arrow"
-            className="h-4 w-4 block dark:hidden"
-          />
-          <img
-            src={isExpanded ? ArrowUpDarkMode : ArrowDownDarkmode}
-            alt="toggle arrow dark"
-            className="h-4 w-4 hidden dark:block"
-          />
-        </span>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <button
+            onClick={openGoogleMapsPlace}
+            className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
+          >
+            <MapPin className="w-4 h-4" />
+            <span>Karta</span>
+          </button>
+
+          <button
+            onClick={sharePlace}
+            className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 flex items-center justify-center space-x-2"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>Dela</span>
+          </button>
+        </div>
       </div>
     </div>
   );

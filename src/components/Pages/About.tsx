@@ -1,165 +1,145 @@
 import { motion } from "framer-motion";
-import HeroImage from "../../assets/homeImages/about.jpg";
+import { Link } from "react-router-dom";
+import {
+  ArrowLeft,
+  MapPin,
+  Search,
+  Navigation,
+  Shield,
+  Share2,
+  Compass,
+  Clock,
+} from "lucide-react";
 
 const About = () => {
   return (
     <motion.div
-      className="w-full p-5 flex flex-col justify-center items-center mb-5 mt-3 md:mt-2 md:mb-0"
-      initial={{ opacity: 0, y: 50, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="w-full min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
     >
-      <div className="flex flex-col gap-8 w-full lg:w-2/4">
-        {/* Header Section */}
-        <div className="relative h-[300px] w-full rounded-md overflow-hidden shadow-md">
-          <img
-            src={HeroImage}
-            alt="Hero"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-60 dark:bg-opacity-55 flex items-center justify-center">
-            <div className="text-center text-white px-4">
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                Om Platsguiden<span className="text-orange-500">.</span>
-              </h1>
-              <p className="text-lg md:text-xl">
-                Din guide till de bästa platserna i närheten
+      <div className="container mx-auto px-4 py-8">
+        {/* Tillbaka-knapp */}
+        <Link
+          to="/"
+          className="inline-flex items-center text-white hover:text-gray-300 transition-colors mb-8"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Tillbaka till start
+        </Link>
+
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Om{" "}
+            <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+              PlatsGuiden
+            </span>
+          </h1>
+          <p className="text-xl text-gray-200 max-w-2xl mx-auto">
+            Din smarta guide till restauranger, butiker och mycket mer i din
+            närhet
+          </p>
+        </div>
+
+        {/* Innehåll */}
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Platssökning */}
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+            <div className="flex items-center mb-4">
+              <Search className="w-8 h-8 text-blue-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">
+                Smart platssökning
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-200">
+              <p>
+                Utforska närliggande restauranger, snabbmatsställen, butiker och
+                hotell. PlatsGuiden använder OpenStreetMap-data för att hitta de
+                bästa alternativen inom 5 kilometers radie från din position.
+              </p>
+              <p>
+                Se detaljerad information om öppettider, kontaktuppgifter och
+                webbplatser direkt i appen.
+              </p>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+            <div className="flex items-center mb-4">
+              <Navigation className="w-8 h-8 text-green-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">
+                Enkel navigation
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-200">
+              <p>
+                Få direkt vägbeskrivning till valfri plats via Google Maps. Se
+                exakta avstånd till varje destination och välj mellan kartvy
+                eller listvy för bästa överblick.
+              </p>
+              <p>
+                Interaktiva kartor hjälper dig att hitta rätt och få en tydlig
+                bild av var alla platser ligger i förhållande till din position.
+              </p>
+            </div>
+          </div>
+
+          {/* Realtidsuppdateringar */}
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+            <div className="flex items-center mb-4">
+              <Clock className="w-8 h-8 text-purple-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">
+                Realtidsuppdateringar
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-200">
+              <p>
+                Din position uppdateras automatiskt medan du rör dig, vilket ger
+                dig alltid aktuell information om platser i närheten.
+              </p>
+              <p>
+                Se direkt vilka platser som är öppna just nu och hur långt bort
+                de ligger från din nuvarande position.
+              </p>
+            </div>
+          </div>
+
+          {/* Delning och integritet */}
+          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+            <div className="flex items-center mb-4">
+              <Share2 className="w-8 h-8 text-yellow-400 mr-3" />
+              <h2 className="text-2xl font-bold text-white">
+                Dela och integrera
+              </h2>
+            </div>
+            <div className="space-y-4 text-gray-200">
+              <p>
+                Dela intressanta platser med vänner och familj direkt från
+                appen. All delning sker via din enhets inbyggda
+                delningsfunktioner.
+              </p>
+              <p>
+                Din integritet är viktig - vi sparar ingen personlig information
+                och använder endast din platsdata för att visa relevanta
+                resultat.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex flex-col gap-8">
-          {/* Introduction */}
-          <div className="flex flex-col gap-4">
-            <h2 className="text-lg md:text-2xl font-semibold text-gray-800 dark:text-gray-300">
-              Hitta Ställen Nära Dig
-            </h2>
-            <p className="text-gray-600 dark:text-gray-200 leading-relaxed">
-              Oavsett om du är sugen på att prova en ny restaurang till lunch,
-              hitta ett café för en kopp kaffe eller utforska områdets bästa
-              barer, erbjuder Platsguiden en enkel och snabb översikt över de
-              bästa alternativen i närheten.
-            </p>
-          </div>
-
-          {/* Features */}
-          <div className="flex flex-col gap-6">
-            <h2 className="text-lg md:text-2xl font-semibold text-gray-800 dark:text-gray-300">
-              Vad kan du göra på Platsguiden
-              <span className="text-orange-500">?</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Hitta närmaste platser 📍
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Se de 15 närmaste restaurangerna, snabbmatsställen, kaffeer
-                  och barer baserat på din plats. Du får även information om
-                  avstånd och öppettider.
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Visa på karta 🗺️
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Se varje restaurang eller bar på en interaktiv karta, med din
-                  egen position för att göra det enklare att hitta dit.
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Detaljerad information ℹ️
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Om telefonnummer, webbplats eller öppettider finns
-                  tillgängliga visas dessa direkt. Saknas någon information kan
-                  du enkelt söka efter platsen på internet via en smidig genväg.
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Exakt position 📡
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  På mobil används din GPS-position för bästa träff, medan
-                  användare på datorer får en uppskattad plats baserat på
-                  IP-adressen (vilket kan vara något mindre exakt).
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Aktivera GPS 📡
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Med funktionen "Aktivera GPS" får du realtidsuppdatering av
-                  din position och den valda platsen, så att du alltid vet var
-                  du är och om du börjar närma dig stället du letar efter.
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Väder på aktuell plats 🌤️
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Få väderinformation baserat på din aktuella position – så att
-                  du alltid vet om det är bra väder att ge sig ut på en promenad
-                  till din nästa destination.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div className="flex flex-col gap-6">
-            <h2 className="text-lg md:text-2xl font-semibold text-gray-800 dark:text-gray-300">
-              Kategorier i Platsguiden
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Mat & Dryck
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Restauranger, Livsmedel, kiosker, snabbmat, kaffeer och barer
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Butiker
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  kläder, skor, elektronik och Systembolag
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Boende
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Hotell och vandrarhem
-                </p>
-              </div>
-
-              <div className="p-4 bg-white dark:bg-[#282828] rounded-lg shadow-sm dark:border-[1.5px] dark:border-[#ffffff20]">
-                <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">
-                  Vård & Hälsa
-                </h3>
-                <p className="text-gray-600 dark:text-gray-200">
-                  Hitta vård och apotek nära dig
-                </p>
-              </div>
-            </div>
+        {/* Footer */}
+        <div className="text-center mt-12">
+          <p className="text-gray-300">
+            Byggd med OpenStreetMap och Overpass API för att ge dig den bästa
+            möjliga lokala sökupplevelsen.
+          </p>
+          <div className="flex items-center justify-center mt-4 space-x-2">
+            <Compass className="w-5 h-5 text-blue-400" />
+            <Shield className="w-5 h-5 text-green-400" />
+            <MapPin className="w-5 h-5 text-purple-400" />
           </div>
         </div>
       </div>
