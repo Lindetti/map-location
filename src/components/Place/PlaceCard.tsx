@@ -1,4 +1,4 @@
-import { PlaceCardProps } from "../../Interfaces";
+import { ExtendedOverpassElement } from "../../Interfaces";
 
 import {
   MapPin,
@@ -11,14 +11,19 @@ import {
   Store,
   Hotel,
   Zap,
+  Fuel,
+  Bus,
 } from "lucide-react";
 
 const PlaceCard = ({
   place,
   onClick,
   typeLabel = "Restaurang",
-  icon,
-}: PlaceCardProps) => {
+}: {
+  place: ExtendedOverpassElement;
+  onClick?: () => void;
+  typeLabel?: string;
+}) => {
   const openInGoogleMaps = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lon}`;
@@ -46,24 +51,64 @@ const PlaceCard = ({
     }
   };
 
+  // Get the proper type label for transport types
+  const getTypeLabel = () => {
+    if (place.tags?.amenity === "taxi") {
+      return "Taxi station";
+    }
+    if (
+      place.tags?.highway === "bus_stop" ||
+      place.tags?.amenity === "bus_station"
+    ) {
+      return "Busshållsplats";
+    }
+    return typeLabel;
+  };
+
   const getIcon = () => {
+    if (place.tags?.amenity === "taxi") {
+      return <Bus className="w-5 h-5 text-blue-400" />;
+    }
+    if (
+      place.tags?.highway === "bus_stop" ||
+      place.tags?.amenity === "bus_station"
+    ) {
+      return <Bus className="w-5 h-5 text-blue-400" />;
+    }
+
     switch (typeLabel) {
       case "Restaurang":
-        return <Utensils className="w-6 h-6" />;
+        return <Utensils className="w-5 h-5 text-blue-400" />;
       case "Snabbmat":
-        return <Zap className="w-6 h-6" />;
+        return <Zap className="w-5 h-5 text-blue-400" />;
       case "Butik":
-        return <Store className="w-6 h-6" />;
+        return <Store className="w-5 h-5 text-blue-400" />;
       case "Boende":
-        return <Hotel className="w-6 h-6" />;
+        return <Hotel className="w-5 h-5 text-blue-400" />;
+      case "Bensinstationer":
+        return <Fuel className="w-5 h-5 text-blue-400" />;
       default:
-        return icon || <MapPin className="w-6 h-6" />;
+        return <Store className="w-5 h-5 text-blue-400" />;
     }
   };
 
+  const showLines = () => {
+    if (place.lines && place.lines.length > 0) {
+      return (
+        <div className="flex items-center text-gray-300 mt-2">
+          <Bus className="w-4 h-4 mr-2" />
+          <span className="text-sm">Linjer: {place.lines.join(", ")}</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Icon handling has been moved to the getIcon function above
+
   return (
     <div
-      className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 shadow-lg hover:bg-white/15 transition-all duration-300 hover:scale-105 flex flex-col min-h-[320px]"
+      className="bg-slate-800/70 backdrop-blur-md border border-slate-600 rounded-xl p-6 shadow-lg hover:bg-slate-700/70 transition-all duration-300 hover:scale-105 flex flex-col min-h-[320px]"
       onClick={onClick}
     >
       {/* Content section - will grow to fill available space */}
@@ -72,16 +117,26 @@ const PlaceCard = ({
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-2">
               {getIcon()}
-              <span className="text-sm text-gray-300">{typeLabel}</span>
+              <span className="text-sm text-gray-300">{getTypeLabel()}</span>
             </div>
             <h3 className="text-xl font-bold text-white mb-2">{place.name}</h3>
-            <div className="flex items-center text-green-400 mb-2">
-              <MapPin className="w-4 h-4 mr-1" />
-              <span className="text-sm font-semibold">
-                {place.distance < 1
-                  ? `${Math.round(place.distance * 1000)} m bort`
-                  : `${place.distance.toFixed(2)} km bort`}
-              </span>
+            <div className="space-y-2">
+              <div className="flex items-center text-blue-400">
+                <MapPin className="w-4 h-4 mr-1" />
+                <span className="text-sm font-semibold">
+                  {place.distance < 1
+                    ? `${Math.round(place.distance * 1000)} m bort`
+                    : `${place.distance.toFixed(2)} km bort`}
+                </span>
+              </div>
+              {place.lines && place.lines.length > 0 && (
+                <div className="flex items-center text-blue-400">
+                  <Bus className="w-4 h-4 mr-1" />
+                  <span className="text-xs text-gray-300">
+                    Linjer: {place.lines.join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -135,6 +190,8 @@ const PlaceCard = ({
               </a>
             </div>
           )}
+
+          {showLines()}
         </div>
       </div>
 
@@ -142,7 +199,7 @@ const PlaceCard = ({
       <div className="mt-6 pt-4 border-t border-white/10 space-y-2">
         <button
           onClick={openInGoogleMaps}
-          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+          className="w-full bg-gradient-to-r from-blue-500 to-cyan-600  hover:to-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
         >
           <Navigation className="w-4 h-4" />
           <span>Vägbeskrivning</span>
