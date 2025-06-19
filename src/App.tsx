@@ -7,7 +7,7 @@ import PrivacyPolicy from "./components/Pages/PrivacyPolicy";
 
 function App() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden from-indigo-900 via-purple-800 to-pink-700 z-0">
+    <div className="min-h-screen flex flex-col items-center justify-center font-sans relative overflow-hidden bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 z-0">
       {/* Content */}
       <div className="relative w-full">
         <main className="flex-1 flex justify-center items-start w-full">

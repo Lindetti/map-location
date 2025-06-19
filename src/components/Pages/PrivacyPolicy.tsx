@@ -13,7 +13,7 @@ import {
 const PrivacyPolicy = () => {
   return (
     <motion.div
-      className="w-full min-h-screen bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700"
+      className="w-full min-h-screen bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -22,10 +22,10 @@ const PrivacyPolicy = () => {
         {/* Tillbaka-knapp */}
         <Link
           to="/"
-          className="inline-flex items-center text-white hover:text-gray-300 transition-colors mb-8"
+          className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 text-white font-semibold py-2 px-4 rounded-full transition-all duration-300 mb-10 mt-4"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Tillbaka till start
+          Tillbaka
         </Link>
 
         {/* Header */}
@@ -44,7 +44,7 @@ const PrivacyPolicy = () => {
         {/* Innehåll */}
         <div className="max-w-4xl mx-auto space-y-8">
           {/* Översikt */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+          <div className="bg-slate-800/60 backdrop-blur-md border border-slate-600 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
               <Eye className="w-6 h-6 mr-3 text-blue-400" />
               Översikt
@@ -56,7 +56,7 @@ const PrivacyPolicy = () => {
                 från din position. Vi värdesätter din integritet och är
                 transparenta med hur vi hanterar din information.
               </p>
-              <p className="font-semibold text-green-400">
+              <p className="font-semibold text-blue-200">
                 Viktigast av allt: Vi samlar inte in, lagrar eller delar någon
                 personlig information. Alla sökningar och platsfunktioner sker
                 lokalt på din enhet.
@@ -65,7 +65,7 @@ const PrivacyPolicy = () => {
           </div>
 
           {/* Positionsdata */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+          <div className="bg-slate-800/60 backdrop-blur-md border border-slate-600 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
               <MapPin className="w-6 h-6 mr-3 text-red-400" />
               Platsinformation
@@ -101,9 +101,9 @@ const PrivacyPolicy = () => {
           </div>
 
           {/* Sökningar och resultat */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+          <div className="bg-slate-800/60 backdrop-blur-md border border-slate-600 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-              <Search className="w-6 h-6 mr-3 text-purple-400" />
+              <Search className="w-6 h-6 mr-3 text-blue-400" />
               Sökningar och resultat
             </h2>
             <div className="text-gray-200 space-y-4">
@@ -130,7 +130,7 @@ const PrivacyPolicy = () => {
           </div>
 
           {/* Externa tjänster */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+          <div className="bg-slate-800/60 backdrop-blur-md border border-slate-600 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
               <Globe className="w-6 h-6 mr-3 text-yellow-400" />
               Externa tjänster
@@ -175,7 +175,7 @@ const PrivacyPolicy = () => {
           </div>
 
           {/* Dina rättigheter och kontroll */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+          <div className="bg-slate-800/60 backdrop-blur-md border border-slate-600 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
               <Shield className="w-6 h-6 mr-3 text-green-400" />
               Din kontroll
@@ -204,7 +204,7 @@ const PrivacyPolicy = () => {
           </div>
 
           {/* Kontakt */}
-          <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6">
+          <div className="bg-slate-800/60 backdrop-blur-md border border-slate-600 rounded-xl p-6">
             <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
               <Share2 className="w-6 h-6 mr-3 text-blue-400" />
               Kontakt & uppdateringar

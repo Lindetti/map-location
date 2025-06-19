@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { ClipLoader, PulseLoader } from "react-spinners";
-import { HeaderProps, iconMapping } from "../../Interfaces";
+import { HeaderProps } from "../../Interfaces";
 import Refresh1 from "../../assets/icons/refresh1.png";
 import Refresh2 from "../../assets/icons/refresh2.png";
 
@@ -112,19 +112,6 @@ const Header = ({
                             : ""
                         }`}
                       >
-                        {iconMapping[
-                          option.value as keyof typeof iconMapping
-                        ] && (
-                          <img
-                            src={
-                              iconMapping[
-                                option.value as keyof typeof iconMapping
-                              ]
-                            } // Hämta rätt ikon från iconMapping
-                            alt={`${option.value} icon`}
-                            className="h-5 w-5 mr-2 inline" 
-                          />
-                        )}
                         {option.label}
                       </li>
                     ))}

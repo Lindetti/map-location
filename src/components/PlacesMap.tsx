@@ -2,31 +2,9 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L, { LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { OverpassElement } from "../Interfaces";
+import { ExtendedOverpassElement } from "../Interfaces";
 
-interface ExtendedOverpassElement extends OverpassElement {
-  distance?: number;
-  center?: { lat: number; lon: number };
-  tags?: {
-    name?: string;
-    "addr:street"?: string;
-    "addr:city"?: string;
-    "addr:housenumber"?: string;
-    "contact:phone"?: string;
-    "building:levels"?: string;
-    place?: string;
-    operator?: string;
-    brand?: string;
-    phone: string;
-    email: string;
-    cuisine?: string;
-    opening_hours?: string;
-    amenity?: string;
-    shop?: string;
-    website?: string;
-    tourism?: string;
-  };
-}
+// Using ExtendedOverpassElement from Interfaces.tsx
 
 interface PlacesMapProps {
   places: ExtendedOverpassElement[];
@@ -54,6 +32,7 @@ const getPlaceIcon = (place: ExtendedOverpassElement) => {
   const amenity = place.tags?.amenity;
   const shop = place.tags?.shop;
   const tourism = place.tags?.tourism;
+  const highway = place.tags?.highway;
 
   if (amenity === "restaurant") {
     return createCustomIcon("🍽️");
@@ -61,6 +40,19 @@ const getPlaceIcon = (place: ExtendedOverpassElement) => {
   if (amenity === "fast_food") {
     return createCustomIcon("🍔");
   }
+
+  if (amenity === "fuel") {
+    return createCustomIcon("⛽️");
+  }
+
+  if (amenity === "taxi") {
+    return createCustomIcon("🚕");
+  }
+
+  if (highway === "bus_stop") {
+    return createCustomIcon("🚌");
+  }
+
   if (shop) {
     if (shop === "clothes") return createCustomIcon("👕");
     if (shop === "shoes") return createCustomIcon("👟");

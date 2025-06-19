@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { OverpassElement, PlaceType, iconMapping } from "../../Interfaces";
+import { ExtendedOverpassElement, PlaceType } from "../../Interfaces";
 import LocationPermission from "../LocationPermission";
 import AutoLocationUpdater from "../AutoLocationUpdater";
 import { ClipLoader } from "react-spinners";
@@ -13,11 +13,11 @@ import {
   fetchFastFood,
   fetchShops,
   fetchAccommodation,
+  fetchGasStations,
+  fetchTransport,
 } from "../CategoryFetchers";
 
-interface ExtendedOverpassElement extends OverpassElement {
-  distance: number;
-}
+// Use the ExtendedOverpassElement from Interfaces
 
 const Home = () => {
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(
@@ -91,6 +91,12 @@ const Home = () => {
           break;
         case "fast_food":
           places = await fetchFastFood(lat, lon, getDistance);
+          break;
+        case "fuel":
+          places = await fetchGasStations(lat, lon, getDistance);
+          break;
+        case "transport":
+          places = await fetchTransport(lat, lon, getDistance);
           break;
         case "clothes":
         case "shoes":
@@ -182,6 +188,10 @@ const Home = () => {
         case "hotel":
         case "hostel":
           return "Söker efter boende...";
+        case "fuel":
+          return "Söker efter bensinstationer...";
+        case "transport":
+          return "Söker efter buss eller texi...";
         default:
           return "Söker efter platser...";
       }
@@ -199,6 +209,10 @@ const Home = () => {
       case "hotel":
       case "hostel":
         return "Hitta boende nära mig";
+      case "fuel":
+        return "Hitta bensinstationer nära mig";
+      case "transport":
+        return "Hitta buss eller taxi nära mig";
       default:
         return "Hitta platser nära mig";
     }
@@ -209,14 +223,18 @@ const Home = () => {
       case "restaurant":
         return "Restaurang";
       case "fast_food":
-        return "Snabbmat"; // This will show "Snabbmat i närheten" in the UI
+        return "Snabbmat";
       case "clothes":
       case "shoes":
       case "electronics":
-        return "Butik";
+        return "Butiker";
       case "hotel":
       case "hostel":
-        return "Boende"; // This will show "Boende i närheten" in the UI
+        return "Boende";
+      case "fuel":
+        return "Bensinstationer";
+      case "transport":
+        return "Busshållplats/Taxi";
       default:
         return type;
     }
@@ -228,8 +246,8 @@ const Home = () => {
       <div className="absolute inset-0 bg-gradient-to-br" />
 
       {/* Hero section with solid background */}
-      <div className="relative w-full pt-16 h-[350px]">
-        <div className="absolute inset-0 bg-black/20"></div>
+      <div className="relative w-full pt-16 h-[350px] ">
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/20 to-blue-900/20"></div>
         <div className="relative w-full px-8 text-center">
           <div className="flex items-center justify-center mb-6">
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-full p-3 md:p-4 mr-4">
@@ -237,7 +255,7 @@ const Home = () => {
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-white">
               Plats
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 Guiden
               </span>
             </h1>
@@ -281,9 +299,9 @@ const Home = () => {
               onClick={handleFindNearby}
               disabled={isSearching}
               className={`
-        relative overflow-hidden bg-gradient-to-r from-blue-500 to-purple-600 
-        hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 px-8 
-        rounded-full shadow-lg transform transition-all duration-300 
+    relative overflow-hidden bg-gradient-to-r from-blue-500 to-cyan-600 
+        hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-4 px-8 
+        rounded-full shadow-xl transform transition-all duration-300 
         inline-flex items-center gap-3
         ${isSearching ? "scale-95" : "hover:scale-105"} 
         ${isSearching ? "animate-pulse-glow" : ""}
@@ -327,7 +345,7 @@ const Home = () => {
               <>
                 {/* Info */}
                 <div className="mb-5 md:mb-8 max-w-[90rem] mx-auto md:px-4">
-                  <div className="bg-white/10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-lg">
+                  <div className="bg-slate-800/80 backdrop-blur-md border border-slate-600 text-slate-200 shadow-lg p-4 rounded-lg">
                     <div className="flex gap-2 items-center justify-center">
                       <Info className="h-4 w-4 text-blue-300 mt-1" />
                       <p className="text-gray-200 text-sm ">
@@ -341,7 +359,7 @@ const Home = () => {
                 </div>
 
                 <div className="flex justify-center mb-6 md:mb-4 max-w-[90rem] mx-auto px-4 md:px-8">
-                  <div className="inline-flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-6 py-3">
+                  <div className="inline-flex items-center bg-slate-800/80 backdrop-blur-md border border-slate-600 text-slate-200 shadow-lg rounded-full px-6 py-3">
                     <MapPin className="h-5 w-5 mr-2" />
                     Din position: {location.lat.toFixed(4)},{" "}
                     {location.lon.toFixed(4)}
@@ -359,14 +377,14 @@ const Home = () => {
                   : getCategoryTypeLabel(selectedCategory)}{" "}
                 i närheten ({nearbyPlaces.length})
               </h2>
-              <div className="flex justify-center md:justify-end items-center gap-2 order-1 md:order-2">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-1  flex gap-1 border border-white/20">
+              <div className="flex justify-center md:justify-end items-center gap-4 order-1 md:order-2">
+                <div className="bg-slate-800/80 backdrop-blur-md border border-slate-600 text-slate-200 shadow-lg rounded-lg p-1 flex gap-1 ">
                   <button
                     onClick={() => setViewMode("grid")}
                     className={`p-2 rounded-md transition-colors flex items-center gap-2 ${
                       viewMode === "grid"
-                        ? "bg-white text-black"
-                        : "text-white hover:bg-white/10"
+                        ? "bg-blue-500 hover:bg-blue-600 text-white"
+                        : "text-white hover:bg-slate-700/70"
                     }`}
                   >
                     <LayoutGrid className="w-4 h-4" />
@@ -376,8 +394,8 @@ const Home = () => {
                     onClick={() => setViewMode("map")}
                     className={`p-2 rounded-md transition-colors flex items-center gap-2 ${
                       viewMode === "map"
-                        ? "bg-white text-black"
-                        : "text-white hover:bg-white/10"
+                        ? "bg-blue-500 hover:bg-blue-600 text-white"
+                        : "text-white hover:bg-slate-700/70"
                     }`}
                   >
                     <Map className="w-4 h-4" />
@@ -387,7 +405,7 @@ const Home = () => {
                 <button
                   onClick={handleUpdate}
                   disabled={isUpdatingLocation || isSearching}
-                  className="flex items-center gap-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/20"
+                  className="bg-slate-800/80 backdrop-blur-md border border-slate-600 hover:bg-slate-700/80 text-slate-200 font-semibold py-2 px-6 rounded-full transition-all duration-300 shadow-lg"
                 >
                   {isUpdatingLocation || isSearching ? (
                     <>
@@ -420,15 +438,18 @@ const Home = () => {
                   <PlaceCard
                     key={place.id}
                     place={{
-                      name: place.tags?.name || "",
+                      ...place,
+                      name: place.tags?.name || place.name || "",
                       lat: place.lat || place.center?.lat || 0,
                       lon: place.lon || place.center?.lon || 0,
+                      type: place.type || "node",
+                      id: place.id || Math.random(),
                       distance: place.distance || 0,
-                      tags: place.tags,
+                      tags: place.tags || {},
                     }}
                     onClick={() => {}}
                     typeLabel={getCategoryTypeLabel(selectedCategory)}
-                    icon={iconMapping[selectedCategory]}
+                    // icon prop removed as we now use Lucide icons directly in PlaceCard
                   />
                 ))}
               </div>
@@ -443,7 +464,7 @@ const Home = () => {
             )}
 
             {nearbyPlaces.length === 0 && !isLoading && (
-              <div className="bg-purple-800 bg-opacity-50 p-8 rounded-lg text-center mx-4">
+              <div className="bg-blue-200 bg-opacity-50 p-8 rounded-lg text-center mx-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-12 w-12 mx-auto mb-4 text-gray-300"
@@ -470,9 +491,9 @@ const Home = () => {
 
       {/* Results notification */}
       {showNotification && nearbyPlaces.length > 0 && (
-        <div className="fixed bottom-4 right-4 bg-white text-purple-900 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out opacity-90 hover:opacity-100 z-50">
+        <div className="fixed bottom-4 right-4 bg-white text-black px-6 py-4 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out opacity-90 hover:opacity-100 z-50">
           <p className="font-medium">Platser hittade!</p>
-          <p className="text-sm text-purple-700">
+          <p className="text-sm text-blue-800">
             Hittade {nearbyPlaces.length}{" "}
             {selectedCategory === "restaurant"
               ? "restauranger"
@@ -480,6 +501,10 @@ const Home = () => {
               ? "snabbmatsställen"
               : selectedCategory === "hotel" || selectedCategory === "hostel"
               ? "boenden"
+              : selectedCategory === "fuel"
+              ? "bensinstationer"
+              : selectedCategory === "transport"
+              ? "transportalternativ"
               : "butiker"}{" "}
             i närheten.
           </p>

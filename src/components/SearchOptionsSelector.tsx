@@ -1,5 +1,5 @@
 import { PlaceType } from "../Interfaces";
-import { Utensils, Zap, Store, Hotel } from "lucide-react";
+import { Utensils, Zap, Store, Hotel, Fuel, Bus } from "lucide-react";
 
 interface SearchOptionsSelectorProps {
   selectedType: PlaceType;
@@ -15,7 +15,7 @@ const SearchOptionsSelector = ({
       type: "restaurant" as PlaceType,
       label: "Restauranger",
       icon: Utensils,
-      color: "from-orange-500 to-red-600",
+      color: "from-blue-500 to-blue-600",
     },
     {
       type: "fast_food" as PlaceType,
@@ -35,11 +35,23 @@ const SearchOptionsSelector = ({
       icon: Hotel,
       color: "from-purple-500 to-pink-600",
     },
+    {
+      type: "fuel" as PlaceType,
+      label: "Bensinmackar",
+      icon: Fuel,
+      color: "from-red-500 to-red-600",
+    },
+    {
+      type: "transport" as PlaceType,
+      label: "Transport",
+      icon: Bus,
+      color: "from-indigo-500 to-indigo-600",
+    },
   ];
 
   return (
     <div className="w-full max-w-[88rem] mx-auto px-4 md:px-8 mt-5 md:mt-0">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
         {options.map((option) => {
           const Icon = option.icon;
           const isSelected = selectedType === option.type;
@@ -53,19 +65,19 @@ const SearchOptionsSelector = ({
                 ${
                   isSelected
                     ? `bg-gradient-to-br ${option.color} scale-105 shadow-lg`
-                    : "bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:scale-102"
+                    : "bg-slate-800/60 backdrop-blur-md border border-slate-600 hover:bg-slate-700/60 hover:scale-102"
                 }
               `}
             >
               <div className="flex flex-col items-center space-y-2">
                 <Icon
                   className={`w-6 h-6 md:w-8 md:h-8 ${
-                    isSelected ? "text-white" : "text-gray-200"
+                    isSelected ? "text-white" : "text-slate-300"
                   }`}
                 />
                 <span
                   className={`text-sm font-medium ${
-                    isSelected ? "text-white" : "text-gray-200"
+                    isSelected ? "text-white" : "text-slate-300"
                   }`}
                 >
                   {option.label}

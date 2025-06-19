@@ -1,15 +1,3 @@
-import ClothesIcon from "./assets/icons/clothes.png";
-import ShoesIcon from "./assets/icons/shoes.png";
-import ElectronicsIcon from "./assets/icons/electronics.png";
-import RestaurantIcon from "./assets/icons/restaurant.png";
-import BarIcon from "./assets/icons/bar.png";
-import CafeIcon from "./assets/icons/cafe.png";
-import FastFoodIcon from "./assets/icons/fastfood.png";
-import AlcoholIcon from "./assets/icons/alcohol.png";
-import HotelIcon from "./assets/icons/hotel.png";
-import SuperMarketIcon from "./assets/icons/grocery.png";
-import FuelIcon from "./assets/icons/gas.png";
-
 export interface Place {
   name: string;
   lat: number;
@@ -59,14 +47,24 @@ export interface OverpassElement {
     place?: string;
     operator?: string;
     brand?: string;
-    phone: string;
-    email: string;
+    phone?: string;
+    amenity?: string;
+    highway?: string;
+    railway?: string;
+    network?: string;
+    public_transport?: string;
+    email?: string;
     cuisine?: string;
     opening_hours?: string;
-    amenity?: string;
     shop?: string;
     website?: string;
+    tourism?: string;
   };
+}
+
+export interface ExtendedOverpassElement extends OverpassElement {
+  distance: number;
+  lines?: string[]; // Busslinjer t.ex. ["2", "3", "4"]
 }
 
 export interface HeaderProps {
@@ -101,7 +99,8 @@ export type PlaceType =
   | "convenience"
   | "pharmacy"
   | "kiosk"
-  | "hospital";
+  | "hospital"
+  | "transport";
 
 export const isPlaceType = (value: string): value is PlaceType => {
   return [
@@ -123,31 +122,11 @@ export const isPlaceType = (value: string): value is PlaceType => {
     "pharmacy",
     "kiosk",
     "hospital",
+    "gas_station",
   ].includes(value);
 };
 
-export const iconMapping: { [key in PlaceType]: string } = {
-  restaurant: RestaurantIcon,
-  fast_food: FastFoodIcon,
-  bar: BarIcon,
-  pub: BarIcon,
-  clothes: ClothesIcon,
-  shoes: ShoesIcon,
-  supermarket: SuperMarketIcon,
-  electronics: ElectronicsIcon,
-  nightclub: ClothesIcon,
-  cafe: CafeIcon,
-  flowers: ClothesIcon,
-  after_party: ClothesIcon,
-  alcohol: AlcoholIcon,
-  hotel: HotelIcon,
-  hostel: HotelIcon,
-  fuel: FuelIcon,
-  convenience: SuperMarketIcon,
-  pharmacy: SuperMarketIcon,
-  kiosk: SuperMarketIcon,
-  hospital: SuperMarketIcon,
-};
+// Icon mapping has been removed as we now use Lucide React icons directly in components
 
 export interface LoadMoreButtonProps {
   isLoading: boolean;
