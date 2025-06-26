@@ -21,7 +21,6 @@ export const fetchGasStations = async (
     lon2: number
   ) => number
 ): Promise<ExtendedOverpassElement[]> => {
-  // Enklare query för att vara säker på att vi hittar bensinstationer
   const query = `[out:json][timeout:25];
 node["amenity"="fuel"](around:5000, ${lat}, ${lon});
 out body;`;
@@ -54,7 +53,6 @@ out body;`;
             a.distance - b.distance
         );
 
-      console.log("Processed gas stations:", places); // Debug logging
       return places.slice(0, 21);
     }
 

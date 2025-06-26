@@ -104,14 +104,12 @@ const PlaceCard = ({
     return null;
   };
 
-  // Icon handling has been moved to the getIcon function above
-
   return (
     <div
       className="bg-slate-800/70 backdrop-blur-md border border-slate-600 rounded-xl p-6 shadow-lg hover:bg-slate-700/70 transition-all duration-300 hover:scale-105 flex flex-col min-h-[320px]"
       onClick={onClick}
     >
-      {/* Content section - will grow to fill available space */}
+      {/* Content section */}
       <div className="flex-grow">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
@@ -195,7 +193,7 @@ const PlaceCard = ({
         </div>
       </div>
 
-      {/* Button section - will stay at the bottom */}
+      {/* Button section */}
       <div className="mt-6 pt-4 border-t border-white/10 space-y-2">
         <button
           onClick={openInGoogleMaps}

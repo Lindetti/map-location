@@ -4,8 +4,6 @@ import L, { LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { ExtendedOverpassElement } from "../Interfaces";
 
-// Using ExtendedOverpassElement from Interfaces.tsx
-
 interface PlacesMapProps {
   places: ExtendedOverpassElement[];
   userLocation: { lat: number; lon: number } | null;

@@ -33,13 +33,11 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
       if (permissionStatus.state === "granted") {
         getCurrentPosition();
       } else if (permissionStatus.state === "denied") {
-        // Platsåtkomst är nekad
         setError(
           "Du har nekat åtkomst till platsen. Tillåt platsåtkomst i webbläsarens inställningar för att använda RestaurantFinder."
         );
         setIsModalOpen(true);
       } else {
-        // Platsåtkomst har inte frågats ännu, be om den
         requestLocation();
       }
     } catch (err) {
@@ -96,7 +94,7 @@ const LocationPermission: React.FC<LocationPermissionProps> = ({
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000, // Increased timeout for better accuracy
+          timeout: 10000, 
           maximumAge: 0,
         }
       );
