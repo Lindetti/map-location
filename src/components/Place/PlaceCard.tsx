@@ -51,7 +51,6 @@ const PlaceCard = ({
     }
   };
 
-  // Get the proper type label for transport types
   const getTypeLabel = () => {
     if (place.tags?.amenity === "taxi") {
       return "Taxi station";

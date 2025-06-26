@@ -126,8 +126,6 @@ export const isPlaceType = (value: string): value is PlaceType => {
   ].includes(value);
 };
 
-// Icon mapping has been removed as we now use Lucide React icons directly in components
-
 export interface LoadMoreButtonProps {
   isLoading: boolean;
   visibleCount: number;
