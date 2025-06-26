@@ -55,7 +55,7 @@ const Home = () => {
       setShowNotification(true);
       const timer = setTimeout(() => {
         setShowNotification(false);
-      }, 3000); // Hide after 3 seconds
+      }, 3000); 
       return () => clearTimeout(timer);
     }
   }, [isSearching, isUpdatingLocation, showPlaces]);
@@ -139,7 +139,7 @@ const Home = () => {
   const handleUpdate = async () => {
     setIsUpdatingLocation(true);
     setIsSearching(true);
-    setShowPlaces(false); // Hide current results
+    setShowPlaces(false); 
 
     if ("geolocation" in navigator) {
       try {
@@ -449,7 +449,6 @@ const Home = () => {
                     }}
                     onClick={() => {}}
                     typeLabel={getCategoryTypeLabel(selectedCategory)}
-                    // icon prop removed as we now use Lucide icons directly in PlaceCard
                   />
                 ))}
               </div>

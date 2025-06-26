@@ -34,17 +34,17 @@ const AutoLocationUpdater: React.FC<AutoLocationUpdaterProps> = ({
                 },
                 {
                   enableHighAccuracy: true,
-                  timeout: 20000, // Längre timeout vid andra försöket
+                  timeout: 20000, 
                   maximumAge: 0,
                 }
               );
-              return; // Avsluta här eftersom vi gör ett nytt försök
+              return; 
           }
           console.error("Error updating location:", errorMessage);
         },
         {
           enableHighAccuracy: true,
-          timeout: 15000, // Ökad från 5000 till 15000
+          timeout: 15000, 
           maximumAge: 0,
         }
       );
@@ -52,7 +52,6 @@ const AutoLocationUpdater: React.FC<AutoLocationUpdaterProps> = ({
   }, [onLocationUpdate]);
 
   useEffect(() => {
-    // Initial position update
     getPosition();
 
     // Uppdatera position var 3:e minut

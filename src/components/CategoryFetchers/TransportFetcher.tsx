@@ -54,7 +54,6 @@ out center;`;
           const elementLon: number = element.lon || element.center?.lon || 0;
           const tags: TransportTags = element.tags as TransportTags;
 
-          // Defaultnamn om inget namn finns
           let defaultName: string = "Transport";
           if (tags?.highway === "bus_stop") {
             defaultName = "Busshållplats";
